@@ -10,6 +10,30 @@
 #pragma shader_feature_raytracing _EMISSION
 #pragma shader_feature_raytracing _TRANSPARENT
 
+struct ShadowRayData
+{
+    bool visible;
+};
+
+
+struct DirLight
+{
+    float3 direction;
+    float3 intensity;
+};
+
+
+void TraceShadowRay(RayDesc ray, inout PathPayload payload, inout ShadowRayData shadowRayData)
+{
+    TraceRay(g_AccelStruct, 0, 0xFF, 0, 1, K_MISS_SHADER_PT_SHADOW_RAY_INDEX, ray, payload);
+    if (payload.bounceIndexOpaque == -1)
+    {
+        shadowRayData.visible = true;
+    }
+}
+
+
+
 float3 GetNormalTS(float2 uv)
 {
     float4 map = _NormalMap.SampleLevel(sampler__NormalMap, _NormalMap_ST.xy * uv + _NormalMap_ST.zw, 0);
@@ -134,6 +158,31 @@ void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData att
         float3 pushOff = K_RAY_ORIGIN_PUSH_OFF * worldFaceNormal;
 
     #endif
+
+    DirLight dirLight;
+    dirLight.direction = float3(0.1, 0.5, 0.5);
+    dirLight.intensity = 0.1;
+
+
+    ShadowRayData shadowRayData;
+    shadowRayData.visible = false;
+
+    RayDesc shadowRay;
+    shadowRay.Origin = payload.bounceRayOrigin;
+    shadowRay.Direction = dirLight.direction;
+    shadowRay.TMin = K_T_MIN;
+    shadowRay.TMax = K_T_MAX;
+
+    PathPayload shadowPayload;
+    shadowPayload.radiance = float3(1, 1, 1);
+    shadowPayload.emission = float3(0, 0, 0);
+    shadowPayload.rngState = 0;
+    shadowPayload.bounceIndexOpaque = 0;
+    shadowPayload.bounceIndexTransparent = 0;
+    shadowPayload.bounceRayOrigin = float3(0, 0, 0);
+    shadowPayload.bounceRayDirection = float3(0, 0, 0);
+
+    // TraceShadowRay(shadowRay, shadowPayload, shadowRayData);
 
     payload.hitPos = worldPosition;
     payload.hitNorm = worldNormal;

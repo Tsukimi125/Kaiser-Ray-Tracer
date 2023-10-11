@@ -18,8 +18,8 @@ MonoBehaviour:
   rayTracingStyle: 0
   bounceCount: 1
   progressive: 1
-  samplePerPixel: 1
+  samplePerPixel: 64
   restirGBufferDebugMode: 0
   activeCameraType: 3
-  bounceCountOpaque: 6
+  bounceCountOpaque: 4
   bounceCountTransparent: 17

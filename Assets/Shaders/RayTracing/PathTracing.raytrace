@@ -26,6 +26,12 @@ struct ShadowRayData
     bool visible;
 };
 
+struct DirLight
+{
+    float3 direction;
+    float3 intensity;
+};
+
 
 void TraceScatterRay(RayDesc ray, inout PathPayload payload, inout ScatterRayData scatterRayData)
 {
@@ -37,8 +43,10 @@ void TraceScatterRay(RayDesc ray, inout PathPayload payload, inout ScatterRayDat
 void TraceShadowRay(RayDesc ray, inout PathPayload payload, inout ShadowRayData shadowRayData)
 {
     TraceRay(g_AccelStruct, 0, 0xFF, 0, 1, K_MISS_SHADER_PT_SHADOW_RAY_INDEX, ray, payload);
-
-    float3 lightDir = float3(0.5, 0.5, 0.5);
+    if (payload.bounceIndexOpaque == -1)
+    {
+        shadowRayData.visible = true;
+    }
 }
 
 
@@ -91,13 +99,57 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
         scatterRayData.radiance = float3(0, 0, 0);
         scatterRayData.throughput = float3(1, 1, 1);
 
-        ShadowRayData shadowRayData;
+        
+
+        DirLight dirLight;
+        dirLight.direction = float3(0.1, 0.5, 0.5);
+        dirLight.intensity = 0.1;
 
         do
         {
             TraceScatterRay(ray, payload, scatterRayData);
-            TraceShadowRay(ray, payload, shadowRayData);
 
+            if (payload.bounceIndexOpaque == -1)
+                break;
+
+            ShadowRayData shadowRayData;
+            shadowRayData.visible = false;
+
+            RayDesc shadowRay;
+            shadowRay.Origin = payload.bounceRayOrigin;
+            shadowRay.Direction = dirLight.direction;
+            shadowRay.TMin = K_T_MIN;
+            shadowRay.TMax = K_T_MAX;
+
+            PathPayload shadowPayload;
+            shadowPayload.radiance = float3(1, 1, 1);
+            shadowPayload.emission = float3(0, 0, 0);
+            shadowPayload.rngState = rngState;
+            shadowPayload.bounceIndexOpaque = 0;
+            shadowPayload.bounceIndexTransparent = 0;
+            shadowPayload.bounceRayOrigin = float3(0, 0, 0);
+            shadowPayload.bounceRayDirection = float3(0, 0, 0);
+
+            TraceShadowRay(shadowRay, shadowPayload, shadowRayData);
+
+            if (shadowRayData.visible)
+            {
+                // blinn phong
+                float3 N = payload.hitNorm;
+                float3 L = dirLight.direction;
+                float3 V = normalize(_WorldSpaceCameraPos - payload.hitPos);
+                float3 H = normalize(L + V);
+
+                float3 diffuse = payload.radiance * scatterRayData.throughput * dirLight.intensity * max(0, dot(N, L));
+                float3 specular = dirLight.intensity * pow(max(0, dot(N, H)), 0.5);
+
+                scatterRayData.radiance += diffuse + specular;
+
+
+                // scatterRayData.radiance += dirLight.intensity * payload.radiance * scatterRayData.throughput;
+
+            }
+            
             float pathStopProbability = 1;
 
             #define ENABLE_RUSSIAN_ROULETTE 1
@@ -141,7 +193,8 @@ void PathTracingRayGenShader()
 [shader("miss")]
 void MissShader0_Primary(inout PathPayload payload : SV_RayPayload)
 {
-    payload.emission = g_EnvTex.SampleLevel(sampler_g_EnvTex, WorldRayDirection(), 0).xyz;
+    // payload.emission = g_EnvTex.SampleLevel(sampler_g_EnvTex, WorldRayDirection(), 0).xyz;
+    payload.emission = 0;
     payload.bounceIndexOpaque = -1;
 }
 
