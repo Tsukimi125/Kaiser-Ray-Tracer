@@ -2,6 +2,7 @@
 #include "includes/RayPayload.hlsl"
 #include "includes/Utils.hlsl"
 #include "includes/Global.hlsl"
+#include "includes/Lighting.hlsl"
 
 uint g_ConvergenceStep;
 uint g_FrameIndex;
@@ -99,8 +100,8 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
         scatterRayData.throughput = float3(1, 1, 1);
 
         DirLight dirLight;
-        dirLight.direction = float3(0.25, 0.5, 0.5);
-        dirLight.intensity = 1.0;
+        dirLight.direction = _DirectionalLightDirection;
+        dirLight.intensity = _DirectionalLightColor;
 
         do
         {
@@ -132,16 +133,15 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
             if (shadowRayData.visible)
             {
                 // blinn phong
-                // float3 N = payload.hitNorm;
-                // float3 L = dirLight.direction;
+                float3 N = payload.hitNorm;
+                float3 L = dirLight.direction;
                 // float3 V = normalize(_WorldSpaceCameraPos - payload.hitPos);
                 // float3 H = normalize(L + V);
 
                 // float3 diffuse = payload.radiance * scatterRayData.throughput * dirLight.intensity * max(0, dot(N, L));
                 // float3 specular = dirLight.intensity * pow(max(0, dot(N, H)), 0.5);
 
-                scatterRayData.radiance += payload.hitBSDF * scatterRayData.throughput * dirLight.intensity;
-
+                scatterRayData.radiance += payload.hitBSDF * scatterRayData.throughput * dirLight.intensity * max(0, dot(N, L));
 
                 // scatterRayData.radiance += dirLight.intensity * payload.radiance * scatterRayData.throughput;
 

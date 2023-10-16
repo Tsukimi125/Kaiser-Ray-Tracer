@@ -23,6 +23,14 @@ float4 _EmissionColor;
 
 float _ExtinctionCoefficient;
 
+
+//------------------------------------------------------------------
+
+
+
+
+
+
 //------------------------------------------------------------------
 
 RaytracingAccelerationStructure g_AccelStruct : register(t0, space1);

@@ -28,7 +28,7 @@ public class RayTracingVirtualLighting
     void SetupDirectionalLight()
     {
         Light light = RenderSettings.sun;
-        buffer.SetGlobalVector(dirLightColorId, light.color.linear);
+        buffer.SetGlobalVector(dirLightColorId, light.color.linear * light.intensity);
         buffer.SetGlobalVector(dirLightDirectionId, -light.transform.forward);
     }
 }

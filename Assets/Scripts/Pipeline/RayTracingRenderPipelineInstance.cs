@@ -15,6 +15,7 @@ public partial class RayTracingRenderPipelineInstance : RenderPipeline
     private RenderGraph renderGraph = null;
 
     private RTHandleSystem rtHandleSystem = null;
+    private RayTracingVirtualLighting lighting = new RayTracingVirtualLighting();
 
     private int convergenceStep = 0;
 
@@ -121,15 +122,6 @@ public partial class RayTracingRenderPipelineInstance : RenderPipeline
         rtas.CullInstances(ref cullingConfig);
     }
 
-    private Light FindPointLight()
-    {
-        Light pointLight = Object.FindFirstObjectByType<Light>();
-
-        if (pointLight == null || pointLight.type != LightType.Point) return null;
-
-        return pointLight;
-    }
-
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
         if (!ValidateRayTracing())
@@ -144,6 +136,8 @@ public partial class RayTracingRenderPipelineInstance : RenderPipeline
 
         CullInstance();
 
+        lighting.Setup(context);
+
         foreach (Camera camera in cameras)
         {
             if (!camera.TryGetComponent<AdditionalCameraData>(out var additionalData))
@@ -155,6 +149,8 @@ public partial class RayTracingRenderPipelineInstance : RenderPipeline
             if (additionalData.UpdateCameraResources()) convergenceStep = 0;
 
             CommandBuffer cmd = new CommandBuffer();
+
+
 
             if ((camera.cameraType & renderPipelineAsset.activeCameraType) > 0)
             {
