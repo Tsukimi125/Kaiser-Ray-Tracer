@@ -2,6 +2,7 @@ struct PathPayload
 {
     float3 hitPos;
     float3 hitNorm;
+    float3 hitBSDF;
     
     float3 radiance;
     float3 emission;

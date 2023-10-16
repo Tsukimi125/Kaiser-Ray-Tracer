@@ -51,6 +51,16 @@ public partial class RayTracingRenderPipelineInstance : RenderPipeline
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_BounceCountOpaque"), (int)renderPipelineAsset.bounceCountOpaque);
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_BounceCountTransparent"), (int)renderPipelineAsset.bounceCountTransparent);
 
+                if (renderPipelineAsset.progressive)
+                {
+                    ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_Progressive"), 1);
+                }
+                else
+                {
+                    ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_Progressive"), 0);
+                }
+
+
                 ctx.cmd.SetRayTracingAccelerationStructure(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_AccelStruct"), rtas);
                 ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_Zoom"), zoom);
                 ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_AspectRatio"), aspectRatio);

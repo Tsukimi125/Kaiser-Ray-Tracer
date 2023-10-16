@@ -10,30 +10,6 @@
 #pragma shader_feature_raytracing _EMISSION
 #pragma shader_feature_raytracing _TRANSPARENT
 
-struct ShadowRayData
-{
-    bool visible;
-};
-
-
-struct DirLight
-{
-    float3 direction;
-    float3 intensity;
-};
-
-
-void TraceShadowRay(RayDesc ray, inout PathPayload payload, inout ShadowRayData shadowRayData)
-{
-    TraceRay(g_AccelStruct, 0, 0xFF, 0, 1, K_MISS_SHADER_PT_SHADOW_RAY_INDEX, ray, payload);
-    if (payload.bounceIndexOpaque == -1)
-    {
-        shadowRayData.visible = true;
-    }
-}
-
-
-
 float3 GetNormalTS(float2 uv)
 {
     float4 map = _NormalMap.SampleLevel(sampler__NormalMap, _NormalMap_ST.xy * uv + _NormalMap_ST.zw, 0);
@@ -86,6 +62,8 @@ void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData att
     float3 metallic = _Metallic;
 
     float smoothness = _Glossiness;
+    float3 emission = float3(0, 0, 0);
+    float3 fr = float3(0, 0, 0);
 
     #if _METALLICMAP
         float4 metallicSmoothness = _MetallicMap.SampleLevel(sampler__MetallicMap, _MetallicMap_ST.xy * v.uv + _MetallicMap_ST.zw, 0);
@@ -93,7 +71,7 @@ void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData att
         smoothness *= metallicSmoothness.w;
     #endif
 
-    float3 emission = float3(0, 0, 0);
+    
 
     #if _EMISSION
         emission = _EmissionColor * _EmissionTex.SampleLevel(sampler__EmissionTex, _EmissionTex_ST.xy * v.uv + _EmissionTex_ST.zw, 0).xyz;
@@ -145,7 +123,7 @@ void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData att
 
         float3 specularColor = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
 
-        float3 fr = SampleBSDF(TBN, view, worldNormal, roughness, albedo, specularColor, smoothness, fresnelFactor, bounceRayDir, pdf, payload.rngState);
+        fr = SampleBSDF(TBN, view, worldNormal, roughness, albedo, specularColor, smoothness, fresnelFactor, bounceRayDir, pdf, payload.rngState);
 
         float3 radiance = albedo;
 
@@ -159,33 +137,9 @@ void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData att
 
     #endif
 
-    DirLight dirLight;
-    dirLight.direction = float3(0.1, 0.5, 0.5);
-    dirLight.intensity = 0.1;
-
-
-    ShadowRayData shadowRayData;
-    shadowRayData.visible = false;
-
-    RayDesc shadowRay;
-    shadowRay.Origin = payload.bounceRayOrigin;
-    shadowRay.Direction = dirLight.direction;
-    shadowRay.TMin = K_T_MIN;
-    shadowRay.TMax = K_T_MAX;
-
-    PathPayload shadowPayload;
-    shadowPayload.radiance = float3(1, 1, 1);
-    shadowPayload.emission = float3(0, 0, 0);
-    shadowPayload.rngState = 0;
-    shadowPayload.bounceIndexOpaque = 0;
-    shadowPayload.bounceIndexTransparent = 0;
-    shadowPayload.bounceRayOrigin = float3(0, 0, 0);
-    shadowPayload.bounceRayDirection = float3(0, 0, 0);
-
-    // TraceShadowRay(shadowRay, shadowPayload, shadowRayData);
-
     payload.hitPos = worldPosition;
     payload.hitNorm = worldNormal;
+    payload.hitBSDF = fr;
     payload.pdf = pdf;
 
     payload.radiance = radiance;

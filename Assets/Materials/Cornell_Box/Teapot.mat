@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: 9c688a85f58f3a54fa7919bb4833bd06, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _TRANSPARENT
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -128,7 +129,7 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
-    - _Transparent: 0
+    - _Transparent: 1
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:

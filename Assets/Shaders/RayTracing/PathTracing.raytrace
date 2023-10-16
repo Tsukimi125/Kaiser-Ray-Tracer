@@ -10,6 +10,8 @@ float g_AspectRatio;
 
 uint g_SamplePerPixel;
 
+int g_Progressive;
+
 TextureCube<float4> g_EnvTex;
 SamplerState sampler_g_EnvTex;
 
@@ -32,12 +34,10 @@ struct DirLight
     float3 intensity;
 };
 
-
 void TraceScatterRay(RayDesc ray, inout PathPayload payload, inout ScatterRayData scatterRayData)
 {
     TraceRay(g_AccelStruct, 0, 0xFF, 0, 1, K_MISS_SHADER_PT_SCATTER_RAY_INDEX, ray, payload);
     scatterRayData.radiance += payload.emission * scatterRayData.throughput;
-    scatterRayData.throughput *= payload.radiance;
 }
 
 void TraceShadowRay(RayDesc ray, inout PathPayload payload, inout ShadowRayData shadowRayData)
@@ -48,7 +48,6 @@ void TraceShadowRay(RayDesc ray, inout PathPayload payload, inout ShadowRayData 
         shadowRayData.visible = true;
     }
 }
-
 
 float3 tracePath(uint2 launchIndex, uint2 launchDim)
 {
@@ -99,11 +98,9 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
         scatterRayData.radiance = float3(0, 0, 0);
         scatterRayData.throughput = float3(1, 1, 1);
 
-        
-
         DirLight dirLight;
-        dirLight.direction = float3(0.1, 0.5, 0.5);
-        dirLight.intensity = 0.1;
+        dirLight.direction = float3(0.25, 0.5, 0.5);
+        dirLight.intensity = 1.0;
 
         do
         {
@@ -135,20 +132,21 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
             if (shadowRayData.visible)
             {
                 // blinn phong
-                float3 N = payload.hitNorm;
-                float3 L = dirLight.direction;
-                float3 V = normalize(_WorldSpaceCameraPos - payload.hitPos);
-                float3 H = normalize(L + V);
+                // float3 N = payload.hitNorm;
+                // float3 L = dirLight.direction;
+                // float3 V = normalize(_WorldSpaceCameraPos - payload.hitPos);
+                // float3 H = normalize(L + V);
 
-                float3 diffuse = payload.radiance * scatterRayData.throughput * dirLight.intensity * max(0, dot(N, L));
-                float3 specular = dirLight.intensity * pow(max(0, dot(N, H)), 0.5);
+                // float3 diffuse = payload.radiance * scatterRayData.throughput * dirLight.intensity * max(0, dot(N, L));
+                // float3 specular = dirLight.intensity * pow(max(0, dot(N, H)), 0.5);
 
-                scatterRayData.radiance += diffuse + specular;
+                scatterRayData.radiance += payload.hitBSDF * scatterRayData.throughput * dirLight.intensity;
 
 
                 // scatterRayData.radiance += dirLight.intensity * payload.radiance * scatterRayData.throughput;
 
             }
+            scatterRayData.throughput *= payload.radiance;
             
             float pathStopProbability = 1;
 
@@ -186,7 +184,10 @@ void PathTracingRayGenShader()
     uint2 launchDim = DispatchRaysDimensions().xy;
 
     float3 result = tracePath(launchIndex, launchDim);
-    
+
+    float3 prevRadiance = g_Output[launchIndex].xyz;
+    if (g_Progressive == 1) result = lerp(prevRadiance, result, 1 / float(g_ConvergenceStep + 1));
+
     g_Output[launchIndex] = float4(result, 1);
 }
 
