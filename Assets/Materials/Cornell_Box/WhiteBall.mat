@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: WhiteWall
+  m_Name: WhiteBall
   m_Shader: {fileID: 4800000, guid: 9c688a85f58f3a54fa7919bb4833bd06, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -110,12 +110,12 @@ Material:
     - _DstBlendAlpha: 0
     - _Emission: 0
     - _EnvironmentReflections: 1
-    - _ExtinctionCoefficient: 1
+    - _ExtinctionCoefficient: 8.1
     - _GlossMapScale: 0
-    - _Glossiness: 0.726
+    - _Glossiness: 0.827
     - _GlossyReflections: 0
-    - _IOR: 1.3333
-    - _Metallic: 0
+    - _IOR: 1.03
+    - _Metallic: 0.858
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0

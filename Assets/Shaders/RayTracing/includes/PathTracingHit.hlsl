@@ -113,7 +113,7 @@ void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData att
 
         float3 bounceRayDir = lerp(reflectionRayDir, refractionRayDir, doRefraction);
     #else
-        float roughness = 1.0 - smoothness;
+        float roughness = clamp(1.0 - smoothness, 0.001, 0.999);
 
         float fresnelFactor = FresnelReflectAmountOpaque(isFrontFace ? 1 : _IOR, isFrontFace ? _IOR : 1, WorldRayDirection(), worldNormal);
 
@@ -123,11 +123,15 @@ void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData att
 
         float3 specularColor = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
 
-        fr = SampleBSDF(TBN, view, worldNormal, roughness, albedo, specularColor, smoothness, fresnelFactor, bounceRayDir, pdf, payload.rngState);
+        float specularChance = lerp(metallic, 1, fresnelFactor * smoothness);
+
+        // float doSpecular = (RandomFloat01(payload.rngState) < specularChance) ? 1 : 0;
+
+        fr = SampleBSDF(TBN, view, worldNormal, roughness, albedo, specularColor, specularChance, fresnelFactor, bounceRayDir, pdf, payload.rngState);
 
         float3 radiance = albedo;
 
-        if (dot(fr, fr) > 0 && pdf > 1e-6) radiance = fr * dot(bounceRayDir, worldNormal) / pdf;
+        // if (dot(fr, fr) > 0 && pdf > 1e-6) radiance = fr * dot(bounceRayDir, worldNormal) / pdf;
         
         uint bounceIndexOpaque = payload.bounceIndexOpaque + 1;
 

@@ -140,11 +140,9 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
 
                 // float3 diffuse = payload.radiance * scatterRayData.throughput * dirLight.intensity * max(0, dot(N, L));
                 // float3 specular = dirLight.intensity * pow(max(0, dot(N, H)), 0.5);
-
-                scatterRayData.radiance += payload.hitBSDF * scatterRayData.throughput * dirLight.intensity * max(0, dot(N, L));
-
-                // scatterRayData.radiance += dirLight.intensity * payload.radiance * scatterRayData.throughput;
-
+                
+                // Using Rendering Equation!
+                scatterRayData.radiance += scatterRayData.throughput * payload.hitBSDF * dirLight.intensity * max(0, dot(N, L));
             }
             scatterRayData.throughput *= payload.radiance;
             
@@ -194,8 +192,9 @@ void PathTracingRayGenShader()
 [shader("miss")]
 void MissShader0_Primary(inout PathPayload payload : SV_RayPayload)
 {
-    // payload.emission = g_EnvTex.SampleLevel(sampler_g_EnvTex, WorldRayDirection(), 0).xyz;
     payload.emission = 0;
+    // payload.emission = g_EnvTex.SampleLevel(sampler_g_EnvTex, WorldRayDirection(), 0).xyz;
+    
     payload.bounceIndexOpaque = -1;
 }
 

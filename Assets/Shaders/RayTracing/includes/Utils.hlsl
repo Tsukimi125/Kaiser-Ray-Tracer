@@ -9,7 +9,7 @@
 #define K_T_MIN                         0
 #define K_T_MAX                         10000
 #define K_MAX_BOUNCES                   1000
-#define K_RAY_ORIGIN_PUSH_OFF           0.002
+#define K_RAY_ORIGIN_PUSH_OFF           0.00001
 #define K_MISS_SHADER_INDEX             0
 #define K_MISS_SHADER_SHADOW_INDEX      1
 
