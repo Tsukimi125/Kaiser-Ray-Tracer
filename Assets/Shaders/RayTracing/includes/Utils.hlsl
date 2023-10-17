@@ -1,11 +1,11 @@
 #ifndef RAYTRACING_UTILS
 #define RAYTRACING_UTILS
 
-#define K_PI                            3.1415926535f
+#define K_PI                            3.14159265358979323846264338327950288f
 #define K_HALF_PI                       1.5707963267f
 #define K_QUARTER_PI                    0.7853981633f
 #define K_TWO_PI                        6.283185307f
-#define K_INV_PI                        0.3183098862f
+#define K_INV_PI                        0.318309886183790671537767526745028724f
 #define K_T_MIN                         0
 #define K_T_MAX                         10000
 #define K_MAX_BOUNCES                   1000
@@ -15,6 +15,8 @@
 
 #define K_MISS_SHADER_PT_SCATTER_RAY_INDEX  0
 #define K_MISS_SHADER_PT_SHADOW_RAY_INDEX  1
+
+#define SELECT(a, b, c) ((a) ? (b) : (c))
 
 #include "UnityRaytracingMeshUtils.cginc"
 
