@@ -139,10 +139,10 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
                 // float3 H = normalize(L + V);
 
                 // float3 diffuse = payload.radiance * scatterRayData.throughput * dirLight.intensity * max(0, dot(N, L));
-                // float3 specular = dirLight.intensity * pow(max(0, dot(N, H)), 0.5);
+                // float3 specular = dirLight.intensity * pow(max(0, dot(N, H)), 0.5); * max(0, dot(N, L))
                 
                 // Using Rendering Equation!
-                scatterRayData.radiance += scatterRayData.throughput * payload.hitBSDF * dirLight.intensity * max(0, dot(N, L));
+                scatterRayData.radiance += scatterRayData.throughput * payload.hitBSDF * dirLight.intensity;
             }
             scatterRayData.throughput *= payload.radiance;
             

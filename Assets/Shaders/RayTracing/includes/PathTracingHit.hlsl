@@ -131,7 +131,7 @@ void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData att
 
         float3 radiance = albedo;
 
-        // if (dot(fr, fr) > 0 && pdf > 1e-6) radiance = fr * dot(bounceRayDir, worldNormal) / pdf;
+        if (dot(fr, fr) > 0 && pdf > 1e-6) radiance = fr * dot(bounceRayDir, worldNormal) / pdf;
         
         uint bounceIndexOpaque = payload.bounceIndexOpaque + 1;
 
