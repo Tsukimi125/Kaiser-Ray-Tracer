@@ -3,6 +3,7 @@
 #include "includes/Utils.hlsl"
 #include "includes/Global.hlsl"
 #include "includes/Lighting.hlsl"
+#include "includes/rt/RayTrace.hlsl"
 
 uint g_ConvergenceStep;
 uint g_FrameIndex;

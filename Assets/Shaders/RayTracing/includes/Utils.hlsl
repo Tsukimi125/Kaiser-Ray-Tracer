@@ -13,13 +13,33 @@
 #define K_MISS_SHADER_INDEX             0
 #define K_MISS_SHADER_SHADOW_INDEX      1
 
+#define FLT_MAX 3.402823466e+38f
+
 #define K_MISS_SHADER_PT_SCATTER_RAY_INDEX  0
 #define K_MISS_SHADER_PT_SHADOW_RAY_INDEX  1
 
-#define SELECT(a, b, c) ((a) ? (b) : (c))
+#define SELECT(a, b, c) ((a) ? (b) :(c))
 
 #include "UnityRaytracingMeshUtils.cginc"
 
+Texture2D _BRDF_LUT_Texture;
+SamplerState sampler_bilinear_clamp;
+
+RayDesc CreateNewRay(float3 origin, float3 direction, float tmin, float tmax)
+{
+    RayDesc ray;
+    ray.Origin = origin;
+    ray.Direction = direction;
+    ray.TMin = tmin;
+    ray.TMax = tmax;
+    return ray;
+}
+
+
+
+
+
+// --------------------------------------------
 struct AttributeData
 {
     float2 barycentrics;
