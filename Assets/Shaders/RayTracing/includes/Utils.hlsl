@@ -49,8 +49,9 @@ struct Vertex
 {
     float3 position;
     float3 normal;
-    float3 tangent;
-    float2 uv;
+    // float3 tangent;
+    // float2 uv;
+
 };
 
 Vertex FetchVertex(uint vertexIndex)
@@ -58,8 +59,8 @@ Vertex FetchVertex(uint vertexIndex)
     Vertex v;
     v.position = UnityRayTracingFetchVertexAttribute3(vertexIndex, kVertexAttributePosition);
     v.normal = UnityRayTracingFetchVertexAttribute3(vertexIndex, kVertexAttributeNormal);
-    v.tangent = UnityRayTracingFetchVertexAttribute3(vertexIndex, kVertexAttributeTangent);
-    v.uv = UnityRayTracingFetchVertexAttribute2(vertexIndex, kVertexAttributeTexCoord0);
+    // v.tangent = UnityRayTracingFetchVertexAttribute3(vertexIndex, kVertexAttributeTangent);
+    // v.uv = UnityRayTracingFetchVertexAttribute2(vertexIndex, kVertexAttributeTexCoord0);
     return v;
 }
 
@@ -69,8 +70,8 @@ Vertex InterpolateVertices(Vertex v0, Vertex v1, Vertex v2, float3 barycentrics)
     #define INTERPOLATE_ATTRIBUTE(attr) v.attr = v0.attr * barycentrics.x + v1.attr * barycentrics.y + v2.attr * barycentrics.z
     INTERPOLATE_ATTRIBUTE(position);
     INTERPOLATE_ATTRIBUTE(normal);
-    INTERPOLATE_ATTRIBUTE(tangent);
-    INTERPOLATE_ATTRIBUTE(uv);
+    // INTERPOLATE_ATTRIBUTE(tangent);
+    // INTERPOLATE_ATTRIBUTE(uv);
     return v;
 }
 

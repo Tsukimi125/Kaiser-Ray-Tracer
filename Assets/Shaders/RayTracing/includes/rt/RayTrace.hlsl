@@ -3,6 +3,9 @@
 
 #include "../Utils.hlsl"
 #include "../BRDF/BRDF.hlsl"
+#include "../RayPayload.hlsl"
+
+
 
 struct RayCone
 {

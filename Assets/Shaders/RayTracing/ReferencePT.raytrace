@@ -39,12 +39,23 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
     // Rotate the ray from view space to world space.
     float3 rayDirection = mul((float3x3)unity_CameraToWorld, viewDirection);
 
-    RayDesc ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, 0, FLT_MAX);
+    RayDesc ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, 0, 9999);
+
+    // TODO: RayCone Never Used
+    RayCone rayCone = RayCone::Create(launchDim.y, 0.0);
     
     float3 throughput = 1.0.xxx;
     float3 radiance = 0.0.xxx;
+    uint pathlength = 0;
+    
 
-    PathVertex hitVertex = KaiserRayTracer::CreatePathVertex(ray, 0, 0, 0, throughput, radiance);
+    PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathlength, false).Trace(g_AccelStruct);
+
+    if (hitVertex.bHit)
+    {
+        return hitVertex.surfaceData.albedo;
+    }
+    return 0.0.xxx;
 }
 
 
@@ -63,17 +74,11 @@ void PathTracingRayGenShader()
 }
 
 [shader("miss")]
-void MissShader0_Primary(inout PathPayload payload : SV_RayPayload)
+void MissShader0_Primary(inout RayPayload payload : SV_RayPayload)
 {
-    payload.emission = 0;
-    // payload.emission = g_EnvTex.SampleLevel(sampler_g_EnvTex, WorldRayDirection(), 0).xyz;
+    // payload.emission = 0;
+    // // payload.emission = g_EnvTex.SampleLevel(sampler_g_EnvTex, WorldRayDirection(), 0).xyz;
     
-    payload.bounceIndexOpaque = -1;
-}
+    // payload.bounceIndexOpaque = -1;
 
-[shader("miss")]
-void MissShader1_Shadow(inout PathPayload payload : SV_RayPayload)
-{
-    payload.emission = g_EnvTex.SampleLevel(sampler_g_EnvTex, WorldRayDirection(), 0).xyz;
-    payload.bounceIndexOpaque = -1;
 }
