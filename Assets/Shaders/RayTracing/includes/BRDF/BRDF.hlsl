@@ -30,6 +30,29 @@ struct BRDFValue
     }
 };
 
+struct BRDFSample: BRDFValue
+{
+    float3 wi;
+
+    float approxRoughness;
+
+    static BRDFSample invalid()
+    {
+        BRDFSample res;
+        res.valueOverPDF = 0.0;
+        res.pdf = 0.0;
+        res.wi = float3(0.0, 0.0, -1.0);
+        res.transmissionFraction = 0.0;
+        res.approxRoughness = 0;
+        return res;
+    }
+
+    bool IsValid()
+    {
+        return wi.z > 1e-6;
+    }
+};
+
 // ------------------------------------------------------------------
 // Diffuse BRDFs
 // ------------------------------------------------------------------
@@ -40,12 +63,41 @@ struct DiffuseBRDF
 
     BRDFValue evaluate(float3 wo, float3 wi)
     {
-        BRDFValue result;
-        result.pdf = SELECT(wi.z > 0.0, 1.0 / K_PI, 0.0);
-        result.valueOverPDF = SELECT(wi.z > 0.0, albedo / K_PI, 0.0.xxx);
-        result.value = albedo;
+        
+        
+        BRDFValue res;
 
-        return result;
+        if (wo.z <= 0 || wi.z <= 0)
+        {
+            return res;
+        }
+        res.pdf = SELECT(wi.z > 0.0, K_INV_PI, 0.0);
+        res.valueOverPDF = SELECT(wi.z > 0.0, albedo, 0.0.xxx);
+        res.value = res.pdf * res.valueOverPDF;
+
+        res.transmissionFraction = 0.0;
+
+        return res;
+    }
+
+    BRDFSample sample(float3 wo, float2 urand)
+    {
+        float phi = urand.x * K_TWO_PI;
+        float cosTheta = sqrt(max(0.0, 1.0 - urand.y));
+        float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+
+        float sinPhi = sin(phi);
+        float cosPhi = cos(phi);
+
+        BRDFSample res;
+        res.wi = float3(cosPhi * sinTheta, sinPhi * sinTheta, cosTheta);
+        res.pdf = K_INV_PI;
+        res.valueOverPDF = albedo;
+        res.value = res.valueOverPDF * res.pdf;
+        res.transmissionFraction = 0.0;
+        res.approxRoughness = 1.0;
+
+        return res;
     }
 };
 

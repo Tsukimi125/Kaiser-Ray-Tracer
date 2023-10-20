@@ -56,6 +56,30 @@ struct RayPayload
     }
 };
 
+
+struct ShadowRayPayload
+{
+    bool isShadowed;
+
+    static ShadowRayPayload NewHit()
+    {
+        ShadowRayPayload res;
+        res.isShadowed = true;
+        return res;
+    }
+
+    bool isMiss()
+    {
+        return !isShadowed;
+    }
+
+    bool isHit()
+    {
+        return !isMiss();
+    }
+};
+
+
 struct KaiserRayTracer
 {
     RayDesc ray;
@@ -101,6 +125,16 @@ struct KaiserRayTracer
             res.rayT = FLT_MAX;
         }
         return res;
+    }
+
+    bool TraceShadowRay(RaytracingAccelerationStructure rtas)
+    {
+        ShadowRayPayload payload = ShadowRayPayload::NewHit();
+
+        TraceRay(rtas, RAY_FLAG_CULL_FRONT_FACING_TRIANGLES | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,
+        0xff, 0, 1, 1, ray, payload);
+
+        return payload.isShadowed;
     }
 };
 

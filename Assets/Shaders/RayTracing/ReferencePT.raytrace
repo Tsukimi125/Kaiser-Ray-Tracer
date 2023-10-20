@@ -21,6 +21,7 @@ SamplerState sampler_g_EnvTex;
 #pragma max_recursion_depth 10
 
 
+
 float3 tracePath(uint2 launchIndex, uint2 launchDim)
 {
     float2 frameCoord = launchIndex + float2(0.5, 0.5);
@@ -39,32 +40,107 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
     // Rotate the ray from view space to world space.
     float3 rayDirection = mul((float3x3)unity_CameraToWorld, viewDirection);
 
-    RayDesc ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, 0, 9999);
-
-    // TODO: RayCone Never Used
-    RayCone rayCone = RayCone::Create(launchDim.y, 0.0);
-    
     float3 throughput = 1.0.xxx;
     float3 radiance = 0.0.xxx;
-    uint pathlength = 0;
-    
+    float3 totalRadiance = 0.0.xxx;
 
-    PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathlength, false).Trace(g_AccelStruct);
-
-    if (!hitVertex.bHit)
+    RayDesc ray;
     {
-        return 0.0.xxx;
+        ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, K_T_MIN, K_T_MAX);
     }
-
-    const float3x3 tangentToWorld = BuildOrthonormalBasis(hitVertex.surfaceData.normal);
-    float3 wo = mul(-ray.Direction, tangentToWorld);
-
-    const float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
-
-    // float3 wo = mul(-outgoing_ray.Direction, tangent_to_world);
     
-    
-    return wi;
+    [loop]
+    for (uint pathLength = 0; pathLength < g_BounceCountOpaque; pathLength++)
+    {
+        // TODO: RayCone Never Used
+        RayCone rayCone = RayCone::Create(launchDim.y, 0.0);
+
+        PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).Trace(g_AccelStruct);
+
+        if (!hitVertex.bHit)
+        {
+            break;
+        }
+
+        SurfaceData surfaceData = hitVertex.surfaceData;
+
+        // if (dot(surfaceData.normal, ray.Direction) >= 0.0)
+        // {
+        //     if (0 == pathLength)
+        //     {
+        //         // Flip the normal for primary hits so we don't see blackness
+        //         surfaceData.normal = -surfaceData.normal;
+        //     }
+        //     else
+        //     {
+        //         break;
+        //     }
+        // }
+
+        const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(g_AccelStruct);
+
+        const float3x3 tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
+        float3 wo = mul(-ray.Direction, tangentToWorld);
+        // float3 wo = mul(-outgoing_ray.Direction, tangent_to_world);
+        const float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
+
+        if (wo.z < 0.0)
+        {
+            wo.z *= -0.25;
+            wo = normalize(wo);
+        }
+
+        LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
+        BRDFValue brdfValue = brdf.diffuseBRDF.evaluate(wo, wi);
+
+        radiance += SELECT(isShadowed, 0.0, throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z));
+        // radiance += throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z);
+        radiance += throughput * surfaceData.emissive;
+        // radiancePack[pathLength] = throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z);
+
+        float3 urand;
+
+        #ifdef USE_NEW_RANDOM_SYSTEM
+            // TODO: USE_NEW_RANDOM_SYSTEM
+        #else
+            urand = float3(RandomFloat01(rng), RandomFloat01(rng), RandomFloat01(rng));
+        #endif
+        
+        BRDFSample brdfSample = BRDFSample::invalid();
+        brdfSample = brdf.diffuseBRDF.sample(wo, urand.xy);
+
+        if (brdfSample.IsValid())
+        {
+            ray.Origin = hitVertex.position;
+            ray.Direction = mul(tangentToWorld, brdfSample.wi);
+            ray.TMin = 1e-4;
+            throughput *= brdfSample.valueOverPDF;
+        }
+        else
+        {
+            break;
+        }
+
+        // Russian roulette
+        if (pathLength >= 2)
+        {
+            const float rr_coin = RandomFloat01(rng);
+            const float continue_p = max(surfaceData.albedo.r, max(surfaceData.albedo.g, surfaceData.albedo.b));
+            if (rr_coin > continue_p)
+            {
+                break;
+            }
+            else
+            {
+                throughput /= continue_p;
+            }
+        }
+        if (all(radiance >= 0.0))
+        {
+            totalRadiance += float4(radiance, 1.0);
+        }
+    }
+    return totalRadiance.rgb;
 }
 
 
@@ -90,4 +166,9 @@ void MissShader0_Primary(inout RayPayload payload : SV_RayPayload)
     
     // payload.bounceIndexOpaque = -1;
 
+}
+[shader("miss")]
+void MissShader1_ShadowRay(inout ShadowRayPayload payload : SV_RayPayload)
+{
+    payload.isShadowed = false;
 }

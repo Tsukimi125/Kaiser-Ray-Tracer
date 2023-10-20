@@ -16,10 +16,10 @@ MonoBehaviour:
   restirShader: {fileID: 4807578003741378534, guid: 9d996fa97337b814b8a3cb23c088ee1c, type: 3}
   envTexture: {fileID: 8900000, guid: 63455f8f82537ac43b62c575aa75a7c2, type: 3}
   rayTracingStyle: 0
-  bounceCount: 1
-  progressive: 0
+  bounceCount: 6
+  progressive: 1
   samplePerPixel: 1
   restirGBufferDebugMode: 0
   activeCameraType: 3
-  bounceCountOpaque: 8
+  bounceCountOpaque: 4
   bounceCountTransparent: 8
