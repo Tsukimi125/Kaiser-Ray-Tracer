@@ -40,11 +40,11 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
     float3 rayDirection = mul((float3x3)unity_CameraToWorld, viewDirection);
 
     RayDesc ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, 0, FLT_MAX);
-    
+    RayCone rayCone;
     float3 throughput = 1.0.xxx;
     float3 radiance = 0.0.xxx;
 
-    PathVertex hitVertex = KaiserRayTracer::CreatePathVertex(ray, 0, 0, 0, throughput, radiance);
+    PathVertex hitVertex = KaiserRayTracer::Create(ray, payload, RayCone)
 }
 
 
