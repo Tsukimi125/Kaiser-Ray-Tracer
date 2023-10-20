@@ -85,7 +85,7 @@ struct KaiserRayTracer
             traceFlags |= RAY_FLAG_CULL_BACK_FACING_TRIANGLES;
         }
 
-        TraceRay(rtas, traceFlags, 0xff, 0, 0, 0, ray, payload);
+        TraceRay(rtas, traceFlags, 0xff, 0, 1, 0, ray, payload);
 
         PathVertex res;
         if (payload.isHit())

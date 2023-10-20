@@ -18,7 +18,7 @@
 #define K_MISS_SHADER_PT_SCATTER_RAY_INDEX  0
 #define K_MISS_SHADER_PT_SHADOW_RAY_INDEX  1
 
-#define SELECT(a, b, c) ((a) ? (b) : (c))
+#define SELECT(a, b, c) ((a) ? (b) :(c))
 
 #include "UnityRaytracingMeshUtils.cginc"
 
@@ -33,6 +33,33 @@ RayDesc CreateNewRay(float3 origin, float3 direction, float tmin, float tmax)
     ray.TMin = tmin;
     ray.TMax = tmax;
     return ray;
+}
+
+float3x3 BuildOrthonormalBasis(float3 n)
+{
+    float3 b1;
+    float3 b2;
+
+    if (n.z < 0.0)
+    {
+        const float a = 1.0 / (1.0 - n.z);
+        const float b = n.x * n.y * a;
+        b1 = float3(1.0 - n.x * n.x * a, -b, n.x);
+        b2 = float3(b, n.y * n.y * a - 1.0, -n.y);
+    }
+    else
+    {
+        const float a = 1.0 / (1.0 + n.z);
+        const float b = -n.x * n.y * a;
+        b1 = float3(1.0 - n.x * n.x * a, b, -n.x);
+        b2 = float3(b, 1.0 - n.y * n.y * a, -n.y);
+    }
+
+    return float3x3(
+        b1.x, b2.x, n.x,
+        b1.y, b2.y, n.y,
+        b1.z, b2.z, n.z
+    );
 }
 
 // --------------------------------------------

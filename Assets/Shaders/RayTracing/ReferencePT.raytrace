@@ -51,11 +51,20 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
 
     PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathlength, false).Trace(g_AccelStruct);
 
-    if (hitVertex.bHit)
+    if (!hitVertex.bHit)
     {
-        return hitVertex.surfaceData.normal;
+        return 0.0.xxx;
     }
-    return 0.0.xxx;
+
+    const float3x3 tangentToWorld = BuildOrthonormalBasis(hitVertex.surfaceData.normal);
+    float3 wo = mul(-ray.Direction, tangentToWorld);
+
+    const float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
+
+    // float3 wo = mul(-outgoing_ray.Direction, tangent_to_world);
+    
+    
+    return wi;
 }
 
 
