@@ -53,7 +53,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
 
     if (hitVertex.bHit)
     {
-        return hitVertex.surfaceData.albedo;
+        return hitVertex.surfaceData.normal;
     }
     return 0.0.xxx;
 }

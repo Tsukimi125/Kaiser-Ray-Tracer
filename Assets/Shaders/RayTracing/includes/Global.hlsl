@@ -2,15 +2,15 @@ float4 _Color;
 
 Texture2D<float4> _MainTex;
 float4 _MainTex_ST;
-SamplerState sampler__MainTex;
+SamplerState sampler_MainTex;
 
 Texture2D<float4> _NormalMap;
 float4 _NormalMap_ST;
-SamplerState sampler__NormalMap;
+SamplerState sampler_NormalMap;
 
 Texture2D<float4> _MetallicMap;
 float4 _MetallicMap_ST;
-SamplerState sampler__MetallicMap;
+SamplerState sampler_MetallicMap;
 
 float _Glossiness;
 float _Metallic;
@@ -18,7 +18,7 @@ float _IOR;
 
 Texture2D<float4> _EmissionTex;
 float4 _EmissionTex_ST;
-SamplerState sampler__EmissionTex;
+SamplerState sampler_EmissionTex;
 float4 _EmissionColor;
 
 float _ExtinctionCoefficient;

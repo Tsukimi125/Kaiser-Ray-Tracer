@@ -12,7 +12,7 @@
 
 float3 GetNormalTS(float2 uv)
 {
-    float4 map = _NormalMap.SampleLevel(sampler__NormalMap, _NormalMap_ST.xy * uv + _NormalMap_ST.zw, 0);
+    float4 map = _NormalMap.SampleLevel(sampler_NormalMap, _NormalMap_ST.xy * uv + _NormalMap_ST.zw, 0);
     return UnpackNormal(map);
 }
 
@@ -30,14 +30,59 @@ void ClosestHitMain(inout RayPayload payload : SV_RayPayload, AttributeData attr
     float3 barycentricCoords = float3(1.0 - attribs.barycentrics.x - attribs.barycentrics.y, attribs.barycentrics.x, attribs.barycentrics.y);
     Vertex v = InterpolateVertices(v0, v1, v2, barycentricCoords);
 
-    float3 normal = v0.normal * barycentricCoords.x + v1.normal * barycentricCoords.y + v2.normal * barycentricCoords.z;
+    float3 localNormal = v.normal;
     bool isFrontFace = HitKind() == HIT_KIND_TRIANGLE_FRONT_FACE;
-    normal = isFrontFace ? normal : - normal;
-    float3 worldNormal = normalize(mul(normal, (float3x3)WorldToObject()));
-    payload.t = 1.0;
-    payload.surfaceData.albedo = worldNormal;
-
+    localNormal = isFrontFace ? v.normal : - v.normal;
+    float3 worldNormal = normalize(mul((float3x3)ObjectToWorld3x4(), float4(localNormal, 0.0)));
     
+
+    // const float3x3 tangent_to_world = build_orthonormal_basis(gbuffer.normal);
+    // const float3 wi = mul(to_light_norm, tangent_to_world);
+
+    // float3 wo = mul(-outgoing_ray.Direction, tangent_to_world);
+
+    // Construct TBN
+    float3 tangent = normalize(mul(v.tangent, (float3x3)WorldToObject()));
+    float3 N = worldNormal;
+    float3 T = normalize(tangent - dot(tangent, N) * N);
+    float3 Bi = normalize(cross(T, N));
+    float3x3 TBN = float3x3(T, Bi, N);
+
+    // float3 albedo = _MainTex.SampleLevel(sampler_MainTex, _MainTex_ST.xy * v.uv + _MainTex_ST.zw, 0).xyz;
+    float3 albedo = _Color.xyz * _MainTex.SampleLevel(sampler_MainTex, _MainTex_ST.xy * v.uv + _MainTex_ST.zw, 0).xyz;
+    
+    float pdf = 0;
+    float3 metallic = _Metallic;
+
+    float smoothness = _Glossiness;
+    float3 emission = float3(0, 0, 0);
+
+    #if _METALLICMAP
+        float4 metallicSmoothness = _MetallicMap.SampleLevel(sampler_MetallicMap, _MetallicMap_ST.xy * v.uv + _MetallicMap_ST.zw, 0);
+        metallic = metallicSmoothness.xxx;
+        smoothness *= metallicSmoothness.w;
+    #endif
+
+    #if _EMISSION
+        emission = _EmissionColor * _EmissionTex.SampleLevel(sampler_EmissionTex, _EmissionTex_ST.xy * v.uv + _EmissionTex_ST.zw, 0).xyz;
+    #endif
+
+    #if _NORMALMAP
+        localNormal = GetNormalTS(v.uv);
+        worldNormal = normalize(mul(localNormal, TBN));
+        N = worldNormal;
+        T = normalize(T - dot(T, N) * N);
+        Bi = normalize(cross(T, N));
+        TBN = float3x3(T, Bi, N);
+    #endif
+
+    payload.surfaceData.albedo = albedo;
+    payload.surfaceData.normal = worldNormal;
+    payload.surfaceData.metallic = metallic;
+    payload.surfaceData.roughness = 1.0 - smoothness;
+    payload.surfaceData.emissive = emission;
+
+    payload.t = RayTCurrent();
 }
 
 
