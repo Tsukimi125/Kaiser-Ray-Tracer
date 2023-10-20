@@ -107,7 +107,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
         do
         {
             TraceScatterRay(ray, payload, scatterRayData);
-
+            return payload.radiance;
             if (payload.bounceIndexOpaque == -1)
                 break;
 
