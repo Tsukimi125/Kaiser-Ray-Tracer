@@ -18,7 +18,7 @@
 #define K_MISS_SHADER_PT_SCATTER_RAY_INDEX  0
 #define K_MISS_SHADER_PT_SHADOW_RAY_INDEX  1
 
-#define SELECT(a, b, c) ((a) ? (b) :(c))
+#define SELECT(a, b, c) ((a) ? (b) : (c))
 
 #include "UnityRaytracingMeshUtils.cginc"
 

@@ -22,12 +22,12 @@ SamplerState sampler_g_EnvTex;
 
 
 
-float3 tracePath(uint2 launchIndex, uint2 launchDim)
+float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
 {
     float2 frameCoord = launchIndex + float2(0.5, 0.5);
     float3 result = float3(0, 0, 0);
     
-    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(g_ConvergenceStep + g_FrameIndex) * uint(26699)) | uint(1);
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(g_ConvergenceStep + g_FrameIndex + sampleIndex) * uint(26699)) | uint(1);
     float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
     float2 ndcCoords = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
     
@@ -64,18 +64,18 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
 
         SurfaceData surfaceData = hitVertex.surfaceData;
 
-        // if (dot(surfaceData.normal, ray.Direction) >= 0.0)
-        // {
-        //     if (0 == pathLength)
-        //     {
-        //         // Flip the normal for primary hits so we don't see blackness
-        //         surfaceData.normal = -surfaceData.normal;
-        //     }
-        //     else
-        //     {
-        //         break;
-        //     }
-        // }
+        if (dot(surfaceData.normal, ray.Direction) >= 0.0)
+        {
+            if (0 == pathLength)
+            {
+                // Flip the normal for primary hits so we don't see blackness
+                surfaceData.normal = -surfaceData.normal;
+            }
+            else
+            {
+                break;
+            }
+        }
 
         const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(g_AccelStruct);
 
@@ -91,10 +91,11 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
         }
 
         LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
-        BRDFValue brdfValue = brdf.diffuseBRDF.evaluate(wo, wi);
-
-        radiance += SELECT(isShadowed, 0.0, throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z));
-        // radiance += throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z);
+        // BRDFValue brdfValue = brdf.diffuseBRDF.evaluate(wo, wi);
+        float3 dirLightRadiance = brdf.evaluateDirectionalLight(wo, wi);
+        // return dirLightRadiance;
+        radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor * max(0.0, wi.z));
+        // return radiance;
         radiance += throughput * surfaceData.emissive;
         // radiancePack[pathLength] = throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z);
 
@@ -106,8 +107,9 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim)
             urand = float3(RandomFloat01(rng), RandomFloat01(rng), RandomFloat01(rng));
         #endif
         
-        BRDFSample brdfSample = BRDFSample::invalid();
-        brdfSample = brdf.diffuseBRDF.sample(wo, urand.xy);
+        BRDFSample brdfSample = BRDFSample::Invalid();
+        brdfSample = brdf.sample(wo, urand);
+        // brdfSample = brdf.specularBRDF.sample(wo, urand.xy);
 
         if (brdfSample.IsValid())
         {
@@ -150,7 +152,12 @@ void PathTracingRayGenShader()
     uint2 launchIndex = DispatchRaysIndex().xy;
     uint2 launchDim = DispatchRaysDimensions().xy;
 
-    float3 result = tracePath(launchIndex, launchDim);
+    float3 result = float3(0, 0, 0);
+    for (uint i = 0; i < g_SamplePerPixel; i++)
+    {
+        result += tracePath(launchIndex, launchDim, i);
+    }
+    result /= float(g_SamplePerPixel);
 
     float3 prevRadiance = g_Output[launchIndex].xyz;
     if (g_Progressive == 1) result = lerp(prevRadiance, result, 1 / float(g_ConvergenceStep + 1));
@@ -159,7 +166,7 @@ void PathTracingRayGenShader()
 }
 
 [shader("miss")]
-void MissShader0_Primary(inout RayPayload payload : SV_RayPayload)
+void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)
 {
     // payload.emission = 0;
     // // payload.emission = g_EnvTex.SampleLevel(sampler_g_EnvTex, WorldRayDirection(), 0).xyz;
@@ -168,7 +175,7 @@ void MissShader0_Primary(inout RayPayload payload : SV_RayPayload)
 
 }
 [shader("miss")]
-void MissShader1_ShadowRay(inout ShadowRayPayload payload : SV_RayPayload)
+void MissShader1_ShadowRay(inout ShadowRayPayload payload:SV_RayPayload)
 {
     payload.isShadowed = false;
 }

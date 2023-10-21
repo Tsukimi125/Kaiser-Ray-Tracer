@@ -117,7 +117,7 @@ Material:
     - _GlossyReflections: 0
     - _IOR: 1.5
     - _MagicValue: 0
-    - _Metallic: 0
+    - _Metallic: 0.393
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0

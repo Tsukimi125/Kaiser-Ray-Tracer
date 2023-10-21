@@ -20,7 +20,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: _NormalMap
+  m_LockedProperties: _Glossiness _NormalMap
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -112,10 +112,10 @@ Material:
     - _EnvironmentReflections: 1
     - _ExtinctionCoefficient: 1
     - _GlossMapScale: 0
-    - _Glossiness: 0.844
+    - _Glossiness: 0.773
     - _GlossyReflections: 0
     - _IOR: 1.3333
-    - _Metallic: 0.839
+    - _Metallic: 0.907
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0

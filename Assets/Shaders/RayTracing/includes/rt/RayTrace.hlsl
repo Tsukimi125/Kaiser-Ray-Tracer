@@ -116,7 +116,7 @@ struct KaiserRayTracer
         {
             res.bHit = true;
             res.surfaceData = payload.surfaceData;
-            res.position = ray.Origin + ray.Direction * payload.t;
+            res.position = ray.Origin + ray.Direction * payload.t + res.surfaceData.normal * 0.002f;
             res.rayT = payload.t;
         }
         else

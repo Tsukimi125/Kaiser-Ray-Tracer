@@ -17,9 +17,9 @@ MonoBehaviour:
   envTexture: {fileID: 8900000, guid: 63455f8f82537ac43b62c575aa75a7c2, type: 3}
   rayTracingStyle: 0
   bounceCount: 6
-  progressive: 1
-  samplePerPixel: 1
+  progressive: 0
+  samplePerPixel: 8
   restirGBufferDebugMode: 0
   activeCameraType: 3
-  bounceCountOpaque: 4
+  bounceCountOpaque: 8
   bounceCountTransparent: 8
