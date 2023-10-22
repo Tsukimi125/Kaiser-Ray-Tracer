@@ -27,7 +27,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     float2 frameCoord = launchIndex + float2(0.5, 0.5);
     float3 result = float3(0, 0, 0);
     
-    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(g_ConvergenceStep + g_FrameIndex + sampleIndex) * uint(26699)) | uint(1);
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(g_ConvergenceStep + g_FrameIndex) * uint(26699 + sampleIndex)) | uint(1);
     float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
     float2 ndcCoords = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
     
@@ -43,6 +43,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     float3 throughput = 1.0.xxx;
     float3 radiance = 0.0.xxx;
     float3 totalRadiance = 0.0.xxx;
+    
 
     RayDesc ray;
     {
@@ -54,7 +55,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     {
         // TODO: RayCone Never Used
         RayCone rayCone = RayCone::Create(launchDim.y, 0.0);
-
+        float roughnessBias = 0.0;
         PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).Trace(g_AccelStruct);
 
         if (!hitVertex.bHit)
@@ -66,23 +67,24 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
 
         if (dot(surfaceData.normal, ray.Direction) >= 0.0)
         {
-            if (0 == pathLength)
-            {
-                // Flip the normal for primary hits so we don't see blackness
-                surfaceData.normal = -surfaceData.normal;
-            }
-            else
-            {
-                break;
-            }
+            // if (0 == pathLength)
+            // {
+            //     // Flip the normal for primary hits so we don't see blackness
+            //     surfaceData.normal = -surfaceData.normal;
+            // }
+            // else
+            // {
+            //     break;
+            // }
+
         }
 
         const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(g_AccelStruct);
 
         const float3x3 tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
+
         float3 wo = mul(-ray.Direction, tangentToWorld);
-        // float3 wo = mul(-outgoing_ray.Direction, tangent_to_world);
-        const float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
+        float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
 
         if (wo.z < 0.0)
         {
@@ -91,11 +93,22 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
         }
 
         LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
+        brdf.specularBRDF.roughness = lerp(brdf.specularBRDF.roughness, 1.0, roughnessBias);
         // BRDFValue brdfValue = brdf.diffuseBRDF.evaluate(wo, wi);
         float3 dirLightRadiance = brdf.evaluateDirectionalLight(wo, wi);
+        
         // return dirLightRadiance;
         radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor * max(0.0, wi.z));
-        // return radiance;
+        if (uint(0) == pathLength)
+        {
+            // return dirLightRadiance;
+            // return max(0.0, wi.z);
+            // return max(0.0, wi.z);
+            // return throughput;
+            // return hitVertex.surfaceData.normal;
+
+        }
+        // return brdf.specularBRDF.roughness;
         radiance += throughput * surfaceData.emissive;
         // radiancePack[pathLength] = throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z);
 
@@ -113,9 +126,11 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
 
         if (brdfSample.IsValid())
         {
+            roughnessBias = lerp(roughnessBias, 1.0, 0.5 * brdfSample.approxRoughness);
             ray.Origin = hitVertex.position;
             ray.Direction = mul(tangentToWorld, brdfSample.wi);
             ray.TMin = 1e-4;
+            // return brdfSample.valueOverPDF;
             throughput *= brdfSample.valueOverPDF;
         }
         else

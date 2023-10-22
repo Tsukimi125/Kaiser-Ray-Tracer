@@ -161,11 +161,33 @@ struct SpecularBRDF
         return a2 / (K_PI * denom_sqrt * denom_sqrt);
     }
 
+    static float GetPDF_GGX(float a2, float cosTheta)
+    {
+        return GGX_NDF(a2, cosTheta) * cosTheta;
+    }
+
     static float GetPDF_GGX_VNDF(float a2, float3 wo, float3 h)
     {
         float g1 = SmithShadowingMasking::gSmithGGX1(wo.z, a2);
         float d = GGX_NDF(a2, h.z);
         return g1 * d * max(0.f, dot(wo, h)) / wo.z;
+    }
+
+    NDFSample sampleNDF(float2 urand)
+    {
+        const float a2 = roughness * roughness;
+
+        const float cos2Theta = (1 - urand.x) / (1 - urand.x + a2 * urand.x);
+        const float cosTheta = sqrt(cos2Theta);
+        const float phi = K_TWO_PI * urand.y;
+
+        const float sinTheta = sqrt(max(0.0, 1.0 - cos2Theta));
+
+        NDFSample res;
+        res.m = float3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+        res.pdf = GetPDF_GGX(a2, cosTheta);
+
+        return res;
     }
 
     NDFSample SampleVNDF(float alpha, float3 wo, float2 urand)
@@ -203,10 +225,10 @@ struct SpecularBRDF
 
     BRDFValue evaluate(float3 wo, float3 wi)
     {
-        BRDFValue res;
+        BRDFValue res = BRDFValue::Invalid();
         if (wi.z <= 0.0 || wo.z <= 0.0)
         {
-            res = BRDFValue::Invalid();
+            // res = BRDFValue::Invalid();
             return res;
         }
 
@@ -214,9 +236,10 @@ struct SpecularBRDF
         const float3 m = normalize(wo + wi);
         const float cosTheta = m.z;
 
-        const float pdf_h = GetPDF_GGX_VNDF(a2, wo, m);
+        const float pdf_h = GetPDF_GGX(a2, cosTheta);
+        // const float pdf_h = GetPDF_GGX_VNDF(a2, wo, m);
 
-        const float mdotwi = dot(m, wi);
+        const float mdotwi = dot(m, wo);
         const float jacobian = 1.0 / (4.0 * mdotwi);
 
         const float3 fresnel = EvalFresnelSchlick(albedo, 1.0, mdotwi);
@@ -227,7 +250,10 @@ struct SpecularBRDF
         res.transmissionFraction = 1.0.xxx - fresnel;
 
         res.valueOverPDF = fresnel * shadowingMasking.g_over_g1_wo;
-        res.value = fresnel * shadowingMasking.g * GGX_NDF(a2, cosTheta) / (4.0 * wo.z * wi.z);
+        // res.value = fresnel * shadowingMasking.g * GGX_NDF(a2, cosTheta) / (4.0 * wo.z * wi.z);
+        res.value = fresnel * shadowingMasking.g * GGX_NDF(a2, cosTheta) * 0.25f / (wo.z * wi.z);
+        // res.value = fresnel * shadowingMasking.g / (4.0 * wo.z * wi.z);
+        // res.value = cosTheta;
 
         return res;
     }
@@ -237,6 +263,7 @@ struct SpecularBRDF
         NDFSample ndfSample = SampleVNDF(roughness, wo, urand);
 
         const float3 wi = reflect(-wo, ndfSample.m);
+
         if (ndfSample.m.z <= BRDF_SAMPLING_MIN_COS || wi.z <= BRDF_SAMPLING_MIN_COS || wo.z <= BRDF_SAMPLING_MIN_COS)
         {
             return BRDFSample::Invalid();
@@ -327,11 +354,11 @@ struct LayeredBRDF
 
         ApplyMetallicToBRDFs(diffuseBRDF, specularBRDF, surfaceData.metallic);
 
-        specularBRDF._fresnel = EvalFresnelSchlick(specularBRDF.albedo, 1.0, ndotv).x;
+        specularBRDF._fresnel = EvalFresnelSchlick(specularBRDF.albedo, 1.0, ndotv);
         brdf.specularChance = lerp(surfaceData.metallic, 1.0, specularBRDF._fresnel * (1.0 - surfaceData.roughness));
 
         // TODO: Specular BRDF energy preservation
-        
+
         brdf.diffuseBRDF = diffuseBRDF;
         brdf.specularBRDF = specularBRDF;
         return brdf;
@@ -357,8 +384,9 @@ struct LayeredBRDF
     {
         if (wo.z <= 0 || wi.z <= 0)
         {
-            return 0;
+            return 0.0.xxx;
         }
+        
         const BRDFValue diffValue = diffuseBRDF.evaluate(wo, wi);
         const BRDFValue specValue = specularBRDF.evaluate(wo, wi);
 
@@ -368,6 +396,8 @@ struct LayeredBRDF
         
         // float specularChance = lerp(_Metallic, 1, fresnel * _Smoothness);
         // return diffValue.value * specValue.transmissionFraction + specValue.value;
+        // return diffValue.value;
+        // return diffValue.value * specValue.transmissionFraction + specValue.value * (1 - specValue.transmissionFraction);
         return diffValue.value * (1 - specularChance) + specValue.value * specularChance;
     };
 };

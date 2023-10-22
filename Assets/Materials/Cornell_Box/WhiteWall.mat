@@ -112,10 +112,10 @@ Material:
     - _EnvironmentReflections: 1
     - _ExtinctionCoefficient: 1
     - _GlossMapScale: 0
-    - _Glossiness: 0.773
+    - _Glossiness: 0.83
     - _GlossyReflections: 0
     - _IOR: 1.3333
-    - _Metallic: 0.907
+    - _Metallic: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
