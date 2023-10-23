@@ -397,8 +397,9 @@ struct LayeredBRDF
         // float specularChance = lerp(_Metallic, 1, fresnel * _Smoothness);
         // return diffValue.value * specValue.transmissionFraction + specValue.value;
         // return diffValue.value;
-        // return diffValue.value * specValue.transmissionFraction + specValue.value * (1 - specValue.transmissionFraction);
-        return diffValue.value * (1 - specularChance) + specValue.value * specularChance;
+        return diffValue.value * specValue.transmissionFraction + specValue.value * (1 - specValue.transmissionFraction);
+        // return diffValue.value * (1 - specularChance) + specValue.value * specularChance;
+
     };
 };
 #endif // KAISER_RAYTRACING_BRDF

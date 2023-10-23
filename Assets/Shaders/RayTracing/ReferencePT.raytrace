@@ -67,16 +67,15 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
 
         if (dot(surfaceData.normal, ray.Direction) >= 0.0)
         {
-            // if (0 == pathLength)
-            // {
-            //     // Flip the normal for primary hits so we don't see blackness
-            //     surfaceData.normal = -surfaceData.normal;
-            // }
-            // else
-            // {
-            //     break;
-            // }
-
+            if (0 == pathLength)
+            {
+                // Flip the normal for primary hits so we don't see blackness
+                surfaceData.normal = -surfaceData.normal;
+            }
+            else
+            {
+                break;
+            }
         }
 
         const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(g_AccelStruct);
@@ -94,20 +93,12 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
 
         LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
         brdf.specularBRDF.roughness = lerp(brdf.specularBRDF.roughness, 1.0, roughnessBias);
-        // BRDFValue brdfValue = brdf.diffuseBRDF.evaluate(wo, wi);
+
         float3 dirLightRadiance = brdf.evaluateDirectionalLight(wo, wi);
         
-        // return dirLightRadiance;
-        radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor * max(0.0, wi.z));
-        if (uint(0) == pathLength)
-        {
-            // return dirLightRadiance;
-            // return max(0.0, wi.z);
-            // return max(0.0, wi.z);
-            // return throughput;
-            // return hitVertex.surfaceData.normal;
 
-        }
+        radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor * max(0.0, wi.z));
+
         // return brdf.specularBRDF.roughness;
         radiance += throughput * surfaceData.emissive;
         // radiancePack[pathLength] = throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z);
