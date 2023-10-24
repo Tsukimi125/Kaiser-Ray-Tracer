@@ -140,6 +140,8 @@ public partial class RayTracingRenderPipelineInstance : RenderPipeline
 
         foreach (Camera camera in cameras)
         {
+            
+            
             if (!camera.TryGetComponent<AdditionalCameraData>(out var additionalData))
             {
                 additionalData = camera.gameObject.AddComponent<AdditionalCameraData>();
