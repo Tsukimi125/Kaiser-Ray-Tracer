@@ -84,7 +84,7 @@ void ClosestHitMain(inout RayPayload payload : SV_RayPayload, AttributeData attr
 // [shader("closesthit")]
 // void ClosestHitMain(inout PathPayload payload : SV_RayPayload, AttributeData attribs : SV_IntersectionAttributes)
 // {
-//     if (payload.bounceIndexOpaque == g_BounceCountOpaque)
+//     if (payload.bounceIndexOpaque == _PT_MaxBounceCount)
 //     {
 //         payload.bounceIndexOpaque = -1;
 //         return;

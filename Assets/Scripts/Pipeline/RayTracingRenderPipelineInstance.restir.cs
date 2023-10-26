@@ -114,10 +114,10 @@ public partial class RayTracingRenderPipelineInstance : RenderPipeline
                 float zoom = Mathf.Tan(Mathf.Deg2Rad * camera.fieldOfView * 0.5f);
                 float aspectRatio = camera.pixelWidth / (float)camera.pixelHeight;
 
-                ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_BounceCountOpaque"), (int)renderPipelineAsset.bounceCountOpaque);
+                ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_MaxBounceCount"), (int)renderPipelineAsset.bounceCountOpaque);
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_BounceCountTransparent"), (int)renderPipelineAsset.bounceCountTransparent);
 
-                ctx.cmd.SetRayTracingAccelerationStructure(renderPipelineAsset.restirShader, Shader.PropertyToID("g_AccelStruct"), rtas);
+                ctx.cmd.SetRayTracingAccelerationStructure(renderPipelineAsset.restirShader, Shader.PropertyToID("_PT_AccelStruct"), rtas);
                 ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.restirShader, Shader.PropertyToID("g_Zoom"), zoom);
                 ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.restirShader, Shader.PropertyToID("g_AspectRatio"), aspectRatio);
                 ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.restirShader, Shader.PropertyToID("g_ConvergenceStep"), convergenceStep);

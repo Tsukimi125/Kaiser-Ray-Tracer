@@ -47,28 +47,28 @@ public partial class KaiserRayTracer : RenderPipeline
                 float zoom = Mathf.Tan(Mathf.Deg2Rad * camera.fieldOfView * 0.5f);
                 float aspectRatio = camera.pixelWidth / (float)camera.pixelHeight;
 
-                ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_BounceCountOpaque"), (int)renderPipelineAsset.bounceCountOpaque);
-                ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_BounceCountTransparent"), (int)renderPipelineAsset.bounceCountTransparent);
+                ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_MaxBounceCount"), (int)renderPipelineAsset.bounceCount);
+                // ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_BounceCountTransparent"), (int)renderPipelineAsset.bounceCountTransparent);
 
                 if (renderPipelineAsset.progressive)
                 {
-                    ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_Progressive"), 1);
+                    ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), 1);
                 }
                 else
                 {
-                    ctx.cmd.SetGlobalInt(Shader.PropertyToID("g_Progressive"), 0);
+                    ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), 0);
                 }
 
 
-                ctx.cmd.SetRayTracingAccelerationStructure(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_AccelStruct"), rtas);
-                ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_Zoom"), zoom);
-                ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_AspectRatio"), aspectRatio);
-                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_ConvergenceStep"), convergenceStep);
-                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_FrameIndex"), additionalData.frameIndex);
-                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_SamplePerPixel"), (int)renderPipelineAsset.samplePerPixel);
-                ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_EnvTex"), renderPipelineAsset.envTexture);
-                ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_DebugTex"), debugTexture);
-                ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("g_Output"), passData.outputTexture);
+                ctx.cmd.SetRayTracingAccelerationStructure(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_AccelStruct"), rtas);
+                ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_Zoom"), zoom);
+                ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_AspectRatio"), aspectRatio);
+                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_ConvergenceStep"), frameIndex);
+                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_FrameIndex"), additionalData.frameIndex);
+                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_SamplePerPixel"), (int)renderPipelineAsset.samplePerPixel);
+                // ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_EnvTex"), renderPipelineAsset.envTexture);
+                ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_DebugTex"), debugTexture);
+                ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_Output"), passData.outputTexture);
 
                 ctx.cmd.DispatchRays(renderPipelineAsset.pathTracingShader, "PathTracingRayGenShader", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 

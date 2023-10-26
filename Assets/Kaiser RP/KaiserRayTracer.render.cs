@@ -20,28 +20,55 @@ public partial class KaiserRayTracer : RenderPipeline
 
         CommandBuffer cmd = new CommandBuffer();
 
-        var renderGraphParams = new RenderGraphParameters()
-        {
-            scriptableRenderContext = context,
-            commandBuffer = cmd,
-            currentFrameIndex = additionalData.frameIndex
-        };
 
-        RTHandle outputRTHandle = rtHandleSystem.Alloc(additionalData.rayTracingOutput, "g_Output");
-        switch (renderPipelineAsset.renderType)
+        if ((camera.cameraType & renderPipelineAsset.activeCameraType) > 0)
         {
-            case RenderType.PATH_TRACING:
-                if (RenderPathTracing(camera, outputRTHandle, renderGraphParams, additionalData))
-                {
-                    cmd.Blit(additionalData.rayTracingOutput, camera.activeTexture);
-                }
-                else
-                {
-                    cmd.ClearRenderTarget(false, true, Color.black);
-                    Debug.Log("Error occurred when Path Tracing!");
-                }
-                break;
+            context.SetupCameraProperties(camera);
+            var renderGraphParams = new RenderGraphParameters()
+            {
+                scriptableRenderContext = context,
+                commandBuffer = cmd,
+                currentFrameIndex = additionalData.frameIndex
+            };
+
+            RTHandle outputRTHandle = rtHandleSystem.Alloc(additionalData.rayTracingOutput, "_PT_Output");
+            switch (renderPipelineAsset.renderType)
+            {
+                // Add RenderType Here
+                case RenderType.PATH_TRACING:
+                    if (RenderPathTracing(camera, outputRTHandle, renderGraphParams, additionalData))
+                    {
+                        cmd.Blit(additionalData.rayTracingOutput, camera.activeTexture);
+                    }
+                    else
+                    {
+                        cmd.ClearRenderTarget(false, true, Color.black);
+                        Debug.Log("Error occurred when Path Tracing!");
+                    }
+                    break;
+                case RenderType.RCGI:
+                    // Add RCGI Here
+                    break;
+
+            }
+
+            outputRTHandle.Release();
         }
+        else
+        {
+            cmd.ClearRenderTarget(false, true, Color.black);
+        }
+
+
+        context.ExecuteCommandBuffer(cmd);
+
+        cmd.Release();
+
+        context.Submit();
+
+        renderGraph.EndFrame();
+
+        additionalData.UpdateCameraData();
 
     }
 
@@ -65,6 +92,9 @@ public partial class KaiserRayTracer : RenderPipeline
         {
             RenderSingleCamera(context, camera, true);
         }
+
+
+
     }
 
 

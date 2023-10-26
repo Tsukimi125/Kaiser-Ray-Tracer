@@ -33,10 +33,10 @@ float _ExtinctionCoefficient;
 
 //------------------------------------------------------------------
 
-RaytracingAccelerationStructure g_AccelStruct : register(t0, space1);
+RaytracingAccelerationStructure _PT_AccelStruct:register(t0, space1);
 
-uint g_BounceCountOpaque;
-uint g_BounceCountTransparent;
+uint _PT_MaxBounceCount;
+uint _PT_BounceCountTransparent;
 
-RWTexture2D<float4> g_Output : register(u0);
-RWTexture2D<float4> g_DebugTex : register(u1);
+RWTexture2D<float4> _PT_Output : register(u0);
+RWTexture2D<float4> _PT_DebugTex : register(u1);
