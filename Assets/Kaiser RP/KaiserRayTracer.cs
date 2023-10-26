@@ -7,11 +7,17 @@ using UnityEngine.Experimental.Rendering.RenderGraphModule;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    private RayTracingRenderPipelineAsset renderPipelineAsset;
+    private KaiserRayTracerAsset renderPipelineAsset;
     private RayTracingAccelerationStructure rtas = null;
     private RenderGraph renderGraph = null;
     private RTHandleSystem rtHandleSystem = null;
+    private int frameIndex = 0;
     private RayTracingVirtualLighting lighting = new RayTracingVirtualLighting();
+
+    class RayTracingRenderPassData
+    {
+        public TextureHandle outputTexture;
+    };
     private bool ValidateRayTracing()
     {
         if (!SystemInfo.supportsRayTracing)
@@ -59,7 +65,7 @@ public partial class KaiserRayTracer : RenderPipeline
         rtas.ClearInstances();
         rtas.CullInstances(ref cullingConfig);
     }
-    public KaiserRayTracer(RayTracingRenderPipelineAsset asset)
+    public KaiserRayTracer(KaiserRayTracerAsset asset)
     {
         renderPipelineAsset = asset;
 
@@ -68,11 +74,6 @@ public partial class KaiserRayTracer : RenderPipeline
             RayTracingAccelerationStructure.RayTracingModeMask.Everything,
             255
         );
-        // {
-        //     rayTracingModeMask = RayTracingAccelerationStructure.RayTracingModeMask.Everything,
-        //     managementMode = RayTracingAccelerationStructure.ManagementMode.Manual,
-        //     layerMask = 255
-        // };
 
         rtas = new RayTracingAccelerationStructure(settings);
 
@@ -94,7 +95,5 @@ public partial class KaiserRayTracer : RenderPipeline
 
         rtHandleSystem.Dispose();
     }
-
-    
 }
 

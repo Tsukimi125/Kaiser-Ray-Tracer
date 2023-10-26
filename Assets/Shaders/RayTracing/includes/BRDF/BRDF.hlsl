@@ -353,7 +353,7 @@ struct LayeredBRDF
         specularBRDF.roughness = surfaceData.roughness;
 
         ApplyMetallicToBRDFs(diffuseBRDF, specularBRDF, surfaceData.metallic);
- 
+        
         specularBRDF._fresnel = EvalFresnelSchlick(specularBRDF.albedo, 1.0, ndotv);
         brdf.specularChance = lerp(surfaceData.metallic, 1.0, specularBRDF._fresnel * (1.0 - surfaceData.roughness));// * (1.0 - surfaceData.roughness)
         
