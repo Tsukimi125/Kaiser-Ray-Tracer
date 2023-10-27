@@ -64,8 +64,6 @@ struct DiffuseBRDF
 
     BRDFValue evaluate(float3 wo, float3 wi)
     {
-        
-        
         BRDFValue res;
 
         if (wo.z <= 0 || wi.z <= 0)

@@ -59,7 +59,6 @@ public partial class KaiserRayTracer : RenderPipeline
                     ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), 0);
                 }
 
-
                 ctx.cmd.SetRayTracingAccelerationStructure(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_AccelStruct"), rtas);
                 ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_Zoom"), zoom);
                 ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_AspectRatio"), aspectRatio);
