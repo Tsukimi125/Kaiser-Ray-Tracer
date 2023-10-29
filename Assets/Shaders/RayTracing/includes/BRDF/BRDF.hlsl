@@ -67,7 +67,7 @@ struct FrostbiteDiffuseBRDF
     {
         if (min(wo.z, wi.z) < BRDF_SAMPLING_MIN_COS) return 0.0f.xxx;
 
-        return evalWeight(wo, wi) * K_PI * wi.z;
+        return evalWeight(wo, wi) * K_INV_PI * wi.z;
     }
 
     bool sample(float2 rand2, const float3 wo, out BRDFSample brdfSample)
