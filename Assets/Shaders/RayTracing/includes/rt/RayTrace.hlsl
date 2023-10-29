@@ -1,7 +1,7 @@
 #ifndef KAISER_RAYTRACING_CORE
 #define KAISER_RAYTRACING_CORE
 
-#include "../Utils.hlsl"
+#include "../Utils/RayTracingHelper.hlsl"
 #include "../BRDF/BRDF.hlsl"
 #include "../RayPayload.hlsl"
 
@@ -116,7 +116,8 @@ struct KaiserRayTracer
         {
             res.bHit = true;
             res.surfaceData = payload.surfaceData;
-            res.position = ray.Origin + ray.Direction * payload.t + res.surfaceData.normal * 0.002f;
+            res.position = ray.Origin + ray.Direction * payload.t;
+            res.position = ComputeRayOrigin(res.position, res.surfaceData.normal);
             res.rayT = payload.t;
         }
         else

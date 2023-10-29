@@ -118,7 +118,7 @@ Material:
     - _Glossiness: 0.835
     - _GlossyReflections: 0
     - _IOR: 2.21
-    - _Metallic: 0.848
+    - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0

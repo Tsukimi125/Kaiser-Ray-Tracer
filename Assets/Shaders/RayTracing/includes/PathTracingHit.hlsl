@@ -1,6 +1,6 @@
 #include "UnityRaytracingMeshUtils.cginc"
 #include "RayPayload.hlsl"
-#include "Utils.hlsl"
+#include "Utils/RayTracingHelper.hlsl"
 #include "Global.hlsl"
 
 #pragma raytracing test
@@ -17,7 +17,7 @@ float3 GetNormalTS(float2 uv)
 }
 
 [shader("closesthit")]
-void ClosestHitMain(inout RayPayload payload : SV_RayPayload, AttributeData attribs : SV_IntersectionAttributes)
+void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attribs:SV_IntersectionAttributes)
 {
     float3 hitPoint = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
     const float hitDist = length(hitPoint - WorldRayOrigin());
@@ -32,9 +32,9 @@ void ClosestHitMain(inout RayPayload payload : SV_RayPayload, AttributeData attr
 
     float3 localNormal = v.normal;
     bool isFrontFace = HitKind() == HIT_KIND_TRIANGLE_FRONT_FACE;
-    localNormal = isFrontFace ? v.normal : - v.normal;
+    localNormal = isFrontFace ? v.normal:- v.normal;
     float3 worldNormal = normalize(mul((float3x3)ObjectToWorld3x4(), float4(localNormal, 0.0)));
-  
+    
 
     // Construct TBN
     float3 tangent = normalize(mul(v.tangent, (float3x3)WorldToObject()));
