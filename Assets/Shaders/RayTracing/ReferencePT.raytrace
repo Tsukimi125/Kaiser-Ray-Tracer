@@ -84,6 +84,18 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
                 break;
             }
         }
+        if (dot(surfaceData.normal, ray.Direction) >= 0.0)
+        {
+            if (0 == pathLength)
+            {
+                // Flip the normal for primary hits so we don't see blackness
+                surfaceData.normal = -surfaceData.normal;
+            }
+            else
+            {
+                break;
+            }
+        }
 
         const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(_PT_AccelStruct);
 
