@@ -145,9 +145,6 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
             ray.TMin = 1e-4;
             
             throughput *= brdfSample.weight;
-
-            // return brdf.pSpecular;
-
         }
         else
         {
