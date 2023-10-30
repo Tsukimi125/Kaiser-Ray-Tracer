@@ -41,11 +41,11 @@ struct Reservoir
         return frac(p + randOffset);
     }
 
-    void Update(float3 inputDir, float targetWeight, float sampleWeight) {
-        sampleWeight *= targetWeight;
+    void Update(float3 inputDir, float targetWeight, float sourceWeight) {
+        sourceWeight *= targetWeight;
         M++;
-        wSum += sampleWeight;
-        if (rand() < sampleWeight / max(1e-4, wSum)) 
+        wSum += sourceWeight;
+        if (rand() < sourceWeight / max(1e-4, wSum)) 
         {
             dir = inputDir;
             w = targetWeight;
