@@ -63,7 +63,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
 
         float roughnessBias = 0.0;
 
-        PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).Trace(_PT_AccelStruct);
+        PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).TraceScatterRay(_PT_AccelStruct);
 
         if (!hitVertex.bHit)
         {
@@ -140,7 +140,8 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
                 roughnessBias = lerp(roughnessBias, 1.0, 0.5 * brdfSample.approxRoughness);
             #endif
             
-            ray.Origin = hitVertex.position;
+            // ray.Origin = hitVertex.position;
+            ray.Origin = ComputeRayOrigin(hitVertex.position, hitVertex.surfaceData.normal);;
             ray.Direction = mul(tangentToWorld, brdfSample.wi);
             ray.TMin = 1e-4;
             

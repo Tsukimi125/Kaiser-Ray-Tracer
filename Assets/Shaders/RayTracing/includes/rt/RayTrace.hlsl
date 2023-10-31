@@ -80,6 +80,28 @@ struct ShadowRayPayload
 };
 
 
+struct RayTracedGBuffer
+{
+    float3 albedo;
+    float3 normal;
+    float3 worldPos;
+    float depth;
+    float roughness;
+    float metalness;
+}
+
+void GenerateRayTracedGBufferFromHitPathVertex(in PathVertex hitVertex, out RayTracedGBuffer gbuffer)
+{
+    gbuffer.albedo = hitVertex.surfaceData.albedo;
+    gbuffer.normal = hitVertex.surfaceData.normal;
+    gbuffer.worldPos = hitVertex.position;
+    gbuffer.depth = hitVertex.rayT; // Raw Depth? 01 Depth? Linear Depth?
+    gbuffer.roughness = hitVertex.surfaceData.roughness;
+    gbuffer.metalness = hitVertex.surfaceData.metalness;
+}
+
+
+
 struct KaiserRayTracer
 {
     RayDesc ray;
@@ -97,7 +119,7 @@ struct KaiserRayTracer
         return res;
     }
 
-    PathVertex Trace(RaytracingAccelerationStructure rtas)
+    PathVertex TraceScatterRay(RaytracingAccelerationStructure rtas)
     {
         RayPayload payload = RayPayload::CreateMiss();
         payload.rayCone = this.rayCone;
@@ -117,7 +139,6 @@ struct KaiserRayTracer
             res.bHit = true;
             res.surfaceData = payload.surfaceData;
             res.position = ray.Origin + ray.Direction * payload.t;
-            res.position = ComputeRayOrigin(res.position, res.surfaceData.normal);
             res.rayT = payload.t;
         }
         else
