@@ -10,14 +10,14 @@ public partial class KaiserRayTracer : RenderPipeline
 {
     void RenderSingleCamera(ScriptableRenderContext context, Camera camera, bool anyPostProcessingEnabled)
     {
-        if (!camera.TryGetComponent<AdditionalCameraData>(out var additionalData))
+        if (!camera.TryGetComponent<KaiserCameraData>(out var additionalData))
         {
-            additionalData = camera.gameObject.AddComponent<AdditionalCameraData>();
+            additionalData = camera.gameObject.AddComponent<KaiserCameraData>();
             additionalData.hideFlags = HideFlags.HideAndDontSave;
         }
 
         if (additionalData.UpdateCameraResources()) frameIndex = 0;
-        
+
         CommandBuffer cmd = new CommandBuffer();
 
 
@@ -32,6 +32,7 @@ public partial class KaiserRayTracer : RenderPipeline
             };
 
             RTHandle outputRTHandle = rtHandleSystem.Alloc(additionalData.rayTracingOutput, "_PT_Output");
+            // RTHandle gbuffer0 = rtHandleSystem.Alloc(additionalData, "_PT_Output");
             switch (renderPipelineAsset.renderType)
             {
                 // Add RenderType Here

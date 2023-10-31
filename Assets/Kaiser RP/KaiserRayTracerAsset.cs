@@ -9,6 +9,7 @@ public enum RenderType
 {
     PATH_TRACING,
     RCGI,
+    RESTIR_GI
 };
 
 [CreateAssetMenu(menuName = "Rendering/KaiserRayTracerAsset")]

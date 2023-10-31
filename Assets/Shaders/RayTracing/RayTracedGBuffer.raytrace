@@ -1,0 +1,92 @@
+#include "UnityShaderVariables.cginc"
+#include "includes/RayPayload.hlsl"
+#include "includes/Utils/RayTracingHelper.hlsl"
+#include "includes/Utils/Random.hlsl"
+#include "includes/Utils/MathConstant.hlsl"
+#include "includes/Global.hlsl"
+#include "includes/Lighting.hlsl"
+#include "includes/BRDF/BRDF.hlsl"
+#include "includes/rt/RayTrace.hlsl"
+
+uint _RTGBuffer_ConvergenceStep;
+uint _RTGBuffer_FrameIndex;
+float _RTGBuffer_Zoom;
+float _RTGBuffer_AspectRatio;
+
+uint _RTGBuffer_SamplePerPixel;
+
+int _RTGBuffer_Progressive;
+
+TextureCube<float4> _RTGBuffer_EnvTex;
+SamplerState sampler__RTGBuffer_EnvTex;
+
+#pragma max_recursion_depth 10
+
+#define K_USE_ROUGHNESS_BIAS 0
+
+RWTexture2D<float4> _GBuffer0;
+RWTexture2D<float4> _GBuffer1;
+RWTexture2D<float4> _GBuffer2;
+
+
+
+float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
+{
+    float2 frameCoord = launchIndex + float2(0.5, 0.5);
+    float3 result = float3(0, 0, 0);
+    
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RTGBuffer_ConvergenceStep + _RTGBuffer_FrameIndex) * uint(26699 + sampleIndex)) | uint(1);
+    float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
+    float2 ndcCoords = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
+    
+    ndcCoords = ndcCoords * 2 - float2(1, 1);
+    ndcCoords = ndcCoords * _RTGBuffer_Zoom;
+
+    // Get a ray in view space.
+    float3 viewDirection = normalize(float3(ndcCoords.x * _RTGBuffer_AspectRatio, ndcCoords.y, 1));
+
+    // Rotate the ray from view space to world space.
+    float3 rayDirection = mul((float3x3)unity_CameraToWorld, viewDirection);
+
+    float3 res = 0.0.xxx;
+    
+
+    RayDesc ray;
+    {
+        ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, K_T_MIN, K_T_MAX);
+    }
+
+    RayCone rayCone = RayCone::Create(launchDim.y, 0.0);
+
+    PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).TraceScatterRay(_RTGBuffer_AccelStruct);
+    RayTracedGBuffer rtGBuffer;
+    GenerateRayTracedGBufferFromHitPathVertex(hitVertex, rtGBuffer);
+    
+    return res.rgb;
+}
+
+
+[shader("raygeneration")]
+void PathTracingRayGenShader()
+{
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
+
+    float3 result = float3(0, 0, 0);
+    for (uint i = 0; i < _RTGBuffer_SamplePerPixel; i++)
+    {
+        result += tracePath(launchIndex, launchDim, i);
+    }
+    result /= float(_RTGBuffer_SamplePerPixel);
+
+    float3 prevRadiance = _RTGBuffer_Output[launchIndex].xyz;
+    if (_RTGBuffer_Progressive == 1) result = lerp(prevRadiance, result, 1 / float(_RTGBuffer_ConvergenceStep + 1));
+
+    _RTGBuffer_Output[launchIndex] = float4(result, 1);
+}
+
+[shader("miss")]
+void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)
+{
+
+}
