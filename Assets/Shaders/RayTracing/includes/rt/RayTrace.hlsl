@@ -87,17 +87,17 @@ struct RayTracedGBuffer
     float3 worldPos;
     float depth;
     float roughness;
-    float metalness;
-}
+    float metallic;
+};
 
 void GenerateRayTracedGBufferFromHitPathVertex(in PathVertex hitVertex, out RayTracedGBuffer gbuffer)
 {
     gbuffer.albedo = hitVertex.surfaceData.albedo;
     gbuffer.normal = hitVertex.surfaceData.normal;
     gbuffer.worldPos = hitVertex.position;
-    gbuffer.depth = hitVertex.rayT; // Raw Depth? 01 Depth? Linear Depth?
+    gbuffer.depth = hitVertex.rayT; // TODO: Raw Depth? 01 Depth? Linear Depth?
     gbuffer.roughness = hitVertex.surfaceData.roughness;
-    gbuffer.metalness = hitVertex.surfaceData.metalness;
+    gbuffer.metallic = hitVertex.surfaceData.metallic;
 }
 
 
