@@ -1,0 +1,36 @@
+#pragma kernel CSMain
+
+#include "UnityShaderVariables.cginc"
+#include "../Include/frame_constants.hlsl"
+
+#define THREAD_GROUP_SIZE 512
+#define SEGMENT_SIZE (THREAD_GROUP_SIZE * 2)
+
+ByteAddressBuffer segment_sum_buf : register(t0);
+
+RWByteAddressBuffer inout_buf : register(u0);
+
+groupshared uint shared_data[SEGMENT_SIZE];
+
+uint2 load_input2(uint idx, uint segment)
+{
+    const uint2 internal_sum = inout_buf.Load2(4 * (idx + segment * SEGMENT_SIZE));
+    const uint prev_segment_sum = segment == 0 ? 0 : segment_sum_buf.Load(4 * (segment - 1));
+
+    return internal_sum + prev_segment_sum;
+}
+
+void store_output2(uint idx, uint segment, uint2 val)
+{
+    inout_buf.Store2(4 * (idx + segment * SEGMENT_SIZE), val);
+}
+
+[numthreads(THREAD_GROUP_SIZE,1,1)]
+void CSMain (uint3 GroupId : SV_GroupID,
+    uint3 DispatchThreadId : SV_DispatchThreadID,
+    uint3 GroupThreadId : SV_GroupThreadID)
+{
+    uint idx = GroupThreadId.x;
+    uint segment = GroupId.x;
+    store_output2(idx * 2, segment, load_input2(idx * 2, segment));
+}

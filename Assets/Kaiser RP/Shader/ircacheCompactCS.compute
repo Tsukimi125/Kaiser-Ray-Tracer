@@ -1,0 +1,27 @@
+#pragma kernel CSMain
+
+#include "ircache_constants.hlsl"
+
+
+StructuredBuffer<uint> entry_occupancy_buf : register(t0);
+
+RWByteAddressBuffer ircache_meta_buf : register(u0);
+RWStructuredBuffer<uint> ircache_life_buf : register(u1);
+RWStructuredBuffer<uint> ircache_entry_indirection_buf : register(u2);
+
+[numthreads(64,1,1)]
+void CSMain (uint3 GroupId : SV_GroupID,
+	uint3 DispatchThreadId : SV_DispatchThreadID,
+	uint3 GroupThreadId : SV_GroupThreadID)
+{
+    uint entry_idx = DispatchThreadId.x;
+
+
+    const uint total_entry_count = ircache_meta_buf.Load(IRCACHE_META_ENTRY_COUNT);
+
+    const uint life = ircache_life_buf[entry_idx];
+    if (entry_idx < total_entry_count && is_ircache_entry_life_valid(life))
+    {
+        ircache_entry_indirection_buf[entry_occupancy_buf[entry_idx]] = entry_idx;
+    }
+}

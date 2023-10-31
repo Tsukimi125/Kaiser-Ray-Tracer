@@ -17,7 +17,7 @@ public partial class KaiserRayTracer : RenderPipeline
         }
 
         if (additionalData.UpdateCameraResources()) frameIndex = 0;
-
+        
         CommandBuffer cmd = new CommandBuffer();
 
 
@@ -48,6 +48,8 @@ public partial class KaiserRayTracer : RenderPipeline
                     break;
                 case RenderType.RCGI:
                     // Add RCGI Here
+                    UpdateFrameBuffer(camera, context);
+                    RenderIrcache(camera, renderGraphParams);
                     break;
 
             }
