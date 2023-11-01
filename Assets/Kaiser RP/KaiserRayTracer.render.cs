@@ -10,13 +10,13 @@ public partial class KaiserRayTracer : RenderPipeline
 {
     void RenderSingleCamera(ScriptableRenderContext context, Camera camera, bool anyPostProcessingEnabled)
     {
-        if (!camera.TryGetComponent<KaiserCameraData>(out var additionalData))
+        if (!camera.TryGetComponent<KaiserCameraData>(out var cameraData))
         {
-            additionalData = camera.gameObject.AddComponent<KaiserCameraData>();
-            additionalData.hideFlags = HideFlags.HideAndDontSave;
+            cameraData = camera.gameObject.AddComponent<KaiserCameraData>();
+            cameraData.hideFlags = HideFlags.HideAndDontSave;
         }
 
-        if (additionalData.UpdateCameraResources()) frameIndex = 0;
+        if (cameraData.UpdateCameraResources()) frameIndex = 0;
 
         CommandBuffer cmd = new CommandBuffer();
 
@@ -27,18 +27,18 @@ public partial class KaiserRayTracer : RenderPipeline
             {
                 scriptableRenderContext = context,
                 commandBuffer = cmd,
-                currentFrameIndex = additionalData.frameIndex
+                currentFrameIndex = cameraData.frameIndex
             };
 
-            RTHandle outputRTHandle = rtHandleSystem.Alloc(additionalData.rayTracingOutput, "_PT_Output");
-            // RTHandle gbuffer0 = rtHandleSystem.Alloc(additionalData, "_PT_Output");
+            RTHandle outputRTHandle = rtHandleSystem.Alloc(cameraData.rayTracingOutput, "_PT_Output");
+            // RTHandle gbuffer0 = rtHandleSystem.Alloc(cameraData, "_PT_Output");
             switch (renderPipelineAsset.renderType)
             {
                 // Add RenderType Here
                 case RenderType.PATH_TRACING:
-                    if (RenderPathTracing(camera, outputRTHandle, renderGraphParams, additionalData))
+                    if (RenderPathTracing(camera, outputRTHandle, renderGraphParams, cameraData))
                     {
-                        cmd.Blit(additionalData.rayTracingOutput, camera.activeTexture);
+                        cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
                     }
                     else
                     {
@@ -70,7 +70,7 @@ public partial class KaiserRayTracer : RenderPipeline
 
         renderGraph.EndFrame();
 
-        additionalData.UpdateCameraData();
+        cameraData.UpdateCameraData();
 
     }
 

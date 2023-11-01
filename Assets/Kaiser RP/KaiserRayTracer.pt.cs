@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    private bool RenderPathTracing(Camera camera, RTHandle outputRTHandle, RenderGraphParameters renderGraphParams, KaiserCameraData additionalData)
+    private bool RenderPathTracing(Camera camera, RTHandle outputRTHandle, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData)
     {
 
         if (renderPipelineAsset.pathTracingShader == null)
@@ -21,7 +21,7 @@ public partial class KaiserRayTracer : RenderPipeline
         {
             TextureHandle output = renderGraph.ImportTexture(outputRTHandle);
 
-            RenderGraphBuilder builder = renderGraph.AddRenderPass<RayTracingRenderPassData>("Path Tracing Pass", out var passData);
+            RenderGraphBuilder builder = renderGraph.AddRenderPass<PathTracingRenderPassData>("Path Tracing Pass", out var passData);
 
             passData.outputTexture = builder.WriteTexture(output);
 
@@ -38,7 +38,7 @@ public partial class KaiserRayTracer : RenderPipeline
             };
             TextureHandle debugTexture = builder.CreateTransientTexture(desc);
 
-            builder.SetRenderFunc((RayTracingRenderPassData data, RenderGraphContext ctx) =>
+            builder.SetRenderFunc((PathTracingRenderPassData data, RenderGraphContext ctx) =>
             {
                 ctx.cmd.BuildRayTracingAccelerationStructure(rtas);
 
@@ -63,7 +63,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_Zoom"), zoom);
                 ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_AspectRatio"), aspectRatio);
                 ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_ConvergenceStep"), frameIndex);
-                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_FrameIndex"), additionalData.frameIndex);
+                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_FrameIndex"), cameraData.frameIndex);
                 ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_SamplePerPixel"), (int)renderPipelineAsset.samplePerPixel);
                 // ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_EnvTex"), renderPipelineAsset.envTexture);
                 ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_DebugTex"), debugTexture);
