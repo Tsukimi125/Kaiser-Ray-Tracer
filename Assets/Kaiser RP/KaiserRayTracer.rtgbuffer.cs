@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    void RenderCameraGBffer(ScriptableRenderContext context, Camera camera, bool anyPostProcessingEnabled)
+    void RenderCameraGBffer(ScriptableRenderContext context, Camera camera)
     {
         
 

@@ -20,7 +20,6 @@ public partial class KaiserRayTracer : RenderPipeline
 
         CommandBuffer cmd = new CommandBuffer();
 
-
         if ((camera.cameraType & renderPipelineAsset.activeCameraType) > 0)
         {
             context.SetupCameraProperties(camera);
