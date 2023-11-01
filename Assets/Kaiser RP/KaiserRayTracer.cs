@@ -14,9 +14,17 @@ public partial class KaiserRayTracer : RenderPipeline
     private int frameIndex = 0;
     private RayTracingVirtualLighting lighting = new RayTracingVirtualLighting();
 
-    class RayTracingRenderPassData
+    class PathTracingRenderPassData
     {
         public TextureHandle outputTexture;
+    };
+
+    class GBufferRenderPassData
+    {
+        public TextureHandle gbuffer0;
+        public TextureHandle gbuffer1;
+        public TextureHandle gbuffer2;
+
     };
     private bool ValidateRayTracing()
     {
