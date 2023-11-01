@@ -1,12 +1,12 @@
 #include "UnityShaderVariables.cginc"
-#include "includes/RayPayload.hlsl"
-#include "includes/Utils/RayTracingHelper.hlsl"
-#include "includes/Utils/Random.hlsl"
-#include "includes/Utils/MathConstant.hlsl"
-#include "includes/Global.hlsl"
-#include "includes/Lighting.hlsl"
-#include "includes/BRDF/BRDF.hlsl"
-#include "includes/rt/RayTrace.hlsl"
+#include "../ShaderLibrary/RayPayload.hlsl"
+#include "../ShaderLibrary/Utils/RayTracingHelper.hlsl"
+#include "../ShaderLibrary/Utils/Random.hlsl"
+#include "../ShaderLibrary/Utils/MathConstant.hlsl"
+#include "../ShaderLibrary/Global.hlsl"
+#include "../ShaderLibrary/Lighting.hlsl"
+#include "../ShaderLibrary/BRDF/BRDF.hlsl"
+#include "../ShaderLibrary/rt/RayTrace.hlsl"
 
 uint _PT_ConvergenceStep;
 uint _PT_FrameIndex;
@@ -36,7 +36,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     
     ndcCoords = ndcCoords * 2 - float2(1, 1);
     ndcCoords = ndcCoords * _PT_Zoom;
-
+    
     // Get a ray in view space.
     float3 viewDirection = normalize(float3(ndcCoords.x * _PT_AspectRatio, ndcCoords.y, 1));
 
@@ -62,7 +62,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
         RayCone rayCone = RayCone::Create(launchDim.y, 0.0);
 
         float roughnessBias = 0.0;
-
+        
         PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).TraceScatterRay(_PT_AccelStruct);
 
         if (!hitVertex.bHit)
@@ -84,23 +84,11 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
                 break;
             }
         }
-        if (dot(surfaceData.normal, ray.Direction) >= 0.0)
-        {
-            if (0 == pathLength)
-            {
-                // Flip the normal for primary hits so we don't see blackness
-                surfaceData.normal = -surfaceData.normal;
-            }
-            else
-            {
-                break;
-            }
-        }
 
         const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(_PT_AccelStruct);
 
         const float3x3 tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
-
+        
         float3 wo = mul(-ray.Direction, tangentToWorld);
         float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
 
@@ -109,7 +97,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
             wo.z *= -0.25;
             wo = normalize(wo);
         }
-
+        
         LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
 
         #if K_USE_ROUGHNESS_BIAS
@@ -119,7 +107,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
         float3 dirLightRadiance = brdf.evalDirectionalLight(wo, wi);
         radiance += throughput * surfaceData.emissive;
         radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor); //  * max(0.0, wi.z)
-        
+        // return radiance;
         // radiancePack[pathLength] = throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z);
 
         float3 urand;
