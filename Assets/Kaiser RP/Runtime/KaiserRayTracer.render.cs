@@ -61,7 +61,6 @@ public partial class KaiserRayTracer : RenderPipeline
             cmd.ClearRenderTarget(false, true, Color.black);
         }
 
-
         context.ExecuteCommandBuffer(cmd);
 
         cmd.Release();

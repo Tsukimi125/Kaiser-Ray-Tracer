@@ -1,0 +1,200 @@
+#include "UnityShaderVariables.cginc"
+#include "../ShaderLibrary/RayPayload.hlsl"
+#include "../ShaderLibrary/Utils/RayTracingHelper.hlsl"
+#include "../ShaderLibrary/Utils/Random.hlsl"
+#include "../ShaderLibrary/Utils/MathConstant.hlsl"
+#include "../ShaderLibrary/Global.hlsl"
+#include "../ShaderLibrary/Lighting.hlsl"
+#include "../ShaderLibrary/BRDF/BRDF.hlsl"
+#include "../ShaderLibrary/rt/RayTrace.hlsl"
+
+uint _PT_ConvergenceStep;
+uint _PT_FrameIndex;
+float _PT_Zoom;
+float _PT_AspectRatio;
+
+uint _PT_SamplePerPixel;
+
+int _PT_Progressive;
+
+TextureCube<float4> _PT_EnvTex;
+SamplerState sampler__PT_EnvTex;
+
+#pragma max_recursion_depth 10
+
+#define K_USE_ROUGHNESS_BIAS 0
+
+
+float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
+{
+    float2 frameCoord = launchIndex + float2(0.5, 0.5);
+    float3 result = float3(0, 0, 0);
+    
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex) * uint(26699 + sampleIndex)) | uint(1);
+    float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
+    float2 ndcCoords = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
+    
+    ndcCoords = ndcCoords * 2 - float2(1, 1);
+    ndcCoords = ndcCoords * _PT_Zoom;
+
+    // Get a ray in view space.
+    float3 viewDirection = normalize(float3(ndcCoords.x * _PT_AspectRatio, ndcCoords.y, 1));
+
+    // Rotate the ray from view space to world space.
+    float3 rayDirection = mul((float3x3)unity_CameraToWorld, viewDirection);
+
+    float3 throughput = 1.0.xxx;
+    float3 radiance = 0.0.xxx;
+    float3 totalRadiance = 0.0.xxx;
+    
+
+    RayDesc ray;
+    {
+        ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, K_T_MIN, K_T_MAX);
+    }
+    
+    [loop]
+    for (uint pathLength = 0; pathLength < _PT_MaxBounceCount; pathLength++)
+    {
+        
+        // rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex + rng) * uint(26699 + sampleIndex + pathLength)) | uint(1);
+        // TODO: RayCone Never Used
+        RayCone rayCone = RayCone::Create(launchDim.y, 0.0);
+
+        float roughnessBias = 0.0;
+
+        PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).TraceScatterRay(_PT_AccelStruct);
+
+        if (!hitVertex.bHit)
+        {
+            break;
+        }
+
+        SurfaceData surfaceData = hitVertex.surfaceData;
+
+        if (dot(surfaceData.normal, ray.Direction) >= 0.0)
+        {
+            if (0 == pathLength)
+            {
+                // Flip the normal for primary hits so we don't see blackness
+                surfaceData.normal = -surfaceData.normal;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(_PT_AccelStruct);
+
+        const float3x3 tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
+
+        float3 wo = mul(-ray.Direction, tangentToWorld);
+        float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
+
+        if (wo.z < 0.0)
+        {
+            wo.z *= -0.25;
+            wo = normalize(wo);
+        }
+
+        LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
+
+        #if K_USE_ROUGHNESS_BIAS
+            brdf.specularBRDF.roughness = lerp(brdf.specularBRDF.roughness, 1.0, roughnessBias);
+        #endif
+
+        float3 dirLightRadiance = brdf.evalDirectionalLight(wo, wi);
+        radiance += throughput * surfaceData.emissive;
+        radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor); //  * max(0.0, wi.z)
+        
+        // radiancePack[pathLength] = throughput * brdfValue.value * _DirectionalLightColor * max(0.0, wi.z);
+
+        float3 urand;
+        urand = float3(RandomFloat01(rng), RandomFloat01(rng), RandomFloat01(rng));
+        // #ifdef USE_NEW_RANDOM_SYSTEM
+        //     // TODO: USE_NEW_RANDOM_SYSTEM
+        // #else
+        // float rand = RandomFloat01(rng);
+        // urand = float3(rand, hash(rand), hash(hash(rand)));
+
+        // #endif
+        
+        BRDFSample brdfSample = BRDFSample::Invalid();
+        brdfSample = brdf.sample(urand, wo);
+        if (brdfSample.IsValid())
+        {
+            #if K_USE_ROUGHNESS_BIAS
+                roughnessBias = lerp(roughnessBias, 1.0, 0.5 * brdfSample.approxRoughness);
+            #endif
+            
+            // ray.Origin = hitVertex.position;
+            ray.Origin = ComputeRayOrigin(hitVertex.position, hitVertex.surfaceData.normal);;
+            ray.Direction = mul(tangentToWorld, brdfSample.wi);
+            ray.TMin = 1e-4;
+            
+            throughput *= brdfSample.weight;
+            return throughput;
+        }
+        else
+        {
+            break;
+        }
+
+        // Russian roulette
+        if (pathLength >= 2)
+        {
+            const float rr_coin = RandomFloat01(rng);
+            const float continue_p = max(surfaceData.albedo.r, max(surfaceData.albedo.g, surfaceData.albedo.b));
+            if (rr_coin > continue_p)
+            {
+                break;
+            }
+            else
+            {
+                throughput /= continue_p;
+            }
+        }
+
+        if (all(radiance >= 0.0))
+        {
+            totalRadiance += float4(radiance, 1.0);
+        }
+    }
+    return totalRadiance.rgb;
+}
+
+
+[shader("raygeneration")]
+void PathTracingRayGenShader()
+{
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
+
+    float3 result = float3(0, 0, 0);
+    for (uint i = 0; i < _PT_SamplePerPixel; i++)
+    {
+        result += tracePath(launchIndex, launchDim, i);
+    }
+    result /= float(_PT_SamplePerPixel);
+
+    float3 prevRadiance = _PT_Output[launchIndex].xyz;
+    if (_PT_Progressive == 1) result = lerp(prevRadiance, result, 1 / float(_PT_ConvergenceStep + 1));
+
+    _PT_Output[launchIndex] = float4(result, 1);
+}
+
+[shader("miss")]
+void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)
+{
+    // payload.emission = 0;
+    // // payload.emission = _PT_EnvTex.SampleLevel(sampler__PT_EnvTex, WorldRayDirection(), 0).xyz;
+    
+    // payload.bounceIndexOpaque = -1;
+
+}
+[shader("miss")]
+void MissShader1_ShadowRay(inout ShadowRayPayload payload:SV_RayPayload)
+{
+    payload.isShadowed = false;
+}
