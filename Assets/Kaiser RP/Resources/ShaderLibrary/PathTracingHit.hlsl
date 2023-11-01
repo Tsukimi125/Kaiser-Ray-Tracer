@@ -75,7 +75,7 @@ void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attrib
     payload.surfaceData.normal = worldNormal;
     payload.surfaceData.metallic = metallic;
     payload.surfaceData.roughness = 1.0 - smoothness;
-    payload.surfaceData.emissive = emission;
+    payload.surfaceData.emission = emission;
 
     payload.t = RayTCurrent();
 }

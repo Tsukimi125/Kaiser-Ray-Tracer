@@ -3,7 +3,7 @@
 using UnityEngine;
 using UnityEditor;
 
-public class UberShaderGUI : ShaderGUI
+public class KaiserLitShaderGUI : ShaderGUI
 {
     MaterialEditor m_MaterialEditor;
 

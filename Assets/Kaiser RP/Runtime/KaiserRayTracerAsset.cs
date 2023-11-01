@@ -17,6 +17,8 @@ public class KaiserRayTracerAsset : RenderPipelineAsset
 {
     [Header("Global Settings")]
     public RenderType renderType = RenderType.PATH_TRACING;
+    [Header("Environment Settings")]
+    public Cubemap envTexture = null;
     [Header("Path Tracing Settings")]
     public RayTracingShader pathTracingShader;
     public bool progressive = false;

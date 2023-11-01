@@ -13,7 +13,7 @@ struct SurfaceData
 {
     float3 albedo;
     float3 normal;
-    float3 emissive;
+    float3 emission;
     float roughness;
     float metallic;
 };

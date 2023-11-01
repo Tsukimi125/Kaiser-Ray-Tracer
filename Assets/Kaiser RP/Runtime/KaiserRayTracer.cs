@@ -13,7 +13,6 @@ public partial class KaiserRayTracer : RenderPipeline
     private RTHandleSystem rtHandleSystem = null;
     private int frameIndex = 0;
     private RayTracingVirtualLighting lighting = new RayTracingVirtualLighting();
-
     class PathTracingRenderPassData
     {
         public TextureHandle outputTexture;
