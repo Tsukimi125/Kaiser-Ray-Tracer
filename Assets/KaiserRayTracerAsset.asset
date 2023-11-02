@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: KaiserRayTracerAsset
   m_EditorClassIdentifier: 
   renderType: 0
-  envTexture: {fileID: 8900000, guid: 63455f8f82537ac43b62c575aa75a7c2, type: 3}
+  envTexture: {fileID: 8900000, guid: 63bff151425c9c740869f3cbf1a408f3, type: 3}
+  envIntensity: 0.3
   pathTracingShader: {fileID: 4807578003741378534, guid: ee9704276f1b3d646bcc7d8ec6b439f4, type: 3}
   progressive: 1
   samplePerPixel: 1

@@ -8,22 +8,24 @@
 #include "../ShaderLibrary/BRDF/BRDF.hlsl"
 #include "../ShaderLibrary/rt/RayTrace.hlsl"
 
-uint _PT_ConvergenceStep;
-uint _PT_FrameIndex;
-float _PT_Zoom;
-float _PT_AspectRatio;
-
-uint _PT_SamplePerPixel;
-
-int _PT_Progressive;
-
-TextureCube<float4> _PT_EnvTex;
-SamplerState sampler_PT_EnvTex;
-
 #pragma max_recursion_depth 10
 
 #define K_USE_ROUGHNESS_BIAS 0
 
+// Ray Tracing Properties
+uint _PT_ConvergenceStep;
+uint _PT_FrameIndex;
+uint _PT_SamplePerPixel;
+int _PT_Progressive;
+
+// Camera Properties
+float _PT_Zoom;
+float _PT_AspectRatio;
+
+// Environment Properties
+TextureCube<float4> _PT_EnvTex;
+SamplerState sampler_PT_EnvTex;
+float _PT_EnvIntensity;
 
 float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
 {
@@ -67,11 +69,9 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
         SurfaceData surfaceData = hitVertex.surfaceData;
         if (!hitVertex.bHit)
         {
-            totalRadiance += throughput * saturate(_PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0)).rgb; // TODO: Why need saturate?
+            totalRadiance += throughput * _PT_EnvIntensity * _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb; // TODO: Why need saturate?
             break;
         }
-
-        
 
         if (dot(surfaceData.normal, ray.Direction) >= 0.0)
         {
@@ -155,11 +155,10 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
                 throughput /= continue_p;
             }
         }
-
-        if (all(radiance >= 0.0))
-        {
-            totalRadiance += float4(radiance, 1.0);
-        }
+    }
+    if (all(radiance >= 0.0))
+    {
+        totalRadiance += float4(radiance, 1.0);
     }
     return totalRadiance.rgb;
 }

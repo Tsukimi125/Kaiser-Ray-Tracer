@@ -19,6 +19,8 @@ public class KaiserRayTracerAsset : RenderPipelineAsset
     public RenderType renderType = RenderType.PATH_TRACING;
     [Header("Environment Settings")]
     public Cubemap envTexture = null;
+    [Range(0, 4)]
+    public float envIntensity = 0.5f;
     [Header("Path Tracing Settings")]
     public RayTracingShader pathTracingShader;
     public bool progressive = false;
