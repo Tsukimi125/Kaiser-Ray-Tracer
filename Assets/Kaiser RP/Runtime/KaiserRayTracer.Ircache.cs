@@ -33,6 +33,7 @@ public partial class KaiserRayTracer : RenderPipeline
     private ComputeBuffer Ircache_reposition_proposal_buf = new(65536, sizeof(float) * 4, ComputeBufferType.Structured);
     private ComputeBuffer Ircache_reposition_proposal_count_buf = new(65536, sizeof(uint), ComputeBufferType.Structured);
     private ComputeBuffer Ircache_entry_indirection_buf = new(1048576, sizeof(uint), ComputeBufferType.Structured);
+    private ComputeBuffer Ircache_aux_buf = new(65536 * 4 * 16, sizeof(float) * 4, ComputeBufferType.Structured);
     #endregion
 
     private void RenderIrcache(Camera camera, RenderGraphParameters renderGraphParameters)
@@ -45,7 +46,7 @@ public partial class KaiserRayTracer : RenderPipeline
         if (!initialize)
         {
             //Debug.Log("Initialize");
-            computeShader = renderPipelineAsset.clearIrcachePoolCS;
+            computeShader = Resources.Load<ComputeShader>("clearIrcachePoolCS");
             int kernal = computeShader.FindKernel("CSMain");
             computeShader.SetBuffer(kernal, "ircache_pool_buf", Ircache_pool_buf);
             computeShader.SetBuffer(kernal, "ircache_life_buf", Ircache_life_buf);
@@ -55,7 +56,7 @@ public partial class KaiserRayTracer : RenderPipeline
         else
         {
             //Debug.Log("Scroll Cascade");
-            computeShader = renderPipelineAsset.scrollCascadeCS;
+            computeShader = Resources.Load<ComputeShader>("scrollCascadeCS");
             int kernal = computeShader.FindKernel("CSMain");
             computeShader.SetBuffer(kernal, "ircache_grid_meta_buf", Ircache_grid_meta_buf);
             computeShader.SetBuffer(kernal, "ircache_entry_cell_buf", Ircache_entry_cell_buf);
@@ -71,7 +72,7 @@ public partial class KaiserRayTracer : RenderPipeline
         }
 
         {
-            computeShader = renderPipelineAsset._ircacheDispatchArgsCS;
+            computeShader = Resources.Load<ComputeShader>("_ircacheDispatchArgsCS");
             int kernal = computeShader.FindKernel("CSMain");
             computeShader.SetBuffer(kernal, "ircache_meta_buf", Ircache_meta_buf);
             computeShader.SetBuffer(kernal, "dispatch_args", IrcacheDispatchArgs);
@@ -79,7 +80,7 @@ public partial class KaiserRayTracer : RenderPipeline
         }
 
         {
-            computeShader = renderPipelineAsset.ageIrcacheEntriesCS;
+            computeShader = Resources.Load<ComputeShader>("ageIrcacheEntriesCS");
             int kernal = computeShader.FindKernel("CSMain");
             computeShader.SetBuffer(kernal, "ircache_meta_buf", Ircache_meta_buf);
             computeShader.SetBuffer(kernal, "ircache_entry_cell_buf", Ircache_entry_cell_buf);
@@ -95,18 +96,18 @@ public partial class KaiserRayTracer : RenderPipeline
         }
 
         {
-            computeShader = renderPipelineAsset._prefixScan1CS;
+            computeShader = Resources.Load<ComputeShader>("_prefixScan1CS");
             int kernal = computeShader.FindKernel("CSMain");
             computeShader.SetBuffer(kernal, "inout_buf", Entry_occupancy_buf);
             computeShader.Dispatch(kernal, 1024, 1, 1);
 
-            computeShader = renderPipelineAsset._prefixScan2CS;
+            computeShader = Resources.Load<ComputeShader>("_prefixScan2CS");
             kernal = computeShader.FindKernel("CSMain");
             computeShader.SetBuffer(kernal, "input_buf", Entry_occupancy_buf);
             computeShader.SetBuffer(kernal, "output_buf", Segment_sum_buf);
             computeShader.Dispatch(kernal, 1, 1, 1);
 
-            computeShader = renderPipelineAsset._prefixScanMergeCS;
+            computeShader = Resources.Load<ComputeShader>("_prefixScanMergeCS");
             kernal = computeShader.FindKernel("CSMain");
             computeShader.SetBuffer(kernal, "segment_sum_buf", Segment_sum_buf);
             computeShader.SetBuffer(kernal, "inout_buf", Entry_occupancy_buf);
@@ -114,12 +115,31 @@ public partial class KaiserRayTracer : RenderPipeline
         }
 
         {
-            computeShader = renderPipelineAsset.ircacheCompactCS;
+            computeShader = Resources.Load<ComputeShader>("ircacheCompactCS");
             int kernal = computeShader.FindKernel("CSMain");
             computeShader.SetBuffer(kernal, "entry_occupancy_buf", Entry_occupancy_buf);
             computeShader.SetBuffer(kernal, "ircache_meta_buf", Ircache_meta_buf);
             computeShader.SetBuffer(kernal, "ircache_life_buf", Ircache_life_buf);
             computeShader.SetBuffer(kernal, "ircache_entry_indirection_buf", Ircache_entry_indirection_buf);
+            computeShader.Dispatch(kernal, 1024, 1, 1);
+        }
+
+        {
+            computeShader = Resources.Load<ComputeShader>("_ircacheDispatchArgsCS2");
+            int kernal = computeShader.FindKernel("CSMain");
+            computeShader.SetBuffer(kernal, "ircache_meta_buf", Ircache_meta_buf);
+            computeShader.SetBuffer(kernal, "dispatch_args", IrcacheDispatchArgs2);
+            computeShader.Dispatch(kernal, 1, 1, 1);
+        }
+
+        {
+            computeShader = Resources.Load<ComputeShader>("ircacheResetCS");
+            int kernal = computeShader.FindKernel("CSMain");
+            computeShader.SetBuffer(kernal, "ircache_life_buf", Ircache_life_buf);
+            computeShader.SetBuffer(kernal, "ircache_meta_buf", Ircache_meta_buf);
+            computeShader.SetBuffer(kernal, "ircache_irradiance_buf", Ircache_irradiance_buf);
+            computeShader.SetBuffer(kernal, "ircache_entry_indirection_buf", Ircache_entry_indirection_buf);
+            computeShader.SetBuffer(kernal, "ircache_aux_buf", Ircache_aux_buf);
             computeShader.Dispatch(kernal, 1024, 1, 1);
         }
 
