@@ -28,6 +28,12 @@ public partial class KaiserRayTracer : RenderPipeline
             return false;
         }
 
+        if (RTShaders.referencePathTracer == null)
+        {
+            Debug.Log("Ray Tracing Shader is null!");
+            return false;
+        }
+
         return true;
     }
     private void CullInstance()
@@ -76,6 +82,8 @@ public partial class KaiserRayTracer : RenderPipeline
         renderGraph = new RenderGraph("Ray Tracing Render Graph");
 
         rtHandleSystem = new RTHandleSystem();
+
+        SetupShaders();
     }
 
     protected override void Dispose(bool disposing)

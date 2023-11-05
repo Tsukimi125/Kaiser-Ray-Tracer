@@ -1,7 +1,6 @@
 #include "UnityRaytracingMeshUtils.cginc"
 #include "RayPayload.hlsl"
 #include "Utils/RayTracingHelper.hlsl"
-#include "Global.hlsl"
 
 #pragma raytracing test
 
@@ -9,6 +8,31 @@
 #pragma shader_feature_raytracing _METALLICMAP
 #pragma shader_feature_raytracing _EMISSION
 #pragma shader_feature_raytracing _TRANSPARENT
+
+float4 _Color;
+
+Texture2D<float4> _MainTex;
+float4 _MainTex_ST;
+SamplerState sampler_MainTex;
+
+Texture2D<float4> _NormalMap;
+float4 _NormalMap_ST;
+SamplerState sampler_NormalMap;
+
+Texture2D<float4> _MetallicMap;
+float4 _MetallicMap_ST;
+SamplerState sampler_MetallicMap;
+
+float _Glossiness;
+float _Metallic;
+float _IOR;
+
+Texture2D<float4> _EmissionTex;
+float4 _EmissionTex_ST;
+SamplerState sampler_EmissionTex;
+float4 _EmissionColor;
+
+float _ExtinctionCoefficient;
 
 float3 GetNormalTS(float2 uv)
 {
@@ -35,7 +59,6 @@ void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attrib
     localNormal = isFrontFace ? v.normal:- v.normal;
     float3 worldNormal = normalize(mul((float3x3)ObjectToWorld3x4(), float4(localNormal, 0.0)));
     
-
     // Construct TBN
     float3 tangent = normalize(mul(v.tangent, (float3x3)WorldToObject()));
     float3 N = worldNormal;

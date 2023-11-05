@@ -65,7 +65,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
 
         float roughnessBias = 0.0;
         
-        PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).TraceScatterRay(_PT_AccelStruct);
+        PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, pathLength, false).TraceScatterRay(_AccelStruct);
         SurfaceData surfaceData = hitVertex.surfaceData;
         if (!hitVertex.bHit)
         {
@@ -86,7 +86,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
             }
         }
 
-        const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(_PT_AccelStruct);
+        const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), rayCone, pathLength, false).TraceShadowRay(_AccelStruct);
 
         const float3x3 tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
         

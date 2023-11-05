@@ -18,7 +18,10 @@ public partial class KaiserRayTracer : RenderPipeline
 
         if (cameraData.UpdateCameraResources()) frameIndex = 0;
 
-        CommandBuffer cmd = new CommandBuffer();
+        CommandBuffer cmd = new CommandBuffer
+        {
+            name = "Kaiser Ray Tracer"
+        };
 
         if ((camera.cameraType & renderPipelineAsset.activeCameraType) > 0)
         {
@@ -51,6 +54,19 @@ public partial class KaiserRayTracer : RenderPipeline
                     UpdateFrameBuffer(camera, context);
                     RenderIrcache(camera, renderGraphParams);
                     break;
+                case RenderType.RESTIR_GI:
+                    RenderCameraGBffer(camera, renderGraphParams, cameraData);
+                    if (RenderPathTracing(camera, outputRTHandle, renderGraphParams, cameraData))
+                    {
+                        cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
+                    }
+                    else
+                    {
+                        cmd.ClearRenderTarget(false, true, Color.black);
+                        Debug.Log("Error occurred when Path Tracing!");
+                    }
+                    cmd.Blit(cameraData.gbuffer0, camera.activeTexture);
+                    break;
 
             }
 
@@ -75,7 +91,7 @@ public partial class KaiserRayTracer : RenderPipeline
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
-        if (!ValidateRayTracing())
+        if (!ValidateRayTracing() && !SetupShaders())
         {
             CommandBuffer cmd = new CommandBuffer();
             cmd.ClearRenderTarget(true, true, Color.magenta);
@@ -93,9 +109,6 @@ public partial class KaiserRayTracer : RenderPipeline
         {
             RenderSingleCamera(context, camera, true);
         }
-
-
-
     }
 
 

@@ -23,12 +23,12 @@ Shader "KaiserRenderPipeline/Lit"
     {
         Pass
         {
-            Name "PathTracing"
+            Name "RayTracing"
             Tags { "LightMode" = "RayTracing" }
 
             HLSLPROGRAM
 
-            #include "../ShaderLibrary/PathTracingHit.hlsl"
+            #include "../ShaderLibrary/RayTracingHit.hlsl"
 
             ENDHLSL
         }
