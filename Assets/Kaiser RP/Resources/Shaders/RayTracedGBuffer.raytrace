@@ -59,9 +59,7 @@ void GBffuerRayGenShader()
         ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, K_T_MIN, K_T_MAX);
     }
 
-    RayCone rayCone = RayCone::Create(launchDim.y, 0.0);
-
-    PathVertex hitVertex = KaiserRayTracer::Create(ray, rayCone, 1, false).TraceScatterRay(_AccelStruct);
+    PathVertex hitVertex = KaiserRayTracer::Create(ray, 1, false).TraceScatterRay(_AccelStruct);
     RayTracedGBuffer rtGBuffer;
 
     if (hitVertex.bHit)

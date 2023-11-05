@@ -15,7 +15,7 @@ MonoBehaviour:
   renderType: 0
   envTexture: {fileID: 8900000, guid: 63bff151425c9c740869f3cbf1a408f3, type: 3}
   envIntensity: 0.2
-  progressive: 0
+  progressive: 1
   samplePerPixel: 1
   bounceCount: 4
   activeCameraType: 3

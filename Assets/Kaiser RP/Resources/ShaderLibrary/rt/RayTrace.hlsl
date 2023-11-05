@@ -105,15 +105,13 @@ void GenerateRayTracedGBufferFromHitPathVertex(in PathVertex hitVertex, out RayT
 struct KaiserRayTracer
 {
     RayDesc ray;
-    RayCone rayCone;
     uint pathLength;
     bool bCullBackfaces;
 
-    static KaiserRayTracer Create(RayDesc ray, RayCone rayCone, uint pathLength, bool bCullBackfaces)
+    static KaiserRayTracer Create(RayDesc ray, uint pathLength, bool bCullBackfaces)
     {
         KaiserRayTracer res;
         res.ray = ray;
-        res.rayCone = rayCone;
         res.pathLength = pathLength;
         res.bCullBackfaces = bCullBackfaces;
         return res;
@@ -122,7 +120,6 @@ struct KaiserRayTracer
     PathVertex TraceScatterRay(RaytracingAccelerationStructure rtas)
     {
         RayPayload payload = RayPayload::CreateMiss();
-        payload.rayCone = this.rayCone;
         payload.pathLength = this.pathLength;
 
         uint traceFlags = 0;

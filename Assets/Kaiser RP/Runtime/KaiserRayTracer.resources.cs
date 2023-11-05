@@ -16,6 +16,7 @@ public partial class KaiserRayTracer : RenderPipeline
     bool SetupShaders()
     {
         RTShaders.referencePathTracer = Resources.Load<RayTracingShader>("Shaders/ReferencePathTracer");
+        // RTShaders.referencePathTracer = Resources.Load<RayTracingShader>("Shaders/ReferencePT_Old");
         RTShaders.gbuffer = Resources.Load<RayTracingShader>("Shaders/RayTracedGBuffer");
         if (RTShaders.referencePathTracer == null || RTShaders.gbuffer == null)
         {
