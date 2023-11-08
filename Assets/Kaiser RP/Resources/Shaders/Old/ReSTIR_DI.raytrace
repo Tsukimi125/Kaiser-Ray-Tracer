@@ -1,7 +1,7 @@
 #include "UnityShaderVariables.cginc"
 #include "includes/RayPayload.hlsl"
 #include "includes/Utils.hlsl"
-#include "includes/Global.hlsl"
+#include "includes/RayTracingGlobal.hlsl"
 
 uint g_ConvergenceStep;
 uint g_FrameIndex;

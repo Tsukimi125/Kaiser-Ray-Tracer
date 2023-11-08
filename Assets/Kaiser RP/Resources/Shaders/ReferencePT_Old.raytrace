@@ -4,7 +4,7 @@
 #include "../ShaderLibrary/Utils/RayTracingHelper.hlsl"
 #include "../ShaderLibrary/Utils/Random.hlsl"
 #include "../ShaderLibrary/Utils/MathConstant.hlsl"
-#include "../ShaderLibrary/Global.hlsl"
+#include "../ShaderLibrary/RayTracingGlobal.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 #include "../ShaderLibrary/BRDF/BRDF.hlsl"
 #include "../ShaderLibrary/rt/RayTrace.hlsl"

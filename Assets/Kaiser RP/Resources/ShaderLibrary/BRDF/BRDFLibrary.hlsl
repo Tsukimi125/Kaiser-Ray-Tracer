@@ -1,7 +1,7 @@
 #ifndef KAISER_RAYTRACING_BRDF_LIBRARY
 #define KAISER_RAYTRACING_BRDF_LIBRARY
 
-#include "../Utils/RayTracingHelper.hlsl"
+// #include "../Utils/RayTracingHelper.hlsl"
 #include "../Utils/Sampling.hlsl"
 
 #define BRDF_SAMPLING_MIN_COS 1e-4

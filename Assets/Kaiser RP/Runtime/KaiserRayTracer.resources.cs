@@ -7,18 +7,19 @@ using UnityEngine.Experimental.Rendering.RenderGraphModule;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    static class RTShaders
+    static class KaiserShaders
     {
+        static public ComputeShader deferredLightPass;
         static public RayTracingShader referencePathTracer;
         static public RayTracingShader gbuffer;
     };
 
     bool SetupShaders()
     {
-        RTShaders.referencePathTracer = Resources.Load<RayTracingShader>("Shaders/ReferencePathTracer");
-        // RTShaders.referencePathTracer = Resources.Load<RayTracingShader>("Shaders/ReferencePT_Old");
-        RTShaders.gbuffer = Resources.Load<RayTracingShader>("Shaders/RayTracedGBuffer");
-        if (RTShaders.referencePathTracer == null || RTShaders.gbuffer == null)
+        KaiserShaders.referencePathTracer = Resources.Load<RayTracingShader>("Shaders/ReferencePathTracer");
+        // KaiserShaders.referencePathTracer = Resources.Load<RayTracingShader>("Shaders/ReferencePT_Old");
+        KaiserShaders.gbuffer = Resources.Load<RayTracingShader>("Shaders/RayTracedGBuffer");
+        if (KaiserShaders.referencePathTracer == null || KaiserShaders.gbuffer == null)
         {
             Debug.Log("Ray Tracing Shader is null!");
             return false;
@@ -37,6 +38,11 @@ public partial class KaiserRayTracer : RenderPipeline
         public TextureHandle gbuffer1;
         public TextureHandle gbuffer2;
         public TextureHandle gbuffer3;
+    };
+
+    class DeferredLightPassData
+    {
+        public TextureHandle outputTexture;
     };
 }
 
