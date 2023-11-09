@@ -34,6 +34,10 @@ public partial class KaiserRayTracer : RenderPipeline
             };
 
             RTHandle outputRTHandle = rtHandleSystem.Alloc(cameraData.rayTracingOutput, "_PT_Output");
+            RTHandle gbufferHandle0 = rtHandleSystem.Alloc(cameraData.gbuffer0, "_GBuffer0");
+            RTHandle gbufferHandle1 = rtHandleSystem.Alloc(cameraData.gbuffer1, "_GBuffer1");
+            RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");
+            RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
             // RTHandle gbuffer0 = rtHandleSystem.Alloc(cameraData, "_PT_Output");
             switch (renderPipelineAsset.renderType)
             {
@@ -55,16 +59,8 @@ public partial class KaiserRayTracer : RenderPipeline
                     RenderIrcache(camera, renderGraphParams);
                     break;
                 case RenderType.RESTIR_GI:
-                    RenderCameraGBffer(camera, renderGraphParams, cameraData);
-                    if (RenderPathTracing(camera, outputRTHandle, renderGraphParams, cameraData))
-                    {
-                        cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
-                    }
-                    else
-                    {
-                        cmd.ClearRenderTarget(false, true, Color.black);
-                        Debug.Log("Error occurred when Path Tracing!");
-                    }
+                    RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
+                    RenderLightPass(camera, renderGraphParams, cameraData);
                     cmd.Blit(cameraData.gbuffer0, camera.activeTexture);
                     break;
 

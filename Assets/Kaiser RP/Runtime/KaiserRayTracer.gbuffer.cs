@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    void RenderCameraGBffer(Camera camera, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData)
+    void RenderCameraGBffer(Camera camera, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData, RTHandle gbufferHandle0, RTHandle gbufferHandle1, RTHandle gbufferHandle2, RTHandle gbufferHandle3)
     {
         if (KaiserShaders.gbuffer == null)
         {
@@ -16,10 +16,10 @@ public partial class KaiserRayTracer : RenderPipeline
             return;
         }
 
-        RTHandle gbufferHandle0 = rtHandleSystem.Alloc(cameraData.gbuffer0, "_GBuffer0");
-        RTHandle gbufferHandle1 = rtHandleSystem.Alloc(cameraData.gbuffer1, "_GBuffer1");
-        RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");
-        RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
+        // RTHandle gbufferHandle0 = rtHandleSystem.Alloc(cameraData.gbuffer0, "_GBuffer0");
+        // RTHandle gbufferHandle1 = rtHandleSystem.Alloc(cameraData.gbuffer1, "_GBuffer1");
+        // RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");
+        // RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
 
         using (renderGraph.RecordAndExecute(renderGraphParams))
         {
@@ -47,6 +47,11 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_GBuffer2"), data.gbuffer2);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_GBuffer3"), data.gbuffer3);
                 ctx.cmd.DispatchRays(KaiserShaders.gbuffer, "GBffuerRayGenShader", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+
+                ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer0"), data.gbuffer0);
+                ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer1"), data.gbuffer1);
+                ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer2"), data.gbuffer2);
+                ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer3"), data.gbuffer3);
             });
 
             frameIndex++;

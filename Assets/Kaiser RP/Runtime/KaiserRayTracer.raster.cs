@@ -24,7 +24,16 @@ public partial class KaiserRayTracer : RenderPipeline
 
             builder.SetRenderFunc((DeferredLightPassData data, RenderGraphContext ctx) =>
             {
-                
+                Vector4 bufferSize = new Vector4(camera.pixelWidth, camera.pixelHeight, 1 / camera.pixelWidth, 1 / camera.pixelHeight);
+                ctx.cmd.SetComputeVectorParam(KaiserShaders.deferredLightPass, Shader.PropertyToID("_BufferSize"), bufferSize);
+                ctx.cmd.SetComputeVectorParam(KaiserShaders.deferredLightPass, Shader.PropertyToID("_Jitter"), new Vector4(0.5f, 0.5f, 0, 0));
+                ctx.cmd.SetComputeTextureParam(KaiserShaders.deferredLightPass, 0, "_Result", passData.outputTexture);
+
+                // dispatch
+                int threadGroupsX = Mathf.CeilToInt(camera.pixelWidth / 8.0f);
+                int threadGroupsY = Mathf.CeilToInt(camera.pixelHeight / 8.0f);
+                ctx.cmd.DispatchCompute(KaiserShaders.deferredLightPass, 0, threadGroupsX, threadGroupsY, 1);
+                frameIndex++;
             });
 
         }
