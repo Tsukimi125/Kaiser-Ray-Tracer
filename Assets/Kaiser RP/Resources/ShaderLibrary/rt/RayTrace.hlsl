@@ -39,7 +39,7 @@ struct RayPayload
     static RayPayload CreateMiss()
     {
         RayPayload res;
-        res.t = FLT_MAX;
+        res.t = K_FLT_MAX;
         res.rayCone = RayCone::Create(0, 0);
         res.pathLength = 0;
         return res;
@@ -47,7 +47,7 @@ struct RayPayload
 
     bool isMiss()
     {
-        return t == FLT_MAX;
+        return t == K_FLT_MAX;
     }
 
     bool isHit()
@@ -141,7 +141,7 @@ struct KaiserRayTracer
         else
         {
             res.bHit = false;
-            res.rayT = FLT_MAX;
+            res.rayT = K_FLT_MAX;
         }
         return res;
     }
