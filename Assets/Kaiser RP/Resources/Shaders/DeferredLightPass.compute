@@ -19,11 +19,11 @@ float2 _Jitter;
 SamplerState sampler_linear_clamp;
 
 [numthreads(8, 8, 1)]
-void LightPass(uint3 id : SV_DispatchThreadID)
+void LightPass(uint3 id:SV_DispatchThreadID)
 {
     float2 resolution = _BufferSize.xy;
     float2 invResolution = _BufferSize.zw;
-    float2 uv = (id.xy + _Jitter) * invResolution;
+    float2 uv = (float2(id.xy) + _Jitter) * invResolution;
 
     SurfaceData surfaceData;
     surfaceData.albedo = _GBuffer0.SampleLevel(sampler_linear_clamp, uv, 0).rgb;
@@ -43,7 +43,7 @@ void LightPass(uint3 id : SV_DispatchThreadID)
 
     LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, max(0.0, wo.z));
 
-    float3 dirRes = brdf.eval(wo, wi);
+    float3 dirRes = brdf.eval(wo, wi) * _DirectionalLightColor.rgb;
 
     _Result[id.xy] = float4(dirRes, 1.0);
 }

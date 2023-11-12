@@ -18,15 +18,29 @@ public partial class KaiserRayTracer : RenderPipeline
 
         using (renderGraph.RecordAndExecute(renderGraphParams))
         {
-            RenderGraphBuilder builder = renderGraph.AddRenderPass<DeferredLightPassData>("Path Tracing Pass", out var passData);
-            TextureHandle output = renderGraph.ImportTexture(passData.outputTexture);
-            passData.outputTexture = builder.WriteTexture(output);
+            RenderGraphBuilder builder = renderGraph.AddRenderPass<DeferredLightPassData>("Deferred Light Pass", out var passData);
+
+            TextureDesc desc = new TextureDesc()
+            {
+                dimension = TextureDimension.Tex2D,
+                width = camera.pixelWidth,
+                height = camera.pixelHeight,
+                depthBufferBits = 0,
+                colorFormat = GraphicsFormat.R16G16B16A16_UNorm,
+                slices = 1,
+                msaaSamples = MSAASamples.None,
+                enableRandomWrite = true,
+            };
+
+            passData.outputTexture = builder.CreateTransientTexture(desc);
+            // TextureHandle output = renderGraph.ImportTexture(passData.outputTexture);
+            // passData.outputTexture = builder.WriteTexture(output);
 
             builder.SetRenderFunc((DeferredLightPassData data, RenderGraphContext ctx) =>
             {
-                Vector4 bufferSize = new Vector4(camera.pixelWidth, camera.pixelHeight, 1 / camera.pixelWidth, 1 / camera.pixelHeight);
-                ctx.cmd.SetComputeVectorParam(KaiserShaders.deferredLightPass, Shader.PropertyToID("_BufferSize"), bufferSize);
-                ctx.cmd.SetComputeVectorParam(KaiserShaders.deferredLightPass, Shader.PropertyToID("_Jitter"), new Vector4(0.5f, 0.5f, 0, 0));
+                Vector4 bufferSize = new Vector4(camera.pixelWidth, camera.pixelHeight, 1.0f / camera.pixelWidth, 1.0f / camera.pixelHeight);
+                ctx.cmd.SetComputeVectorParam(KaiserShaders.deferredLightPass, "_BufferSize", bufferSize);
+                ctx.cmd.SetComputeVectorParam(KaiserShaders.deferredLightPass, "_Jitter", new Vector4(0.5f, 0.5f, 0, 0));
                 ctx.cmd.SetComputeTextureParam(KaiserShaders.deferredLightPass, 0, "_Result", passData.outputTexture);
 
                 // dispatch

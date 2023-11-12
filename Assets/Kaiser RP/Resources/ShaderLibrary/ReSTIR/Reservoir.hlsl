@@ -2,7 +2,7 @@
 #define KAISER_RAYTRACING_RESERVOIR
 
 
-struct Reservoir
+struct MyReservoir
 {
     float3 sampleDir; // sample direction
     float W; // unbiased contribution weight of X (sample)
@@ -28,6 +28,68 @@ struct Reservoir
     }
 };
 
+struct Reservoir
+{
+    float3 dir;
+    float w;
+    float W_sum;
+    int M;
+    float rand_offset;
+    int sampleIndex;
+    float rand()
+    {
+        float p = frac(sampleIndex++* .1031);
+        p *= p + 33.33;
+        p *= p + p;
+        return frac(p + rand_offset);
+    }
+    float4 Pack(int sampleNum = 1024)
+    {
+        RescaleTo(sampleNum);
+        int r = f32tof16(dir.x) + (f32tof16(dir.y) << 16);
+        int g = f32tof16(dir.z) + (M << 16);
+        int b = asint(W_sum);
+        int a = f32tof16(w) + (sampleIndex << 16);
+        return int4(r, g, b, a);
+    }
+
+    void RescaleTo(int sampleNum)
+    {
+        float scale_M = min(1, float(sampleNum) / max(1, M));
+        M = min(M, sampleNum);
+        W_sum *= scale_M;
+    }
+
+    float TargetPDF(float3 color)
+    {
+        return 1e-2 + dot(color, float3(0.299, 0.587, 0.114));
+    }
+
+    void Update(float3 d, float tw, float sw)
+    {
+        sw *= tw;
+        M++;
+        W_sum += sw;
+        if (rand() < sw / max(1e-4, W_sum))
+        {
+            dir = d;
+            w = tw;
+        }
+    }
+    void Update(Reservoir re)
+    {
+        if (re.M == 0 || re.w == 0 || re.W_sum == 0) return;
+        W_sum += re.W_sum;
+        if (rand() < re.W_sum / max(1e-4, W_sum))
+        {
+            dir = re.dir;
+            w = re.w;
+        }
+        M += re.M;
+    }
+};
+
+// re.Update(dir, re.TargetPDF(lerp(Lum, radiance, smooth_metallic)), invPDF);
 
 // struct GIReservoir
 // {
@@ -49,48 +111,5 @@ struct Reservoir
 //     uint4 lightInfo;                ///< Reservoir information.
 
 // };
-
-
-// struct Reservoir
-// {
-//     float3 dir;
-//     float w;
-//     float wSum;
-//     int M;
-//     float randOffset;
-//     int sampleIndex;
-
-//     float rand()
-//     {
-//         float p = frac(sampleIndex++* .1031);
-//         p *= p + 33.33;
-//         p *= p + p;
-//         return frac(p + randOffset);
-//     }
-
-//     void Update(float3 inputDir, float targetWeight, float sourceWeight) {
-//         sourceWeight *= targetWeight;
-//         M++;
-//         wSum += sourceWeight;
-//         if (rand() < sourceWeight / max(1e-4, wSum))
-//         {
-//             dir = inputDir;
-//             w = targetWeight;
-//         }
-//     }
-
-//     void Merge(Reservoir r)
-//     {
-//         if (r.M == 0 || r.w == 0 || r.W_sum == 0) return;
-//         wSum += r.wSum;
-//         if (rand() < re.wSum / max(1e-4, wSum))
-//         {
-//             dir = r.dir;
-//             w = r.w;
-//         }
-
-//         M += other.M;
-//     }
-// }
 
 #endif // KAISER_RAYTRACING_RESERVOIR
