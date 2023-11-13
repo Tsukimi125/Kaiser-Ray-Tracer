@@ -1,7 +1,7 @@
 #ifndef KAISER_IBL
 #define KAISER_IBL
 
-float3 FresnelSchlickRoughness(float NdotV, float3 f0, float roughness)
+float3 IBL_FresnelSchlickRoughness(float NdotV, float3 f0, float roughness)
 {
     float r1 = 1.0f - roughness;
     return f0 + (max(float3(r1, r1, r1), f0) - f0) * pow(1 - NdotV, 5.0f);
@@ -22,7 +22,7 @@ float3 IBL(
 
     float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
     // float3 F = SchlickFresnel(HdotV, F0);
-    float3 F = FresnelSchlickRoughness(HdotV, F0, roughness);
+    float3 F = IBL_FresnelSchlickRoughness(HdotV, F0, roughness);
     float3 k_s = F;
     float3 k_d = (1.0 - k_s) * (1.0 - metallic);
 

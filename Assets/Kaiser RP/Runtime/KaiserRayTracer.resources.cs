@@ -11,6 +11,8 @@ public partial class KaiserRayTracer : RenderPipeline
     {
         static public ComputeShader deferredLightPass;
         static public RayTracingShader referencePathTracer;
+        static public RayTracingShader restir;
+
         static public RayTracingShader gbuffer;
     };
 
@@ -18,6 +20,7 @@ public partial class KaiserRayTracer : RenderPipeline
     {
         KaiserShaders.deferredLightPass = Resources.Load<ComputeShader>("Shaders/DeferredLightPass");
         KaiserShaders.referencePathTracer = Resources.Load<RayTracingShader>("Shaders/ReferencePathTracer");
+        KaiserShaders.restir = Resources.Load<RayTracingShader>("Shaders/ReSTIR");
         KaiserShaders.gbuffer = Resources.Load<RayTracingShader>("Shaders/RayTracedGBuffer");
         if (KaiserShaders.referencePathTracer == null || KaiserShaders.gbuffer == null)
         {

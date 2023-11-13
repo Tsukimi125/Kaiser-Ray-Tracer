@@ -7,24 +7,25 @@ struct MyReservoir
     float3 sampleDir; // sample direction
     float W; // unbiased contribution weight of X (sample)
     float weightSum; // sum of resampling weight
+    int M; // number of samples
     /*
-    * weight = misWeight(Xi) * phat(Xi) * W_Xi
+    * ris weight = misWeight(Xi) * targetWeight(Xi) * W_Xi
     */
-    int sampleIndex;
-    float randOffset;
 
-    float rand()
+    float TargetPDF(float3 color)
     {
-        float p = frac(sampleIndex++* .1031);
-        p *= p + 33.33;
-        p *= p + p;
-        return frac(p + randOffset);
+        return 1e-2 + dot(color, float3(0.299, 0.587, 0.114));
     }
 
-    void Update(float3 newDir, float newWeight)
+    float ResampleWeight(float3 targetWeight, float3 sourceWeight)
+    {
+        return targetWeight / max(1e-3, sourceWeight);
+    }
+
+    void Update(float3 newDir, float newWeight, float urand)
     {
         weightSum += newWeight;
-        if (rand() < (newWeight / weightSum)) sampleDir = newDir;
+        if (urand < (newWeight / weightSum)) sampleDir = newDir;
     }
 };
 
@@ -89,27 +90,5 @@ struct Reservoir
     }
 };
 
-// re.Update(dir, re.TargetPDF(lerp(Lum, radiance, smooth_metallic)), invPDF);
-
-// struct GIReservoir
-// {
-//     float3 vPosition;           ///< Visible point's position.
-//     float3 vNormal;          ///< Visible point's normal.
-//     float3 sPosition;                ///< Hit point's position.
-//     float3 sNormal;                  ///< Hit point's normal.
-//     float3 radiance;                ///< Chosen sample's radiance.
-//     float3 random;
-//     int M;                       ///< Input sample count.
-//     float avgWeight;
-//     uint age;
-// }
-
-// struct PackedGIReservoir
-// {
-//     uint4 vPack;         ///< Visible point's position and normal.
-//     uint4 sPack;              ///< Hit point's position and normal.
-//     uint4 lightInfo;                ///< Reservoir information.
-
-// };
 
 #endif // KAISER_RAYTRACING_RESERVOIR

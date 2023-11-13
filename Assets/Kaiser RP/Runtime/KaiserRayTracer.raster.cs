@@ -48,6 +48,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 int threadGroupsY = Mathf.CeilToInt(camera.pixelHeight / 8.0f);
                 ctx.cmd.DispatchCompute(KaiserShaders.deferredLightPass, 0, threadGroupsX, threadGroupsY, 1);
                 frameIndex++;
+                ctx.cmd.Blit(passData.outputTexture, camera.activeTexture);
             });
 
         }
