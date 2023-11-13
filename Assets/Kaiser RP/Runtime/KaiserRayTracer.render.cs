@@ -23,6 +23,8 @@ public partial class KaiserRayTracer : RenderPipeline
             name = "Kaiser Ray Tracer"
         };
 
+
+
         if ((camera.cameraType & renderPipelineAsset.activeCameraType) > 0)
         {
             context.SetupCameraProperties(camera);
@@ -38,33 +40,54 @@ public partial class KaiserRayTracer : RenderPipeline
             RTHandle gbufferHandle1 = rtHandleSystem.Alloc(cameraData.gbuffer1, "_GBuffer1");
             RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");
             RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
-            // RTHandle gbuffer0 = rtHandleSystem.Alloc(cameraData, "_PT_Output");
-            switch (renderPipelineAsset.renderType)
-            {
-                // Add RenderType Here
-                case RenderType.PATH_TRACING:
-                    if (RenderPathTracing(camera, outputRTHandle, renderGraphParams, cameraData))
-                    {
-                        cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
-                    }
-                    else
-                    {
-                        cmd.ClearRenderTarget(false, true, Color.black);
-                        Debug.Log("Error occurred when Path Tracing!");
-                    }
-                    break;
-                case RenderType.RCGI:
-                    // Add RCGI Here
-                    UpdateFrameBuffer(camera, context);
-                    RenderIrcache(camera, renderGraphParams);
-                    break;
-                case RenderType.RESTIR_GI:
-                    RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
-                    RenderLightPass(camera, renderGraphParams, cameraData);
-                    cmd.Blit(cameraData.gbuffer0, camera.activeTexture);
-                    break;
 
+            // RTHandle gbuffer0 = rtHandleSystem.Alloc(cameraData, "_PT_Output");
+
+            if (camera.cameraType == CameraType.SceneView)
+            {
+                RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
+                RenderLightPass(camera, renderGraphParams, cameraData);
             }
+            else
+            {
+                switch (renderPipelineAsset.renderType)
+                {
+                    // Add RenderType Here
+                    case RenderType.PATH_TRACING:
+                        if (RenderPathTracing(camera, outputRTHandle, renderGraphParams, cameraData))
+                        {
+                            cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
+                        }
+                        else
+                        {
+                            cmd.ClearRenderTarget(false, true, Color.black);
+                            Debug.Log("Error occurred when Path Tracing!");
+                        }
+                        break;
+                    case RenderType.RCGI:
+                        // Add RCGI Here
+                        UpdateFrameBuffer(camera, context);
+                        RenderIrcache(camera, renderGraphParams);
+                        break;
+                    case RenderType.RESTIR_GI:
+                        RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
+                        if (RenderReSTIR(camera, outputRTHandle, renderGraphParams, cameraData))
+                        {
+                            cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
+                        }
+                        else
+                        {
+                            cmd.ClearRenderTarget(false, true, Color.black);
+                            Debug.Log("Error occurred when Path Tracing!");
+                        }
+                        break;
+
+                }
+            }
+
+
+
+
 
             outputRTHandle.Release();
         }
