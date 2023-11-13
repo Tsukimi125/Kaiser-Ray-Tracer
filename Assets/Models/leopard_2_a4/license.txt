@@ -1,0 +1,11 @@
+Model Information:
+* title:	Leopard 2 A4
+* source:	https://sketchfab.com/3d-models/leopard-2-a4-9ac35414a643406898d7e56a638135e0
+* author:	GlitterWhisp (https://sketchfab.com/GlitterWhisp)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Leopard 2 A4" (https://sketchfab.com/3d-models/leopard-2-a4-9ac35414a643406898d7e56a638135e0) by GlitterWhisp (https://sketchfab.com/GlitterWhisp) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
