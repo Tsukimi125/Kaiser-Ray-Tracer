@@ -72,17 +72,17 @@ bool TraceScatterRay(inout RayDesc ray, in uint pathLength, inout uint rng, inou
         return false;
     }
 
-    if (dot(hitVertex.surfaceData.normal, ray.Direction) >= 0.0)
-    {
-        if (0 == pathLength)
-        {
-            hitVertex.surfaceData.normal = -hitVertex.surfaceData.normal;
-        }
-        else
-        {
-            return false;
-        }
-    }
+    // if (dot(hitVertex.surfaceData.normal, ray.Direction) >= 0.0)
+    // {
+    //     if (0 == pathLength)
+    //     {
+    //         hitVertex.surfaceData.normal = -hitVertex.surfaceData.normal;
+    //     }
+    //     else
+    //     {
+    //         return false;
+    //     }
+    // }
     radiance += throughput * hitVertex.surfaceData.emission;
     return true;
 }
@@ -115,8 +115,8 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     surfaceData.emission = float3(0, 0, 0);
     // surfaceData.roughness = roughness;
     // surfaceData.metallic = metallic;
-    surfaceData.roughness = 0.98;
-    surfaceData.metallic = 0.02;
+    surfaceData.roughness = 0.999;
+    surfaceData.metallic = 0.001;
 
     float3 viewDir = normalize(_WorldSpaceCameraPos - worldPos);
     float3x3 tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
@@ -139,13 +139,10 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     [loop]
     for (uint pathLength = 0; pathLength < _PT_MaxBounceCount; pathLength++)
     {
-        
-        
         LayeredBRDF brdf = LayeredBRDF::Create(hitVertex.surfaceData, wo.z);
         
         if (!TraceScatterRay(ray, pathLength, rng, hitVertex, throughput, radiance, brdf, wo, wi, tangentToWorld))
         {
-            // return float3(1.0f, 0.0f, 0.0f);
             break;
         }
 
@@ -158,28 +155,30 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
         }
         brdf = LayeredBRDF::Create(hitVertex.surfaceData, wo.z);
         
-        
         wi = mul(_DirectionalLightDirection, tangentToWorld);
-        
+
         TraceShadowRay(pathLength, hitVertex, throughput, radiance, brdf, wo, wi);
         // const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), pathLength, false).TraceShadowRay(_AccelStruct);
         // float3 dirLightRadiance = brdf.evalDirectionalLight(wo, wi);
-        // radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor);
-        // return dirLightRadiance;
+        // radiance += SELECT(isShadowed, 0.0, throughput * saturate(dirLightRadiance) * _DirectionalLightColor);
+        // return radiance;//SELECT(isShadowed, 0.0, saturate(dirLightRadiance));
+
         // Russian roulette
-        if (pathLength >= 2)
-        {
-            const float rr_coin = RandomFloat01(rng);
-            const float continue_p = max(hitVertex.surfaceData.albedo.r, max(hitVertex.surfaceData.albedo.g, hitVertex.surfaceData.albedo.b));
-            if (rr_coin > continue_p)
-            {
-                break;
-            }
-            else
-            {
-                throughput /= continue_p;
-            }
-        }
+
+        // if (pathLength >= 2)
+        // {
+        //     const float rr_coin = RandomFloat01(rng);
+        //     const float continue_p = max(hitVertex.surfaceData.albedo.r, max(hitVertex.surfaceData.albedo.g, hitVertex.surfaceData.albedo.b));
+        //     if (rr_coin > continue_p)
+        //     {
+        //         break;
+        //     }
+        //     else
+        //     {
+        //         throughput /= continue_p;
+        //     }
+        // }
+
     }
     if (all(radiance >= 0.0))
     {

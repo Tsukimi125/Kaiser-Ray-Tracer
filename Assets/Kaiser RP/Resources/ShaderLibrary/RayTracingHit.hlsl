@@ -5,7 +5,7 @@
 #pragma raytracing test
 
 #pragma shader_feature_raytracing _NORMALMAP
-#pragma shader_feature_raytracing _METALLICMAP
+#pragma shader_feature_raytracing _METALLICGLOSSMAP
 #pragma shader_feature_raytracing _EMISSION
 #pragma shader_feature_raytracing _TRANSPARENT
 
@@ -15,13 +15,13 @@ Texture2D<float4> _MainTex;
 float4 _MainTex_ST;
 SamplerState sampler_MainTex;
 
-Texture2D<float4> _NormalMap;
-float4 _NormalMap_ST;
-SamplerState sampler_NormalMap;
+Texture2D<float4> _BumpMap;
+float4 _BumpMap_ST;
+SamplerState sampler_BumpMap;
 
-Texture2D<float4> _MetallicMap;
-float4 _MetallicMap_ST;
-SamplerState sampler_MetallicMap;
+Texture2D<float4> _MetallicGlossMap;
+float4 _MetallicGlossMap_ST;
+SamplerState sampler_MetallicGlossMap;
 
 float _Glossiness;
 float _Metallic;
@@ -36,7 +36,7 @@ float _ExtinctionCoefficient;
 
 float3 GetNormalTS(float2 uv)
 {
-    float4 map = _NormalMap.SampleLevel(sampler_NormalMap, _NormalMap_ST.xy * uv + _NormalMap_ST.zw, 0);
+    float4 map = _BumpMap.SampleLevel(sampler_BumpMap, _BumpMap_ST.xy * uv + _BumpMap_ST.zw, 0);
     return UnpackNormal(map);
 }
 
@@ -56,7 +56,7 @@ void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attrib
 
     float3 localNormal = v.normal;
     bool isFrontFace = HitKind() == HIT_KIND_TRIANGLE_FRONT_FACE;
-    localNormal = isFrontFace ? v.normal:- v.normal;
+    localNormal = isFrontFace ? v.normal: - v.normal;
     float3 worldNormal = normalize(mul((float3x3)ObjectToWorld3x4(), float4(localNormal, 0.0)));
     
     // Construct TBN
@@ -75,8 +75,8 @@ void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attrib
     float smoothness = _Glossiness;
     float3 emission = float3(0, 0, 0);
 
-    #if _METALLICMAP
-        float4 metallicSmoothness = _MetallicMap.SampleLevel(sampler_MetallicMap, _MetallicMap_ST.xy * v.uv + _MetallicMap_ST.zw, 0);
+    #if _METALLICGLOSSMAP
+        float4 metallicSmoothness = _MetallicGlossMap.SampleLevel(sampler_MetallicGlossMap, _MetallicGlossMap_ST.xy * v.uv + _MetallicGlossMap_ST.zw, 0);
         metallic = metallicSmoothness.xxx;
         smoothness *= metallicSmoothness.w;
     #endif
@@ -153,8 +153,8 @@ void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attrib
 //     float3 emission = float3(0, 0, 0);
 //     float3 fr = float3(0, 0, 0);
 
-//     #if _METALLICMAP
-//         float4 metallicSmoothness = _MetallicMap.SampleLevel(sampler__MetallicMap, _MetallicMap_ST.xy * v.uv + _MetallicMap_ST.zw, 0);
+//     #if _MetallicGlossMap
+//         float4 metallicSmoothness = _MetallicGlossMap.SampleLevel(sampler__MetallicGlossMap, _MetallicGlossMap_ST.xy * v.uv + _MetallicGlossMap_ST.zw, 0);
 //         metallic = metallicSmoothness.xxx;
 //         smoothness *= metallicSmoothness.w;
 //     #endif

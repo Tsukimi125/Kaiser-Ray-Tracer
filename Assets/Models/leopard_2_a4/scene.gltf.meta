@@ -2,7 +2,107 @@ fileFormatVersion: 2
 guid: 33b638acb8c6cbd46b177148883a9e1b
 ScriptedImporter:
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HullHull
+    second: {fileID: 2100000, guid: a68b731a589c8f24bb4bb859758f11be, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: MainGunMainGun
+    second: {fileID: 2100000, guid: 67714600285aa5a48a26eef0f2b0d6b6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TracksTracks
+    second: {fileID: 2100000, guid: 5fdbf08c0608fa046b57c9935f7a2f8b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: TurretTurret
+    second: {fileID: 2100000, guid: cd4ad829ec550074580ee6b3853fb6b2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WheelsWheels
+    second: {fileID: 2100000, guid: 17fcf7aa6b9ae844ea49aa284be19c16, type: 2}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: HullHull_baseColor
+    second: {fileID: 2800000, guid: d09f8c641fa74c2458b4826d427d19b6, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: HullHull_metallicRoughness.standard
+    second: {fileID: 2800000, guid: f7e1dfb23eff9be479798a867b4a6a31, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: HullHull_normal.normal
+    second: {fileID: 2800000, guid: 436f9a8cf82a0ec478d7c9c704a9be72, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: MainGunMainGun_baseColor
+    second: {fileID: 2800000, guid: 5c28b9c8553611643b4aaee43e722a8c, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: MainGunMainGun_metallicRoughness.standard
+    second: {fileID: 2800000, guid: c7bbce2c1d174c7429e07918a798b241, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: MainGunMainGun_normal.normal
+    second: {fileID: 2800000, guid: 8471776fa7aa1fe49a740e223644681b, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: TracksTracks_baseColor
+    second: {fileID: 2800000, guid: beed1c2fd1f8b404d922b9fc39777c91, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: TracksTracks_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 759025e7f1c8b804693919d19e5df3c3, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: TracksTracks_normal.normal
+    second: {fileID: 2800000, guid: bb366e9d55ca4ec4388935279a3bd2b2, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: TurretTurret_baseColor
+    second: {fileID: 2800000, guid: 0bc6a4c93b89bff45a3301cfa049760b, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: TurretTurret_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 0eb832044189e8e429ad6b446b5610ec, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: TurretTurret_normal.normal
+    second: {fileID: 2800000, guid: 03d24e57d0367c94eaa7c13d027ca3be, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: WheelsWheels_baseColor
+    second: {fileID: 2800000, guid: 2c58eb133b0d8c64d90911948d0a0731, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: WheelsWheels_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 3ee91f1813d2b5948bc5681e94ee36b4, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: WheelsWheels_normal.normal
+    second: {fileID: 2800000, guid: 7a036ee56c79727439856e9fd615fbfa, type: 3}
   serializedVersion: 2
   userData: 
   assetBundleName: 
