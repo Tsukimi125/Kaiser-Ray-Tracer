@@ -7,9 +7,11 @@
 #define SELECT(a, b, c) ((a) ? (b):(c))
 #include "Random.hlsl"
 #include "MathConstant.hlsl"
+#include "SpaceTransforms.hlsl"
 #include "UnityRaytracingMeshUtils.cginc"
 
 Texture2D _BRDF_LUT_Texture;
+SamplerState sampler_point_clamp;
 SamplerState sampler_bilinear_clamp;
 
 RayDesc CreateNewRay(float3 origin, float3 direction, float tmin, float tmax)
@@ -20,33 +22,6 @@ RayDesc CreateNewRay(float3 origin, float3 direction, float tmin, float tmax)
     ray.TMin = tmin;
     ray.TMax = tmax;
     return ray;
-}
-
-float3x3 BuildOrthonormalBasis(float3 n)
-{
-    float3 b1;
-    float3 b2;
-
-    if (n.z < 0.0)
-    {
-        const float a = 1.0 / (1.0 - n.z);
-        const float b = n.x * n.y * a;
-        b1 = float3(1.0 - n.x * n.x * a, -b, n.x);
-        b2 = float3(b, n.y * n.y * a - 1.0, -n.y);
-    }
-    else
-    {
-        const float a = 1.0 / (1.0 + n.z);
-        const float b = -n.x * n.y * a;
-        b1 = float3(1.0 - n.x * n.x * a, b, -n.x);
-        b2 = float3(b, 1.0 - n.y * n.y * a, -n.y);
-    }
-
-    return float3x3(
-        b1.x, b2.x, n.x,
-        b1.y, b2.y, n.y,
-        b1.z, b2.z, n.z
-    );
 }
 
 float3 ComputeRayOrigin(float3 pos, float3 normal)

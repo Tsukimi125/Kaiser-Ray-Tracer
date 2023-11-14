@@ -12,11 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03af0fd0bb6220a4391f5f91af0a7f81, type: 3}
   m_Name: KaiserRayTracerAsset
   m_EditorClassIdentifier: 
-  renderType: 1
+  renderType: 2
   envTexture: {fileID: 8900000, guid: 63bff151425c9c740869f3cbf1a408f3, type: 3}
-  envIntensity: 0.2
-  pathTracingShader: {fileID: 4807578003741378534, guid: ee9704276f1b3d646bcc7d8ec6b439f4, type: 3}
+  envIntensity: 0
   progressive: 0
   samplePerPixel: 1
-  bounceCount: 8
+  bounceCount: 1
   activeCameraType: 3

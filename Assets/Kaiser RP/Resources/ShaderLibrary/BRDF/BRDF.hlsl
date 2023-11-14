@@ -1,12 +1,9 @@
 #ifndef KAISER_RAYTRACING_BRDF
 #define KAISER_RAYTRACING_BRDF
 
-#include "../Utils/RayTracingHelper.hlsl"
+// #include "../Utils/RayTracingHelper.hlsl"
 #include "../Utils/Sampling.hlsl"
 #include "BRDFLibrary.hlsl"
-
-
-
 
 
 struct SurfaceData

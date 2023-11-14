@@ -37,8 +37,8 @@ public class KaiserLitShaderGUI : ShaderGUI
         colorValue = FindProperty("_Color", props);
         metallicValue = FindProperty("_Metallic", props);
         smoothnessValue = FindProperty("_Glossiness", props);
-        normalTex = FindProperty("_NormalMap", props);
-        metallicTex = FindProperty("_MetallicMap", props);
+        normalTex = FindProperty("_BumpMap", props);
+        metallicTex = FindProperty("_MetallicGlossMap", props);
         iorValue = FindProperty("_IOR", props);
 
         transparentState = FindProperty("_Transparent", props);
@@ -113,10 +113,10 @@ public class KaiserLitShaderGUI : ShaderGUI
             UpdateMaterialKeyword(material, "_TRANSPARENT", isTransparent);
             UpdateMaterialKeyword(material, "_EMISSION", isEmission);
 
-            bool withMetallicMap = material.GetTexture("_MetallicMap") != null;
-            UpdateMaterialKeyword(material, "_METALLICMAP", withMetallicMap);
+            bool withMetallicMap = material.GetTexture("_MetallicGlossMap") != null;
+            UpdateMaterialKeyword(material, "_MetallicGlossMap", withMetallicMap);
 
-            bool withNormalMap = material.GetTexture("_NormalMap") != null;
+            bool withNormalMap = material.GetTexture("_BumpMap") != null;
             UpdateMaterialKeyword(material, "_NORMALMAP", withNormalMap);
         }
     }

@@ -1,0 +1,112 @@
+fileFormatVersion: 2
+guid: 01340515968d9f746b6f38f173221606
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: floor
+    second: {fileID: 2100000, guid: 4def0dbbf3a3ff04db0b440cd379716d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: hull
+    second: {fileID: 2100000, guid: 60b19cc5efd1e2f42bf2776cde866fa4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: track
+    second: {fileID: 2100000, guid: c061ca796d9597e4382d015de11e2e06, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: turret
+    second: {fileID: 2100000, guid: 3eac9a7941cc49c41b25fccc3014016d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wheels
+    second: {fileID: 2100000, guid: 0ea519fbcca88ef4184ef26842d45988, type: 2}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: floor_baseColor
+    second: {fileID: 2800000, guid: c40b2ad490933f14a8a2829b7c5b4bea, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: floor_metallicRoughness.standard
+    second: {fileID: 2800000, guid: b032b855452f8594ab6851e3d4f090d5, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: floor_normal.normal
+    second: {fileID: 2800000, guid: 50f0c5f9e4f698d4f9b5ce118eb8f2f6, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: hull_baseColor
+    second: {fileID: 2800000, guid: 4ad4ae6f5e5bb634abfa3d3cdfd9b684, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: hull_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 14624816b73c2ab4f879e608d422c4d9, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: hull_normal.normal
+    second: {fileID: 2800000, guid: cae2c18700c54d747b1dc29e6b8e49b6, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: track_baseColor
+    second: {fileID: 2800000, guid: bfde9a3466b566348947d577b775912f, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: track_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 88f16863556ffbd4dad8843603f700e3, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: track_normal.normal
+    second: {fileID: 2800000, guid: 1dcdd98a82ecded48ba0dcced2b178ab, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: turret_baseColor
+    second: {fileID: 2800000, guid: e2b4a57875fc4544888264fcac6cb0da, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: turret_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 2907f50c20c5ac449901999528c78171, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: turret_normal.normal
+    second: {fileID: 2800000, guid: 0d0b5220106b44e458a1302869669c19, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: wheels_baseColor
+    second: {fileID: 2800000, guid: 2002e4adbaf4b5549a60634d67dfb738, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: wheels_metallicRoughness.standard
+    second: {fileID: 2800000, guid: dbdb403ffc68e6940a8f9f00b16ad06d, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: wheels_normal.normal
+    second: {fileID: 2800000, guid: dbe492721ed9a6347aa97a005893417f, type: 3}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: aecd2106718f2444db3ca21345da2cef, type: 3}
+  reverseAxis: 0
+  renderPipeline: 0

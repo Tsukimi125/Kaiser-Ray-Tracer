@@ -1,0 +1,132 @@
+fileFormatVersion: 2
+guid: 3161636632384e0468933336990bea8e
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Accent
+    second: {fileID: 2100000, guid: 5808db14cf7775b4b8e5900495824dd7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Hull
+    second: {fileID: 2100000, guid: 1e2c3051156e8824ea76f455fe6ee000, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Strips
+    second: {fileID: 2100000, guid: 7c279d5c1ee1ce5498cf4647de365f68, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tracks
+    second: {fileID: 2100000, guid: 215b4c9e43ec9a44fbd748c7b015600e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Turret
+    second: {fileID: 2100000, guid: d8a6f9f60b3a0c341a775688216f1964, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert2
+    second: {fileID: 2100000, guid: 3a74c81da7d98f24da34c75edb2c10c9, type: 2}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Accent_baseColor
+    second: {fileID: 2800000, guid: 4550c6ea169dadc4793266b2350a4b13, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Accent_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 2ae14311a8547d64a9462621f9aab7c4, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Accent_normal.normal
+    second: {fileID: 2800000, guid: f2e15d9c4ffece84897a5baaee11b9b7, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Hull_baseColor
+    second: {fileID: 2800000, guid: eb2cd8630643c00408436b037b9135df, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Hull_metallicRoughness.standard
+    second: {fileID: 2800000, guid: d6935e24156eb684bb8d31fcfb1101bf, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Hull_normal.normal
+    second: {fileID: 2800000, guid: e039f5d8367cc2e4489167681b615434, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Strips_baseColor
+    second: {fileID: 2800000, guid: a579fa65af094664c9962d15d28205e3, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Strips_metallicRoughness.standard
+    second: {fileID: 2800000, guid: eec0f75749abd7b4e86f11ff34c369af, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Strips_normal.normal
+    second: {fileID: 2800000, guid: aa2b66b9083035b40b38f5214a0d7cfa, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Tracks_baseColor
+    second: {fileID: 2800000, guid: 6742831acb297a54cbd21df4127b6af0, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Tracks_metallicRoughness.standard
+    second: {fileID: 2800000, guid: ca857257f9277004d86cee4b5fe0a145, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Tracks_normal.normal
+    second: {fileID: 2800000, guid: c6ed6b16bcca2834795cd345db7b5408, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Turret_baseColor
+    second: {fileID: 2800000, guid: 160d91f793b83d143bca76e09c454af8, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Turret_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 5f3740a5d16606d4eb7eab219e689c16, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Turret_normal.normal
+    second: {fileID: 2800000, guid: abb9fc5c1b46822468dc332e0671abc5, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: lambert2_baseColor
+    second: {fileID: 2800000, guid: 67f0cb9ede50e4f4f8221d160d698fac, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: lambert2_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 90582e884b655b04f8d22dff831c8984, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: lambert2_normal.normal
+    second: {fileID: 2800000, guid: 90dd095f9592b314f8c18795065b0475, type: 3}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: aecd2106718f2444db3ca21345da2cef, type: 3}
+  reverseAxis: 0
+  renderPipeline: 0

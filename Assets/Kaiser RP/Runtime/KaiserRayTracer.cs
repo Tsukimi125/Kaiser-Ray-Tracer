@@ -14,6 +14,11 @@ public partial class KaiserRayTracer : RenderPipeline
     private int frameIndex = 0;
     private RayTracingVirtualLighting lighting = new RayTracingVirtualLighting();
 
+    private void Cull()
+    {
+
+    }
+
     private bool ValidateRayTracing()
     {
         if (!SystemInfo.supportsRayTracing)
@@ -25,6 +30,12 @@ public partial class KaiserRayTracer : RenderPipeline
         if (rtas == null)
         {
             Debug.Log("Ray Tracing Acceleration Structure is null!");
+            return false;
+        }
+
+        if (KaiserShaders.referencePathTracer == null)
+        {
+            Debug.Log("Ray Tracing Shader is null!");
             return false;
         }
 
@@ -76,6 +87,8 @@ public partial class KaiserRayTracer : RenderPipeline
         renderGraph = new RenderGraph("Ray Tracing Render Graph");
 
         rtHandleSystem = new RTHandleSystem();
+
+        SetupShaders();
     }
 
     protected override void Dispose(bool disposing)

@@ -1,0 +1,222 @@
+#include "UnityShaderVariables.cginc"
+#include "../ShaderLibrary/RayPayload.hlsl"
+#include "../ShaderLibrary/Utils/RayTracingHelper.hlsl"
+#include "../ShaderLibrary/Utils/Random.hlsl"
+#include "../ShaderLibrary/Utils/MathConstant.hlsl"
+#include "../ShaderLibrary/RayTracingGlobal.hlsl"
+#include "../ShaderLibrary/Lighting.hlsl"
+#include "../ShaderLibrary/BRDF/BRDF.hlsl"
+#include "../ShaderLibrary/rt/RayTrace.hlsl"
+
+#pragma max_recursion_depth 10
+
+#define K_USE_ROUGHNESS_BIAS 0
+
+// Ray Tracing Properties
+uint _PT_ConvergenceStep;
+uint _PT_FrameIndex;
+uint _PT_SamplePerPixel;
+int _PT_Progressive;
+
+// Camera Properties
+float _PT_Zoom;
+float _PT_AspectRatio;
+
+// Environment Properties
+TextureCube<float4> _PT_EnvTex;
+SamplerState sampler_PT_EnvTex;
+float _PT_EnvIntensity;
+
+bool TracePrimaryRay(inout RayDesc ray, in uint pathLength, inout uint rng, inout PathVertex hitVertex, inout float3 throughput, inout float3 radiance)
+{
+    hitVertex = KaiserRayTracer::Create(ray, 0, false).TraceScatterRay(_AccelStruct);
+    SurfaceData surfaceData = hitVertex.surfaceData;
+
+    if (!hitVertex.bHit)
+    {
+        radiance += throughput * _PT_EnvIntensity * _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb;
+        return false;
+    }
+
+    if (dot(surfaceData.normal, ray.Direction) >= 0.0)
+    {
+        if (0 == pathLength)
+        {
+            surfaceData.normal = -surfaceData.normal;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    radiance += throughput * surfaceData.emission;
+    return true;
+}
+
+void TraceShadowRay(in uint pathLength, in PathVertex hitVertex, in float3 throughput, inout float3 radiance, in LayeredBRDF brdf, in float3 wo, in float3 wi)
+{
+    // Trace shadow ray
+    const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), pathLength, false).TraceShadowRay(_AccelStruct);
+    float3 dirLightRadiance = brdf.evalDirectionalLight(wo, wi);
+    radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor);
+}
+
+
+bool TraceScatterRay(inout RayDesc ray, in uint pathLength, inout uint rng, inout PathVertex hitVertex, inout float3 throughput, inout float3 radiance, in LayeredBRDF brdf, in float3 wo, in float3 wi, in float3x3 tangentToWorld)
+{
+    float3 urand;
+    urand = float3(RandomFloat01(rng), RandomFloat01(rng), RandomFloat01(rng));
+    
+    BRDFSample brdfSample = BRDFSample::Invalid();
+    brdfSample = brdf.sample(urand, wo);
+
+    if (brdfSample.IsValid())
+    {
+        ray.Origin = ComputeRayOrigin(hitVertex.position, hitVertex.surfaceData.normal);;
+        ray.Direction = mul(tangentToWorld, brdfSample.wi);
+        ray.TMin = 1e-4;
+        throughput *= brdfSample.weight;
+    }
+    else
+    {
+        return false;
+    }
+    
+    hitVertex = KaiserRayTracer::Create(ray, 0, false).TraceScatterRay(_AccelStruct);
+
+    if (!hitVertex.bHit)
+    {
+        radiance += throughput * _PT_EnvIntensity * _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb;
+        return false;
+    }
+
+    if (dot(hitVertex.surfaceData.normal, ray.Direction) >= 0.0)
+    {
+        if (0 == pathLength)
+        {
+            hitVertex.surfaceData.normal = -hitVertex.surfaceData.normal;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    radiance += throughput * hitVertex.surfaceData.emission;
+    
+    
+    return true;
+}
+
+
+float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
+{
+    float2 frameCoord = launchIndex + float2(0.5, 0.5);
+    float3 result = float3(0, 0, 0);
+    
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex) * uint(26699 + sampleIndex)) | uint(1);
+    float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
+    float2 ndcCoords = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
+    
+    ndcCoords = ndcCoords * 2 - float2(1, 1);
+    ndcCoords = ndcCoords * _PT_Zoom;
+    
+    // Get a ray in view space.
+    float3 viewDirection = normalize(float3(ndcCoords.x * _PT_AspectRatio, ndcCoords.y, 1));
+
+    // Rotate the ray from view space to world space.
+    float3 rayDirection = mul((float3x3)unity_CameraToWorld, viewDirection);
+
+    float3 throughput = 1.0.xxx;
+    float3 radiance = 0.0.xxx;
+    float3 totalRadiance = 0.0.xxx;
+    
+    RayDesc ray;
+    {
+        ray = CreateNewRay(_WorldSpaceCameraPos, rayDirection, K_T_MIN, K_T_MAX);
+    }
+
+    PathVertex hitVertex;
+    if (!TracePrimaryRay(ray, uint(0), rng, hitVertex, throughput, radiance))
+    {
+        return radiance.rgb;
+    }
+    
+    [loop]
+    for (uint pathLength = 0; pathLength < _PT_MaxBounceCount; pathLength++)
+    {
+        const float3x3 tangentToWorld = BuildOrthonormalBasis(hitVertex.surfaceData.normal);
+        
+        float3 wo = mul(-ray.Direction, tangentToWorld);
+        float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
+
+        if (wo.z < 0.0)
+        {
+            wo.z *= -0.25;
+            wo = normalize(wo);
+        }
+        
+        LayeredBRDF brdf = LayeredBRDF::Create(hitVertex.surfaceData, wo.z);
+
+        TraceShadowRay(pathLength, hitVertex, throughput, radiance, brdf, wo, wi);
+        
+        if (!TraceScatterRay(ray, pathLength, rng, hitVertex, throughput, radiance, brdf, wo, wi, tangentToWorld))
+        {
+            break;
+        }
+
+        // Russian roulette
+        if (pathLength >= 2)
+        {
+            const float rr_coin = RandomFloat01(rng);
+            const float continue_p = max(hitVertex.surfaceData.albedo.r, max(hitVertex.surfaceData.albedo.g, hitVertex.surfaceData.albedo.b));
+            if (rr_coin > continue_p)
+            {
+                break;
+            }
+            else
+            {
+                throughput /= continue_p;
+            }
+        }
+    }
+    if (all(radiance >= 0.0))
+    {
+        totalRadiance += float4(radiance, 1.0);
+    }
+    return totalRadiance.rgb;
+}
+
+
+[shader("raygeneration")]
+void PathTracingRayGenShader()
+{
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
+
+    float3 result = float3(0, 0, 0);
+    for (uint i = 0; i < _PT_SamplePerPixel; i++)
+    {
+        result += TracePath(launchIndex, launchDim, i);
+    }
+    result /= float(_PT_SamplePerPixel);
+
+    float3 prevRadiance = _PT_Output[launchIndex].xyz;
+    if (_PT_Progressive == 1) result = lerp(prevRadiance, result, 1 / float(_PT_ConvergenceStep + 1));
+
+    _PT_Output[launchIndex] = float4(result, 1);
+}
+
+[shader("miss")]
+void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)
+{
+    // payload.surfaceData.emission = _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, WorldRayDirection(), 0).rgb;
+
+}
+
+[shader("miss")]
+void MissShader1_ShadowRay(inout ShadowRayPayload payload:SV_RayPayload)
+{
+    payload.isShadowed = false;
+}

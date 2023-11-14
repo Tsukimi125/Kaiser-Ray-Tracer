@@ -17,6 +17,8 @@ public class KaiserCameraData : MonoBehaviour
     public RenderTexture gbuffer1 = null;
     [HideInInspector]
     public RenderTexture gbuffer2 = null;
+    [HideInInspector]
+    public RenderTexture gbuffer3 = null;
 
     private Camera _camera;
 
@@ -51,6 +53,18 @@ public class KaiserCameraData : MonoBehaviour
                 volumeDepth = 1,
                 msaaSamples = 1,
                 graphicsFormat = GraphicsFormat.R32G32B32A32_SFloat,
+                enableRandomWrite = true,
+            };
+
+            var gbufferAlbedoDesc = new RenderTextureDescriptor()
+            {
+                dimension = TextureDimension.Tex2D,
+                width = _camera.pixelWidth,
+                height = _camera.pixelHeight,
+                depthBufferBits = 0,
+                volumeDepth = 1,
+                msaaSamples = 1,
+                graphicsFormat = GraphicsFormat.R16G16B16A16_UNorm,
                 enableRandomWrite = true,
             };
 
@@ -93,14 +107,17 @@ public class KaiserCameraData : MonoBehaviour
             rayTracingOutput = new RenderTexture(rtDesc);
             rayTracingOutput.Create();
 
-            gbuffer0 = new RenderTexture(gbufferNormalDesc);
+            gbuffer0 = new RenderTexture(gbufferAlbedoDesc);
             gbuffer0.Create();
 
-            gbuffer1 = new RenderTexture(gbufferWorldPosDesc);
+            gbuffer1 = new RenderTexture(gbufferNormalDesc);
             gbuffer1.Create();
 
-            gbuffer2 = new RenderTexture(gbufferRMAODesc);
+            gbuffer2 = new RenderTexture(gbufferWorldPosDesc);
             gbuffer2.Create();
+
+            gbuffer3 = new RenderTexture(gbufferRMAODesc);
+            gbuffer3.Create();
 
             return true;
         }
@@ -138,6 +155,12 @@ public class KaiserCameraData : MonoBehaviour
         {
             gbuffer2.Release();
             gbuffer2 = null;
+        }
+
+        if (gbuffer3 != null)
+        {
+            gbuffer3.Release();
+            gbuffer3 = null;
         }
     }
 }

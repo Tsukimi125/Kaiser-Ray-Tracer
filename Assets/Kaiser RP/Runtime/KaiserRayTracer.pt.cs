@@ -10,10 +10,9 @@ public partial class KaiserRayTracer : RenderPipeline
 {
     private bool RenderPathTracing(Camera camera, RTHandle outputRTHandle, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData)
     {
-
-        if (renderPipelineAsset.pathTracingShader == null)
+        if (KaiserShaders.referencePathTracer == null)
         {
-            Debug.Log("Ray Tracing Shader is null!");
+            Debug.Log("Reference Path Tracer Shader is null!");
             return false;
         }
 
@@ -42,7 +41,7 @@ public partial class KaiserRayTracer : RenderPipeline
             {
                 ctx.cmd.BuildRayTracingAccelerationStructure(rtas);
 
-                ctx.cmd.SetRayTracingShaderPass(renderPipelineAsset.pathTracingShader, "PathTracing");
+                ctx.cmd.SetRayTracingShaderPass(KaiserShaders.referencePathTracer, "RayTracing");
 
                 float zoom = Mathf.Tan(Mathf.Deg2Rad * camera.fieldOfView * 0.5f);
                 float aspectRatio = camera.pixelWidth / (float)camera.pixelHeight;
@@ -59,18 +58,18 @@ public partial class KaiserRayTracer : RenderPipeline
                     ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), 0);
                 }
 
-                ctx.cmd.SetRayTracingAccelerationStructure(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_AccelStruct"), rtas);
-                ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_Zoom"), zoom);
-                ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_AspectRatio"), aspectRatio);
-                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_ConvergenceStep"), frameIndex);
-                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_FrameIndex"), cameraData.frameIndex);
-                ctx.cmd.SetRayTracingIntParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_SamplePerPixel"), (int)renderPipelineAsset.samplePerPixel);
-                ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_EnvTex"), renderPipelineAsset.envTexture);
-                ctx.cmd.SetRayTracingFloatParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_EnvIntensity"), renderPipelineAsset.envIntensity);
-                ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_DebugTex"), debugTexture);
-                ctx.cmd.SetRayTracingTextureParam(renderPipelineAsset.pathTracingShader, Shader.PropertyToID("_PT_Output"), passData.outputTexture);
+                ctx.cmd.SetRayTracingAccelerationStructure(KaiserShaders.referencePathTracer, Shader.PropertyToID("_AccelStruct"), rtas);
+                ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_Zoom"), zoom);
+                ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_AspectRatio"), aspectRatio);
+                ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_ConvergenceStep"), frameIndex);
+                ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_FrameIndex"), cameraData.frameIndex);
+                ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_SamplePerPixel"), (int)renderPipelineAsset.samplePerPixel);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_EnvTex"), renderPipelineAsset.envTexture);
+                ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_EnvIntensity"), renderPipelineAsset.envIntensity);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_DebugTex"), debugTexture);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_Output"), passData.outputTexture);
 
-                ctx.cmd.DispatchRays(renderPipelineAsset.pathTracingShader, "PathTracingRayGenShader", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+                ctx.cmd.DispatchRays(KaiserShaders.referencePathTracer, "PathTracingRayGenShader", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 
                 frameIndex++;
             });
