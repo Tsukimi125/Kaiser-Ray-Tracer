@@ -3,6 +3,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using Unity.Mathematics;
+using UnityEngine.Rendering.Universal;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
@@ -16,6 +17,7 @@ public partial class KaiserRayTracer : RenderPipeline
     
 
     private ComputeShader computeShader;
+    private RayTracingShader rayTracingShader;
 
     #region Buffers
     private ComputeBuffer Ircache_pool_buf = new(65536, sizeof(uint), ComputeBufferType.Structured);
@@ -141,6 +143,29 @@ public partial class KaiserRayTracer : RenderPipeline
             computeShader.SetBuffer(kernal, "ircache_entry_indirection_buf", Ircache_entry_indirection_buf);
             computeShader.SetBuffer(kernal, "ircache_aux_buf", Ircache_aux_buf);
             computeShader.Dispatch(kernal, 1024, 1, 1);
+        }
+
+        using (renderGraph.RecordAndExecute(renderGraphParameters))
+        {
+            rayTracingShader = Resources.Load<RayTracingShader>("TraceAccessibilityRgen");
+
+            RenderGraphBuilder builder = renderGraph.AddRenderPass<PathTracingRenderPassData>("TraceAccessibilityRgen", out var passData);
+            
+            builder.SetRenderFunc((PathTracingRenderPassData data, RenderGraphContext ctx) =>
+            {
+                ctx.cmd.BuildRayTracingAccelerationStructure(rtas);
+
+                ctx.cmd.SetRayTracingAccelerationStructure(rayTracingShader, Shader.PropertyToID("acceleration_structure"), rtas);
+                ctx.cmd.SetRayTracingShaderPass(rayTracingShader, "TraceAccessibilityRgen");
+                ctx.cmd.SetRayTracingBufferParam(rayTracingShader, "ircache_spatial_buf", Ircache_spatial_buf);
+                ctx.cmd.SetRayTracingBufferParam(rayTracingShader, "ircache_life_buf", Ircache_life_buf);
+                ctx.cmd.SetRayTracingBufferParam(rayTracingShader, "ircache_meta_buf", Ircache_meta_buf);
+                ctx.cmd.SetRayTracingBufferParam(rayTracingShader, "ircache_entry_indirection_buf", Ircache_entry_indirection_buf);
+                ctx.cmd.SetRayTracingBufferParam(rayTracingShader, "ircache_reposition_proposal_buf", Ircache_reposition_proposal_buf);
+                ctx.cmd.SetRayTracingBufferParam(rayTracingShader, "ircache_aux_buf", Ircache_aux_buf);
+
+                ctx.cmd.DispatchRays(rayTracingShader, "TraceAccessibilityRgen", 65536 * 16, 1, 1);
+            });
         }
 
         frameIndex++;
