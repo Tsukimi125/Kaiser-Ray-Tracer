@@ -46,24 +46,17 @@ public partial class KaiserRayTracer : RenderPipeline
                 float zoom = Mathf.Tan(Mathf.Deg2Rad * camera.fieldOfView * 0.5f);
                 float aspectRatio = camera.pixelWidth / (float)camera.pixelHeight;
 
-                ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_MaxBounceCount"), (int)renderPipelineAsset.bounceCount);
+                ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_MaxBounceCount"), (int)renderPipelineAsset.ptBounceCount);
                 // ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_BounceCountTransparent"), (int)renderPipelineAsset.bounceCountTransparent);
 
-                if (renderPipelineAsset.progressive)
-                {
-                    ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), 1);
-                }
-                else
-                {
-                    ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), 0);
-                }
+                ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), (int)renderPipelineAsset.accumulateType);
 
                 ctx.cmd.SetRayTracingAccelerationStructure(KaiserShaders.referencePathTracer, Shader.PropertyToID("_AccelStruct"), rtas);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_Zoom"), zoom);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_AspectRatio"), aspectRatio);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_ConvergenceStep"), frameIndex);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_FrameIndex"), cameraData.frameIndex);
-                ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_SamplePerPixel"), (int)renderPipelineAsset.samplePerPixel);
+                ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_MaxFrameCount"), renderPipelineAsset.accumulateMaxFrame);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_EnvTex"), renderPipelineAsset.envTexture);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_EnvIntensity"), renderPipelineAsset.envIntensity);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_DebugTex"), debugTexture);

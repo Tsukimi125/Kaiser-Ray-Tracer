@@ -12,6 +12,8 @@ public enum RenderType
     RESTIR_GI
 };
 
+public enum AccumulateType { SINGLE_FRAME, MAX_FRAME, UNLIMITED_FRAME };
+
 [CreateAssetMenu(menuName = "Rendering/KaiserRayTracerAsset")]
 public class KaiserRayTracerAsset : RenderPipelineAsset
 {
@@ -21,12 +23,17 @@ public class KaiserRayTracerAsset : RenderPipelineAsset
     public Cubemap envTexture = null;
     [Range(0, 4)]
     public float envIntensity = 0.5f;
+    [Header("Accumulate Settings")]
+    public AccumulateType accumulateType = AccumulateType.SINGLE_FRAME;
+    [Range(1, 128)]
+    public int accumulateMaxFrame = 64;
+
     [Header("Path Tracing Settings")]
-    public bool progressive = false;
+
     [Range(1, 64)]
-    public int samplePerPixel = 1;
+    public int ptSPP = 1;
     [Range(0, 16)]
-    public uint bounceCount = 8;
+    public uint ptBounceCount = 8;
 
     [Header("Active Cameras")]
     public CameraType activeCameraType;

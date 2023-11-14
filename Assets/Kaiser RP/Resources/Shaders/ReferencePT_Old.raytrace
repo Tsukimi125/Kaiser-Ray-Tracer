@@ -16,7 +16,7 @@
 // Ray Tracing Properties
 uint _PT_ConvergenceStep;
 uint _PT_FrameIndex;
-uint _PT_SamplePerPixel;
+uint _PT_MaxFrameCount;
 int _PT_Progressive;
 
 // Camera Properties
@@ -172,11 +172,11 @@ void PathTracingRayGenShader()
     uint2 launchDim = DispatchRaysDimensions().xy;
 
     float3 result = float3(0, 0, 0);
-    for (uint i = 0; i < _PT_SamplePerPixel; i++)
+    for (uint i = 0; i < _PT_MaxFrameCount; i++)
     {
         result += tracePath(launchIndex, launchDim, i);
     }
-    result /= float(_PT_SamplePerPixel);
+    result /= float(_PT_MaxFrameCount);
 
     float3 prevRadiance = _PT_Output[launchIndex].xyz;
     if (_PT_Progressive == 1) result = lerp(prevRadiance, result, 1 / float(_PT_ConvergenceStep + 1));
