@@ -12,8 +12,12 @@ public partial class KaiserRayTracer : RenderPipeline
         static public ComputeShader deferredLightPass;
         static public RayTracingShader referencePathTracer;
         static public RayTracingShader restir;
-
         static public RayTracingShader gbuffer;
+    };
+
+    static class ReservoirBuffers
+    {
+        static public RenderTexture Temporal;
     };
 
     bool SetupShaders()
@@ -47,5 +51,7 @@ public partial class KaiserRayTracer : RenderPipeline
     {
         public TextureHandle outputTexture;
     };
+
+
 }
 

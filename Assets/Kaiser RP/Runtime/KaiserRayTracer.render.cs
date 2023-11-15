@@ -23,8 +23,6 @@ public partial class KaiserRayTracer : RenderPipeline
             name = "Kaiser Ray Tracer"
         };
 
-
-
         if ((camera.cameraType & renderPipelineAsset.activeCameraType) > 0)
         {
             context.SetupCameraProperties(camera);
@@ -40,6 +38,22 @@ public partial class KaiserRayTracer : RenderPipeline
             RTHandle gbufferHandle1 = rtHandleSystem.Alloc(cameraData.gbuffer1, "_GBuffer1");
             RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");
             RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
+
+            var reservoirTemporalDesc = new RenderTextureDescriptor()
+            {
+                dimension = TextureDimension.Tex2D,
+                width = camera.pixelWidth,
+                height = camera.pixelHeight,
+                depthBufferBits = 0,
+                volumeDepth = 1,
+                msaaSamples = 1,
+                graphicsFormat = GraphicsFormat.R32G32B32A32_UInt,
+                enableRandomWrite = true,
+            };
+            ReservoirBuffers.Temporal = new RenderTexture(reservoirTemporalDesc);
+            ReservoirBuffers.Temporal.Create();
+
+            RTHandle temporalReservoir = rtHandleSystem.Alloc(ReservoirBuffers.Temporal, "_TReservoir");
 
             // RTHandle gbuffer0 = rtHandleSystem.Alloc(cameraData, "_PT_Output");
 
@@ -71,23 +85,19 @@ public partial class KaiserRayTracer : RenderPipeline
                         break;
                     case RenderType.RESTIR_GI:
                         RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
-                        if (RenderReSTIR(camera, outputRTHandle, renderGraphParams, cameraData))
+                        if (RenderReSTIR(camera, renderGraphParams, cameraData, outputRTHandle, temporalReservoir))
                         {
                             cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
                         }
                         else
                         {
                             cmd.ClearRenderTarget(false, true, Color.black);
-                            Debug.Log("Error occurred when Path Tracing!");
+                            Debug.Log("Error occurred when ReSTIR!");
                         }
                         break;
 
                 }
             }
-
-
-
-
 
             outputRTHandle.Release();
         }

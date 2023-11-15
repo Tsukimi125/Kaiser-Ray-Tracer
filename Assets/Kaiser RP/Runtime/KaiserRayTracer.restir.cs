@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    private bool RenderReSTIR(Camera camera, RTHandle outputRTHandle, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData)
+    private bool RenderReSTIR(Camera camera, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData, RTHandle outputRTHandle, RTHandle temporalReservoir)
     {
         if (KaiserShaders.restir == null)
         {
@@ -36,9 +36,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_MaxBounceCount"), (int)renderPipelineAsset.ptBounceCount);
                 // ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_BounceCountTransparent"), (int)renderPipelineAsset.bounceCountTransparent);
 
-
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), (int)renderPipelineAsset.accumulateType);
-
 
                 ctx.cmd.SetRayTracingAccelerationStructure(KaiserShaders.restir, Shader.PropertyToID("_AccelStruct"), rtas);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.restir, Shader.PropertyToID("_PT_Zoom"), zoom);

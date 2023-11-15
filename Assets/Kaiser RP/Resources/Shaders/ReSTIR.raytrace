@@ -34,6 +34,8 @@ Texture2D<float4> _GBuffer1;
 Texture2D<float4> _GBuffer2;
 Texture2D<float4> _GBuffer3;
 
+RWTexture2D<int4> _TReservoir;
+
 
 void TraceShadowRay(in uint pathLength, in PathVertex hitVertex, in float3 throughput, inout float3 radiance, in LayeredBRDF brdf, in float3 wo, in float3 wi)
 {
