@@ -88,6 +88,8 @@ public partial class KaiserRayTracer : RenderPipeline
 
         rtHandleSystem = new RTHandleSystem();
 
+        
+
         SetupShaders();
     }
 
