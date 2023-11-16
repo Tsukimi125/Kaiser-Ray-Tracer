@@ -247,7 +247,7 @@ struct LayeredBRDF
     {
         float3 result = 0.0f.xxx;
         if (pDiffuse > 0.f) result += diffuseBRDF.eval(wo, wi);
-        if (pSpecular > 0.f) result += diffuseBRDF.eval(wo, wi);
+        if (pSpecular > 0.f) result += specularBRDF.eval(wo, wi);
         return result;
     }
 
