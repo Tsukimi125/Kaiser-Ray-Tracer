@@ -126,12 +126,15 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 
     surfaceData.metallic = 0.001;
 
     float3 viewDir = normalize(_WorldSpaceCameraPos - worldPos);
-    float3x3 tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
-    float3 wo = mul(viewDir, tangentToWorld);
-    float3 wi = mul(_DirectionalLightDirection, tangentToWorld);
+
+    VertexData vertex;
+
+    vertex.tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
+    vertex.wo = mul(viewDir, vertex.tangentToWorld);
+    vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
     float3 urand3 = float3(RandomFloat01(rng), RandomFloat01(rng), RandomFloat01(rng));
-    LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
+    // LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
     // float3 rayDirection = brdf.sample(urand3, wo).wi;
     float3 rayDirection = 0.0f.xxx;
     
@@ -144,34 +147,34 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 
     hitVertex.position = worldPos;
     hitVertex.surfaceData = surfaceData;
 
-    VertexTraceData vertexData;
+    
 
     // invPDF = 1.0;
 
     [loop]
     for (uint pathLength = 0; pathLength < _PT_MaxBounceCount; pathLength++)
     {
-        LayeredBRDF brdf = LayeredBRDF::Create(hitVertex.surfaceData, wo.z);
+        vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
 
-        if (!TraceScatterRay(ray, pathLength, rng, hitVertex, throughput, radiance, invPDF, brdf, wo, wi, tangentToWorld))
+        if (!TraceScatterRay(ray, pathLength, rng, hitVertex, throughput, radiance, vertex.invPDF, vertex.brdf, vertex.wo, vertex.wi, vertex.tangentToWorld))
         {
             break;
         }
 
-        tangentToWorld = BuildOrthonormalBasis(hitVertex.surfaceData.normal);
+        vertex.tangentToWorld = BuildOrthonormalBasis(hitVertex.surfaceData.normal);
 
         // To next bounce
-        wo = mul(-ray.Direction, tangentToWorld);
-        if (wo.z < 0.0)
+        vertex.wo = mul(-ray.Direction, vertex.tangentToWorld);
+        if (vertex.wo.z < 0.0)
         {
-            wo.z *= -0.25;
-            wo = normalize(wo);
+            vertex.wo.z *= -0.25;
+            vertex.wo = normalize(vertex.wo);
         }
-        brdf = LayeredBRDF::Create(hitVertex.surfaceData, wo.z);
+        vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
         
-        wi = mul(_DirectionalLightDirection, tangentToWorld);
+        vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
-        TraceShadowRay(pathLength, hitVertex, throughput, radiance, curLuminance, brdf, wo, wi);
+        TraceShadowRay(pathLength, hitVertex, throughput, radiance, curLuminance, vertex.brdf, vertex.wo, vertex.wi);
 
         [branch]
         if (pathLength == 0)
@@ -220,7 +223,7 @@ void PathTracingRayGenShader()
 
     uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex) * uint(24699)) | uint(1);
     
-    TracePath(launchIndex, launchDim, rng, totalLuminance, totalRadiance, sampleDir);
+    TracePath(launchIndex, launchDim, rng, totalLuminance, totalRadiance, sampleDir, invPDF);
 
     if (_PT_Progressive == 0)
     {
@@ -231,7 +234,7 @@ void PathTracingRayGenShader()
         Reservoir re = UnPack(_TReservoir[launchIndex]);
         re.rand_offset = RandomFloat01(rng);
         
-        re.Update(dir, re.TargetPDF(lerp(totalLuminance, radiance, 0.0)), invPDF);
+        re.Update(sampleDir, re.TargetPDF(lerp(totalLuminance, totalRadiance, 0.0)), invPDF);
         float3 prevRadiance = _PT_Output[launchIndex].xyz;
         if (_PT_ConvergenceStep < _PT_MaxFrameCount)
         {

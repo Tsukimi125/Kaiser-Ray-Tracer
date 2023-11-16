@@ -29,7 +29,7 @@ struct PathVertex
     float rayT;
 };
 
-struct VertexTraceData
+struct VertexData
 {
     float pathLength;
     float3 wo;
