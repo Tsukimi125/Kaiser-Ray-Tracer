@@ -17,7 +17,7 @@ public partial class KaiserRayTracer : RenderPipeline
 
     static class ReservoirBuffers
     {
-        static public RenderTexture Temporal;
+        static public RTHandle Temporal;
     };
 
     bool SetupShaders()

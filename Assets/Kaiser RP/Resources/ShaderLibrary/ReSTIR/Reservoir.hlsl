@@ -90,5 +90,27 @@ struct Reservoir
     }
 };
 
+Reservoir UnPack(int4 value)
+{
+    Reservoir re;
+    int r = value.r;
+    int g = value.g;
+    int b = value.b;
+    int a = value.a;
+    re.dir = float3(f16tof32(r), f16tof32(r >> 16), f16tof32(g));
+    re.M = (g >> 16) & 0xFFFF;
+    re.W_sum = asfloat(b);
+    re.w = f16tof32(a);
+    re.sampleIndex = (a >> 16) & 0xFFFF;
+    if (isnan(re.W_sum) || isnan(re.w))
+    {
+        re.dir = 0;
+        re.W_sum = 0;
+        re.w = 0;
+        re.M = 0;
+    }
+    return re;
+}
+
 
 #endif // KAISER_RAYTRACING_RESERVOIR

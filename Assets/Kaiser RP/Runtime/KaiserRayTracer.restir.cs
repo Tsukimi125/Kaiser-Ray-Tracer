@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    private bool RenderReSTIR(Camera camera, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData, RTHandle outputRTHandle, RTHandle temporalReservoir)
+    private bool RenderReSTIR(Camera camera, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData, RTHandle outputRTHandle)
     {
         if (KaiserShaders.restir == null)
         {

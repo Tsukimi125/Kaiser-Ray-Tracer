@@ -5,6 +5,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using Unity.VisualScripting;
+using UnityEngine.Rendering.Universal;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
@@ -39,10 +40,19 @@ public partial class KaiserRayTracer : RenderPipeline
             RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");
             RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
 
-            
+            var reTemporalDesc = new RenderTextureDescriptor()
+            {
+                dimension = TextureDimension.Tex2D,
+                width = camera.pixelWidth,
+                height = camera.pixelHeight,
+                depthBufferBits = 0,
+                volumeDepth = 1,
+                msaaSamples = 1,
+                graphicsFormat = GraphicsFormat.R16G16B16A16_UNorm,
+                enableRandomWrite = true,
+            };
 
-            RTHandle temporalReservoir = rtHandleSystem.Alloc(ReservoirBuffers.Temporal, "_TReservoir");
-
+            RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
             // RTHandle gbuffer0 = rtHandleSystem.Alloc(cameraData, "_PT_Output");
 
             if (camera.cameraType == CameraType.SceneView)
@@ -73,7 +83,7 @@ public partial class KaiserRayTracer : RenderPipeline
                         break;
                     case RenderType.RESTIR_GI:
                         RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
-                        if (RenderReSTIR(camera, renderGraphParams, cameraData, outputRTHandle, temporalReservoir))
+                        if (RenderReSTIR(camera, renderGraphParams, cameraData, outputRTHandle))
                         {
                             cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
                         }
@@ -83,6 +93,7 @@ public partial class KaiserRayTracer : RenderPipeline
                             Debug.Log("Error occurred when ReSTIR!");
                         }
                         break;
+
 
                 }
             }

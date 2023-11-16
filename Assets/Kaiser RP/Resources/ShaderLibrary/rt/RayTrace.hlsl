@@ -29,6 +29,16 @@ struct PathVertex
     float rayT;
 };
 
+struct VertexTraceData
+{
+    float pathLength;
+    float3 wo;
+    float3 wi;
+    LayeredBRDF brdf;
+    float3x3 tangentToWorld;
+    float invPDF;
+};
+
 struct RayPayload
 {
     SurfaceData surfaceData;
@@ -88,6 +98,11 @@ struct RayTracedGBuffer
     float depth;
     float roughness;
     float metallic;
+};
+
+struct ScatterRayData
+{
+    float3 direction; float pdf;
 };
 
 void GenerateRayTracedGBufferFromHitPathVertex(in PathVertex hitVertex, out RayTracedGBuffer gbuffer)
