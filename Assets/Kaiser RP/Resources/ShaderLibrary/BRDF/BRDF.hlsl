@@ -231,6 +231,18 @@ struct LayeredBRDF
         return res;
     }
 
+    void ForceDiffuse()
+    {
+        pDiffuse = 1.0f;
+        pSpecular = 0.0f;
+    }
+
+    void ForceSpecular()
+    {
+        pDiffuse = 0.0f;
+        pSpecular = 1.0f;
+    }
+
     float3 eval(const float3 wo, const float3 wi)
     {
         float3 result = 0.0f.xxx;

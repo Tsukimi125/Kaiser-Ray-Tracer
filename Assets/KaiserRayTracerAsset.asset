@@ -16,7 +16,7 @@ MonoBehaviour:
   envTexture: {fileID: 8900000, guid: 63bff151425c9c740869f3cbf1a408f3, type: 3}
   envIntensity: 0
   accumulateType: 0
-  accumulateMaxFrame: 32
+  accumulateMaxFrame: 52
   ptSPP: 1
-  ptBounceCount: 4
+  ptBounceCount: 1
   activeCameraType: 3

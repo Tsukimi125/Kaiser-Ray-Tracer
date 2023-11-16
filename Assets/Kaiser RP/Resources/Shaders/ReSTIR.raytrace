@@ -148,13 +148,14 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 
     hitVertex.surfaceData = surfaceData;
 
     
-
+    vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
+    vertex.brdf.ForceDiffuse();
     // invPDF = 1.0;
 
     [loop]
     for (uint pathLength = 0; pathLength < _PT_MaxBounceCount; pathLength++)
     {
-        vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
+        
 
         if (!TraceScatterRay(ray, pathLength, rng, hitVertex, throughput, radiance, vertex.invPDF, vertex.brdf, vertex.wo, vertex.wi, vertex.tangentToWorld))
         {
