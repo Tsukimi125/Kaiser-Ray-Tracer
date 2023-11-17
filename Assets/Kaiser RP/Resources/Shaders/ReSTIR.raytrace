@@ -149,7 +149,8 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     uint maxBounceCount = _PT_MaxBounceCount;
     if (RandomFloat01(rng) < 0.25)
     {
-        maxBounceCount *= 4;
+        // maxBounceCount *= 4;
+
     }
 
     [loop]
@@ -229,12 +230,12 @@ void PathTracingRayGenShader()
     }
     else if (_PT_Progressive == 1)
     {
-        if (_PT_ConvergenceStep < _PT_MaxFrameCount)
+        if (_PT_ConvergenceStep < _PT_MaxFrameCount + 64)
         {
             Reservoir re = UnPack(_TReservoir[launchIndex]);
             re.rand_offset = RandomFloat01(rng);
             re.Update(trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF);
-            _TReservoir[launchIndex] = re.Pack(64);
+            _TReservoir[launchIndex] = re.Pack(20);
             
             _PT_Output[launchIndex] = float4(re.dir * re.W_sum / (re.M * re.w), 1);
         }

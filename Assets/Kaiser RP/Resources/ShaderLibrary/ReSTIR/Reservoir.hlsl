@@ -37,6 +37,7 @@ struct Reservoir
     int M;
     float rand_offset;
     int sampleIndex;
+
     float rand()
     {
         float p = frac(sampleIndex++* .1031);
@@ -45,7 +46,7 @@ struct Reservoir
         return frac(p + rand_offset);
     }
 
-    float4 Pack(int sampleNum = 1024)
+    int4 Pack(int sampleNum = 1024)
     {
         RescaleTo(sampleNum);
         int r = f32tof16(dir.x) + (f32tof16(dir.y) << 16);
@@ -67,15 +68,15 @@ struct Reservoir
         return 1e-2 + dot(color, float3(0.299, 0.587, 0.114));
     }
 
-    void Update(float3 d, float tw, float sw)
+    void Update(float3 newDir, float targetWeight, float sourceWeight)
     {
-        sw *= tw;
+        sourceWeight *= targetWeight;
         M++;
-        W_sum += sw;
-        if (rand() < sw / max(1e-4, W_sum))
+        W_sum += sourceWeight;
+        if (rand() < sourceWeight / max(1e-4, W_sum))
         {
-            dir = d;
-            w = tw;
+            dir = newDir;
+            w = targetWeight;
         }
     }
     void Update(Reservoir re)
