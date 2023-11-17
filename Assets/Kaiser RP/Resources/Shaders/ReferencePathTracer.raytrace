@@ -144,7 +144,7 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     }
     
     [loop]
-    for (uint pathLength = 0; pathLength < _PT_MaxBounceCount; pathLength++)
+    for (uint pathLength = 0; pathLength < _PT_MaxBounceCount + 1; pathLength++)
     {
         const float3x3 tangentToWorld = BuildOrthonormalBasis(hitVertex.surfaceData.normal);
         
@@ -158,7 +158,7 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
         }
         
         LayeredBRDF brdf = LayeredBRDF::Create(hitVertex.surfaceData, wo.z);
-
+        brdf.ForceSpecular();
         TraceShadowRay(pathLength, hitVertex, throughput, radiance, brdf, wo, wi);
         
         if (!TraceScatterRay(ray, pathLength, rng, hitVertex, throughput, radiance, brdf, wo, wi, tangentToWorld))
@@ -181,9 +181,13 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
             }
         }
     }
-    if (all(radiance >= 0.0))
+    // if (all(radiance >= 0.0))
+    // {
+    // totalRadiance += float4(radiance, 1.0);
+    // }
+    if (all(radiance > 0.0))
     {
-        totalRadiance += float4(radiance, 1.0);
+        totalRadiance += float4(ray.Direction, 1.0);
     }
     return totalRadiance.rgb;
 }

@@ -39,6 +39,14 @@ struct VertexData
     float invPDF;
 };
 
+struct TraceData
+{
+    float pathLength;
+    float3 throughput;
+    float3 radiance;
+    float3 firstLuminance;
+};
+
 struct RayPayload
 {
     SurfaceData surfaceData;

@@ -51,7 +51,7 @@ struct BRDFSample
 
     bool IsValid()
     {
-        return wi.z > 1e-6;
+        return wi.z > 1e-3;
     }
 };
 
@@ -180,10 +180,10 @@ struct SpecularBRDF
     {
         if (min(wo.z, wi.z) < BRDF_SAMPLING_MIN_COS) return 0.f;
 
-        // #if ENABLE_DELTA_BSDF
-        //     // Handle delta reflection.
-        //     if (alpha == 0.f) return 0.f;
-        // #endif
+        #if ENABLE_DELTA_BSDF
+            // Handle delta reflection.
+            if (alpha == 0.f) return 0.f;
+        #endif
 
         float3 h = normalize(wo + wi);
         float woDotH = dot(wo, h);
@@ -280,11 +280,6 @@ struct LayeredBRDF
             if (pDiffuse > 0.f) brdfSample.pdf += pDiffuse * diffuseBRDF.evalPdf(wo, brdfSample.wi);
         }
 
-        
-        // valid = specularBRDF.sample(rand3.xy, wo, brdfSample);
-        // brdfSample.weight /= pSpecular;
-        // brdfSample.pdf *= pSpecular;
-        // if (pDiffuse > 0.f) brdfSample.pdf += pDiffuse * diffuseBRDF.evalPdf(wo, brdfSample.wi);
         return brdfSample;
     }
 };

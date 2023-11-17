@@ -4,8 +4,8 @@
 // #include "../Utils/RayTracingHelper.hlsl"
 #include "../Utils/Sampling.hlsl"
 
-#define BRDF_SAMPLING_MIN_COS 1e-4
-#define ENABLE_DELTA_BSDF 1
+#define BRDF_SAMPLING_MIN_COS 0.0064f
+#define ENABLE_DELTA_BSDF 0
 #define kMinGGXAlpha = 0.0064f;
 
 inline float luminance(float3 rgb)
