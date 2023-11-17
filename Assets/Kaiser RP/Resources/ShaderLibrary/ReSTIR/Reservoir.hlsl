@@ -19,13 +19,13 @@ struct MyReservoir
 
     float ResampleWeight(float3 targetWeight, float3 sourceWeight)
     {
-        return targetWeight / max(1e-3, sourceWeight);
+        return targetWeight / max(1e-3, sourceWeight) / M;
     }
 
     void Update(float3 newDir, float newWeight, float urand)
     {
         weightSum += newWeight;
-        if (urand < (newWeight / weightSum)) sampleDir = newDir;
+        if (urand < (newWeight / max(1e-4, weightSum))) sampleDir = newDir;
     }
 };
 
@@ -44,6 +44,7 @@ struct Reservoir
         p *= p + p;
         return frac(p + rand_offset);
     }
+
     float4 Pack(int sampleNum = 1024)
     {
         RescaleTo(sampleNum);

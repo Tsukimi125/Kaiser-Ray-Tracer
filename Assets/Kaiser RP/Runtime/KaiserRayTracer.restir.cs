@@ -19,6 +19,7 @@ public partial class KaiserRayTracer : RenderPipeline
         using (renderGraph.RecordAndExecute(renderGraphParams))
         {
             TextureHandle output = renderGraph.ImportTexture(outputRTHandle);
+            TextureHandle output1 = renderGraph.ImportTexture(ReservoirBuffers.Temporal);
 
             RenderGraphBuilder builder = renderGraph.AddRenderPass<PathTracingRenderPassData>("ReSTIR Pass", out var passData);
 
@@ -47,6 +48,10 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_PT_EnvTex"), renderPipelineAsset.envTexture);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.restir, Shader.PropertyToID("_PT_EnvIntensity"), renderPipelineAsset.envIntensity);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_PT_Output"), passData.outputTexture);
+
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), ReservoirBuffers.Temporal);
+
+
 
                 ctx.cmd.DispatchRays(KaiserShaders.restir, "PathTracingRayGenShader", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 

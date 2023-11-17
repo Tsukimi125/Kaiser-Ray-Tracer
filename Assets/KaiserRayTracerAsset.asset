@@ -17,6 +17,7 @@ MonoBehaviour:
   envIntensity: 0
   accumulateType: 1
   accumulateMaxFrame: 128
-  ptSPP: 1
-  ptBounceCount: 4
+  ptBounceCount: 1
+  restirType: 0
+  restirMaxSample: 8
   activeCameraType: 3

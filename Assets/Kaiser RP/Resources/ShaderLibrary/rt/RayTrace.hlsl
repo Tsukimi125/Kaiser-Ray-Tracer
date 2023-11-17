@@ -36,7 +36,6 @@ struct VertexData
     float3 wi;
     LayeredBRDF brdf;
     float3x3 tangentToWorld;
-    float invPDF;
 };
 
 struct TraceData
@@ -44,6 +43,8 @@ struct TraceData
     float pathLength;
     float3 throughput;
     float3 radiance;
+    float invPDF;
+    float3 firstSampleDir;
     float3 firstLuminance;
 };
 

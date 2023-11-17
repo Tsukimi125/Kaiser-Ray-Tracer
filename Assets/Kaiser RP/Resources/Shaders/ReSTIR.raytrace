@@ -54,7 +54,7 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
     
     BRDFSample brdfSample = BRDFSample::Invalid();
     brdfSample = vertex.brdf.sample(urand, vertex.wo);
-    vertex.invPDF = 1.0 / brdfSample.pdf;
+    trace.invPDF = 1.0 / brdfSample.pdf;
 
     if (brdfSample.IsValid())
     {
@@ -92,7 +92,7 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
 }
 
 
-void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 totalLuminance, inout float3 totalRadiance, inout float3 sampleDir, inout float invPDF)
+void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceData trace, inout VertexData vertex)
 {
     float2 frameCoord = launchIndex + float2(0.5, 0.5);
     float3 result = float3(0, 0, 0);
@@ -102,16 +102,11 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 
     float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
     // float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
 
-    TraceData trace;
-    
     trace.pathLength = 0;
     trace.throughput = float3(1, 1, 1);
     trace.radiance = float3(0, 0, 0);
+    trace.firstLuminance = float3(0, 0, 0);
 
-    // float3 totalRadiance = float3(0, 0, 0);
-
-    float3 curLuminance = float3(0, 0, 0);
-    // float3 totalLuminance = float3(0, 0, 0);
     
     float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
     float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
@@ -130,8 +125,6 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 
     surfaceData.metallic = 0.001;
 
     float3 viewDir = normalize(_WorldSpaceCameraPos - worldPos);
-
-    VertexData vertex;
 
     vertex.tangentToWorld = BuildOrthonormalBasis(surfaceData.normal);
     vertex.wo = mul(viewDir, vertex.tangentToWorld);
@@ -153,9 +146,14 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
     vertex.brdf.ForceDiffuse();
     // invPDF = 1.0;
+    uint maxBounceCount = _PT_MaxBounceCount;
+    if (RandomFloat01(rng) < 0.25)
+    {
+        maxBounceCount *= 4;
+    }
 
     [loop]
-    for (trace.pathLength = 0; trace.pathLength < _PT_MaxBounceCount; trace.pathLength++)
+    for (trace.pathLength = 0; trace.pathLength < maxBounceCount; trace.pathLength++)
     {
         if (!TraceScatterRay(ray, hitVertex, trace, vertex, rng))
         {
@@ -175,13 +173,12 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 
         vertex.brdf.ForceDiffuse();
         vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
-        TraceShadowRay(trace.pathLength, hitVertex, throughput, radiance, curLuminance, vertex.brdf, vertex.wo, vertex.wi);
+        TraceShadowRay(hitVertex, trace, vertex);
 
         [branch]
         if (trace.pathLength == 0)
         {
-            totalLuminance += max(0.0f, curLuminance);
-            sampleDir = ray.Direction;
+            trace.firstSampleDir = ray.Direction;
         }
 
 
@@ -202,10 +199,10 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout float3 
         // }
 
     }
-    if (all(radiance >= 0.0))
-    {
-        totalRadiance += float4(radiance, 1.0);
-    }
+    // if (all(trace.radiance >= 0.0))
+    // {
+    //     totalRadiance += float4(radiance, 1.0);
+    // }
     // return totalRadiance.rgb;
 
 }
@@ -217,14 +214,14 @@ void PathTracingRayGenShader()
     uint2 launchIndex = DispatchRaysIndex().xy;
     uint2 launchDim = DispatchRaysDimensions().xy;
 
-    float3 totalLuminance = float3(0, 0, 0);
-    float3 totalRadiance = float3(0, 0, 0);
-    float3 sampleDir = float3(0, 0, 0);
-    float invPDF = 1.0;
-
     uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex) * uint(24699)) | uint(1);
     
-    TracePath(launchIndex, launchDim, rng, totalLuminance, totalRadiance, sampleDir, invPDF);
+    TraceData trace;
+    VertexData vertex;
+
+    TracePath(launchIndex, launchDim, rng, trace, vertex);
+
+    float3 totalRadiance = trace.radiance;
 
     if (_PT_Progressive == 0)
     {
@@ -232,26 +229,39 @@ void PathTracingRayGenShader()
     }
     else if (_PT_Progressive == 1)
     {
-        Reservoir re = UnPack(_TReservoir[launchIndex]);
-        re.rand_offset = RandomFloat01(rng);
-        
-        re.Update(sampleDir, re.TargetPDF(lerp(totalLuminance, totalRadiance, 0.0)), invPDF);
-        float3 prevRadiance = _PT_Output[launchIndex].xyz;
         if (_PT_ConvergenceStep < _PT_MaxFrameCount)
         {
-            totalRadiance = lerp(prevRadiance, totalRadiance, 1 / float(_PT_ConvergenceStep + 1));
+            Reservoir re = UnPack(_TReservoir[launchIndex]);
+            re.rand_offset = RandomFloat01(rng);
+            re.Update(trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF);
+            _TReservoir[launchIndex] = re.Pack(64);
+            
+            _PT_Output[launchIndex] = float4(re.dir * re.W_sum / (re.M * re.w), 1);
         }
-        else
-        {
-            totalRadiance = prevRadiance;
-        }
-        _PT_Output[launchIndex] = float4(totalRadiance, 1);
+
+        // re.Update(trace.radiance, re.TargetPDF(lerp(trace.firstLuminance, trace.radiance, 1.0)), trace.invPDF);
+        
+        // float3 prevRadiance = _PT_Output[launchIndex].xyz;
+        // if (_PT_ConvergenceStep < _PT_MaxFrameCount)
+        // {
+        //     totalRadiance = lerp(prevRadiance, trace.radiance, 1 / float(_PT_ConvergenceStep + 1));
+        // }
+        // else
+        // {
+        //     totalRadiance = prevRadiance;
+        // }
+        // _PT_Output[launchIndex] = float4(totalRadiance, 1);
+        // _PT_Output[launchIndex] = float4(totalRadiance, 1);
+
     }
     else
     {
-        float3 prevRadiance = _PT_Output[launchIndex].xyz;
-        totalRadiance = lerp(prevRadiance, totalRadiance, 1 / float(_PT_ConvergenceStep + 1));
-        _PT_Output[launchIndex] = float4(totalRadiance, 1);
+        if (_PT_ConvergenceStep < _PT_MaxFrameCount)
+        {
+            float3 prevRadiance = _PT_Output[launchIndex].xyz;
+            totalRadiance = lerp(prevRadiance, totalRadiance, 1 / float(_PT_ConvergenceStep + 1));
+            _PT_Output[launchIndex] = float4(totalRadiance, 1);
+        }
     }
 }
 

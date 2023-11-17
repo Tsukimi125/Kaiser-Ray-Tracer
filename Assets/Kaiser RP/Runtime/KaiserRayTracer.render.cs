@@ -48,7 +48,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 depthBufferBits = 0,
                 volumeDepth = 1,
                 msaaSamples = 1,
-                graphicsFormat = GraphicsFormat.R16G16B16A16_UNorm,
+                graphicsFormat = GraphicsFormat.R32G32B32A32_UInt,
                 enableRandomWrite = true,
             };
 
