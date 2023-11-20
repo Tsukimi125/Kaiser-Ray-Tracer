@@ -38,6 +38,11 @@ public partial class KaiserRayTracer : RenderPipeline
     {
         public TextureHandle outputTexture;
     };
+    class ReSTIRRenderPassData
+    {
+        public TextureHandle outputTexture;
+        public TextureHandle temporalReservoir;
+    };
 
     class GBufferRenderPassData
     {

@@ -229,14 +229,15 @@ void PathTracingRayGenShader()
     }
     else if (_PT_Progressive == 1)
     {
-        if (_PT_ConvergenceStep < _PT_MaxFrameCount)
+        // if (_PT_ConvergenceStep < _PT_MaxFrameCount)
+
         {
             Reservoir re = UnPack(_TReservoir[launchIndex]);
             re.rand_offset = RandomFloat01(rng);
             re.Update(trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF);
-            _TReservoir[launchIndex] = re.Pack(64);
+            _TReservoir[launchIndex] = re.Pack(4);
             
-            _PT_Output[launchIndex] = float4(re.dir * re.W_sum / (re.M * re.w), 1);
+            _PT_Output[launchIndex] = float4(re.dir * re.W_sum / (re.M * re.w), 1.0f);
         }
 
         // re.Update(trace.radiance, re.TargetPDF(lerp(trace.firstLuminance, trace.radiance, 1.0)), trace.invPDF);

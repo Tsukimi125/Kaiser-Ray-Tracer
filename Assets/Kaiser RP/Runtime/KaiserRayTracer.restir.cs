@@ -21,11 +21,12 @@ public partial class KaiserRayTracer : RenderPipeline
             TextureHandle output = renderGraph.ImportTexture(outputRTHandle);
             TextureHandle output1 = renderGraph.ImportTexture(ReservoirBuffers.Temporal);
 
-            RenderGraphBuilder builder = renderGraph.AddRenderPass<PathTracingRenderPassData>("ReSTIR Pass", out var passData);
+            RenderGraphBuilder builder = renderGraph.AddRenderPass<ReSTIRRenderPassData>("ReSTIR Pass", out var passData);
 
             passData.outputTexture = builder.WriteTexture(output);
+            passData.temporalReservoir = builder.WriteTexture(output1);
 
-            builder.SetRenderFunc((PathTracingRenderPassData data, RenderGraphContext ctx) =>
+            builder.SetRenderFunc((ReSTIRRenderPassData data, RenderGraphContext ctx) =>
             {
                 ctx.cmd.BuildRayTracingAccelerationStructure(rtas);
 
@@ -35,8 +36,6 @@ public partial class KaiserRayTracer : RenderPipeline
                 float aspectRatio = camera.pixelWidth / (float)camera.pixelHeight;
 
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_MaxBounceCount"), (int)renderPipelineAsset.ptBounceCount);
-                // ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_BounceCountTransparent"), (int)renderPipelineAsset.bounceCountTransparent);
-
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), (int)renderPipelineAsset.accumulateType);
 
                 ctx.cmd.SetRayTracingAccelerationStructure(KaiserShaders.restir, Shader.PropertyToID("_AccelStruct"), rtas);
@@ -49,7 +48,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.restir, Shader.PropertyToID("_PT_EnvIntensity"), renderPipelineAsset.envIntensity);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_PT_Output"), passData.outputTexture);
 
-                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), ReservoirBuffers.Temporal);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), passData.temporalReservoir);
 
 
 
