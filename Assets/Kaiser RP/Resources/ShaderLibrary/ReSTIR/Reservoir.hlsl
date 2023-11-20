@@ -60,20 +60,22 @@ struct Reservoir
     {
         float scale_M = min(1, float(sampleNum) / max(1, M));
         M = min(M, sampleNum);
-        W_sum *= scale_M;
+        W_sum *= scale_M; // 等比缩放
+
     }
 
     float TargetPDF(float3 color)
     {
-        return 1e-2 + dot(color, float3(0.299, 0.587, 0.114));
+        return 1e-2 + dot(color, float3(0.299, 0.587, 0.114)); // radiance to luminance
+
     }
 
-    void Update(float3 newDir, float targetWeight, float sourceWeight)
+    void Update(float3 newDir, float targetWeight, float invSourceWeight)
     {
-        sourceWeight *= targetWeight;
+        float risWeight = invSourceWeight * targetWeight;
         M++;
-        W_sum += sourceWeight;
-        if (rand() < sourceWeight / max(1e-4, W_sum))
+        W_sum += risWeight;
+        if (rand() < risWeight / max(1e-4, W_sum))
         {
             dir = newDir;
             w = targetWeight;

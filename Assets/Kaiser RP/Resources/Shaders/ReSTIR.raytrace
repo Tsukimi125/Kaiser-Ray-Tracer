@@ -230,7 +230,7 @@ void PathTracingRayGenShader()
     }
     else if (_PT_Progressive == 1)
     {
-        if (_PT_ConvergenceStep < _PT_MaxFrameCount + 64)
+        if (_PT_ConvergenceStep < _PT_MaxFrameCount)
         {
             Reservoir re = UnPack(_TReservoir[launchIndex]);
             re.rand_offset = RandomFloat01(rng);
