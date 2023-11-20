@@ -88,7 +88,7 @@ public partial class KaiserRayTracer : RenderPipeline
 
         rtHandleSystem = new RTHandleSystem();
 
-        
+
 
         SetupShaders();
     }
@@ -105,6 +105,8 @@ public partial class KaiserRayTracer : RenderPipeline
         renderGraph = null;
 
         rtHandleSystem.Dispose();
+
+        ReservoirBuffers.Temporal.Release();
     }
 }
 

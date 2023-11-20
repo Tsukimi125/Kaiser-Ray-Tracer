@@ -6,6 +6,7 @@ using UnityEngine.Experimental.Rendering;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using Unity.VisualScripting;
 using UnityEngine.Rendering.Universal;
+using TreeEditor;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
@@ -52,7 +53,20 @@ public partial class KaiserRayTracer : RenderPipeline
                 enableRandomWrite = true,
             };
 
-            RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
+            if (ReservoirBuffers.Temporal == null || ReservoirBuffers.Temporal.rt == null)
+            {
+                ReservoirBuffers.Temporal = rtHandleSystem.Alloc(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R32G32B32A32_UInt, enableRandomWrite: true, name: "_TReservoir");
+                Debug.Log(camera.pixelHeight);
+            }
+
+            // if (frameIndex <= 1)
+            // {
+            //     ReservoirBuffers.Temporal = RTHandles.Alloc(reTemporalDesc, name: "_TReservoir");
+            // }
+            // ReservoirBuffers.Temporal = rtHandleSystem.Alloc(reTemporalDesc, name: "_TReservoir");
+            // bool reAlloc = RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
+
+            // Debug.Log("Frame Index: " + frameIndex + reAlloc);
             // RTHandle gbuffer0 = rtHandleSystem.Alloc(cameraData, "_PT_Output");
 
             if (camera.cameraType == CameraType.SceneView)
