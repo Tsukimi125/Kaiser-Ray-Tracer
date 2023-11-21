@@ -1,0 +1,35 @@
+#pragma kernel CSMain
+
+#include "UnityShaderVariables.cginc"
+#include "../Include/math.hlsl"
+#include "../Include/quasi_random.hlsl"
+#include "../Include/samplers.hlsl"
+#include "../Include/cube_map.hlsl"
+
+TextureCube<float4> input_tex : register(t0);
+RWTexture2DArray<float4> output_tex : register(u0);
+
+static uint face_width = 16;
+
+[numthreads(8,8,1)]
+void CSMain(in uint3 px : SV_DispatchThreadID)
+{
+    uint face = px.z;
+    float2 uv = (px.xy + 0.5) / face_width;
+
+    float3 output_dir = normalize(mul(CUBE_MAP_FACE_ROTATIONS[face], float3(uv * 2 - 1, -1.0)));
+    const float3x3 basis = build_orthonormal_basis(output_dir);
+
+    static const uint sample_count = 512;
+
+    uint rng = hash2(px.xy);
+
+    float4 result = 0;
+    for (uint i = 0; i < sample_count; ++i) {
+        float2 urand = hammersley(i, sample_count);
+        float3 input_dir = mul(basis, uniform_sample_cone(urand, 0.99));
+        result += input_tex.SampleLevel(sampler_LinearClamp, input_dir, 0);
+    }
+
+    output_tex[px] = result / sample_count;
+}

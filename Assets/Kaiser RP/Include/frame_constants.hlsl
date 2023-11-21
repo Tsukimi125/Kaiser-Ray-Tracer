@@ -7,6 +7,11 @@
 
 CBUFFER_START(_FrameConstant)
     uint frame_index;
+    float pre_exposure;
+    float4 sky_ambient;
+    float4 sun_direction;
+    float4 sun_color_multiplier;
+    float sun_angular_radius_cos;
     float4 ircache_grid_center;
     int4 ircache_cascade_origin[12];
     int4 ircache_cascade_voxels_scrolled_this_frame[12];
