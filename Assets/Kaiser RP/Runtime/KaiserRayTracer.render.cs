@@ -53,11 +53,23 @@ public partial class KaiserRayTracer : RenderPipeline
                 enableRandomWrite = true,
             };
 
-            if (ReservoirBuffers.Temporal == null || ReservoirBuffers.Temporal.rt == null)
-            {
-                ReservoirBuffers.Temporal = rtHandleSystem.Alloc(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R32G32B32A32_UInt, enableRandomWrite: true, name: "_TReservoir");
-                Debug.Log(camera.pixelHeight);
-            }
+            // if (ReservoirBuffers.Temporal == null || ReservoirBuffers.Temporal.rt == null)
+            // {
+            //     ReservoirBuffers.Temporal = rtHandleSystem.Alloc(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R32G32B32A32_UInt, enableRandomWrite: true, name: "_TReservoir");
+            //     Debug.Log(camera.pixelHeight);
+            // }
+
+            RenderTextureDescriptor descriptor = new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R32G32B32A32_UInt, 0);
+            descriptor.enableRandomWrite = true;
+
+            RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
+
+            // RenderTargetIdentifier renderTargetIdentifier = new RenderTargetIdentifier()
+            // {
+
+            // };
+
+            // ReservoirBuffers.Temporal = rtHandleSystem.Alloc(renderTargetIdentifier, )
 
             // if (frameIndex <= 1)
             // {
