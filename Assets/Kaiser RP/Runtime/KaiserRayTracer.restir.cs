@@ -50,14 +50,11 @@ public partial class KaiserRayTracer : RenderPipeline
 
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), passData.temporalReservoir);
 
-
-
-                ctx.cmd.DispatchRays(KaiserShaders.restir, "PathTracingRayGenShader", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+                ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 
                 frameIndex++;
             });
         }
-
         return true;
     }
 

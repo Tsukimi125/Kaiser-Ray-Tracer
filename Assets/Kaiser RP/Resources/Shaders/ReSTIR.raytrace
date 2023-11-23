@@ -54,7 +54,6 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
     
     BRDFSample brdfSample = BRDFSample::Invalid();
     brdfSample = vertex.brdf.sample(urand, vertex.wo);
-    trace.invPDF = 1.0 / brdfSample.pdf;
 
     if (brdfSample.IsValid())
     {
@@ -62,9 +61,11 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
         ray.Direction = mul(vertex.tangentToWorld, brdfSample.wi);
         ray.TMin = 1e-4;
         trace.throughput *= brdfSample.weight;
+        trace.invPDF = 1.0f / brdfSample.pdf;
     }
     else
     {
+        trace.invPDF = 0.0f;
         return false;
     }
     
@@ -99,15 +100,9 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     
     // uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex) * uint(24699)) | uint(1);
     float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
-    float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
-    // float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
+    // float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
+    float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
 
-    trace.pathLength = 0;
-    trace.throughput = float3(1, 1, 1);
-    trace.radiance = float3(0, 0, 0);
-    trace.firstLuminance = float3(0, 0, 0);
-
-    
     float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
     float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
     float3 worldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
@@ -121,8 +116,13 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     surfaceData.emission = float3(0, 0, 0);
     // surfaceData.roughness = roughness;
     // surfaceData.metallic = metallic;
-    surfaceData.roughness = 0.999;
-    surfaceData.metallic = 0.001;
+    surfaceData.roughness = 1;
+    surfaceData.metallic = 0;
+
+    trace.pathLength = 0;
+    trace.throughput = albedo;
+    trace.radiance = float3(0, 0, 0);
+    trace.firstLuminance = float3(0, 0, 0);
 
     float3 viewDir = normalize(_WorldSpaceCameraPos - worldPos);
 
@@ -210,7 +210,7 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
 
 
 [shader("raygeneration")]
-void PathTracingRayGenShader()
+void ReSTIR_Temporal()
 {
     uint2 launchIndex = DispatchRaysIndex().xy;
     uint2 launchDim = DispatchRaysDimensions().xy;
@@ -233,28 +233,14 @@ void PathTracingRayGenShader()
         // if (_PT_ConvergenceStep < _PT_MaxFrameCount)
 
         {
-            Reservoir re = UnPack(_TReservoir[launchIndex]);
-            re.rand_offset = RandomFloat01(rng);
-            re.Update(trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF);
-            _TReservoir[launchIndex] = re.Pack(4);
+            Reservoir re = UnPack1(_TReservoir[launchIndex]);
+            re.Update(trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
+            _TReservoir[launchIndex] = re.Pack1(20);
             
             _PT_Output[launchIndex] = float4(re.dir * re.W_sum / (re.M * re.w), 1.0f);
+            // _PT_Output[launchIndex] = 1.0f / trace.invPDF;
+
         }
-
-        // re.Update(trace.radiance, re.TargetPDF(lerp(trace.firstLuminance, trace.radiance, 1.0)), trace.invPDF);
-        
-        // float3 prevRadiance = _PT_Output[launchIndex].xyz;
-        // if (_PT_ConvergenceStep < _PT_MaxFrameCount)
-        // {
-        //     totalRadiance = lerp(prevRadiance, trace.radiance, 1 / float(_PT_ConvergenceStep + 1));
-        // }
-        // else
-        // {
-        //     totalRadiance = prevRadiance;
-        // }
-        // _PT_Output[launchIndex] = float4(totalRadiance, 1);
-        // _PT_Output[launchIndex] = float4(totalRadiance, 1);
-
     }
     else
     {
@@ -266,6 +252,44 @@ void PathTracingRayGenShader()
         }
     }
 }
+
+[shader("raygeneration")]
+void ReSTIR_Spatial()
+{
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
+
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex) * uint(24699)) | uint(1);
+    float2 frameCoord = launchIndex + float2(0.5, 0.5);
+
+    float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
+    // float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
+    float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
+
+    float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+
+    float2 offset = float2(RandomFloat01(rng), RandomFloat01(rng));
+    float radi = 20;
+    int maxSpatialSample = 3;
+    for (int i = 0; i < maxSpatialSample; i++)
+    {
+        rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex + uint(i)) * uint(24699)) | uint(1);
+        
+        // float2 s = radi * NonUniformSampleDisk(float2(RandomFloat01(rng), RandomFloat01(rng) + offset));
+        // Reservoir neighbour = UnPack(_TReservoir[dispatchIdx + round(s)]);
+        // neighbour.RescaleTo(4);
+        // if (dot(neighbour.dir, info.normal) < 0) continue;
+        // float3 brdf = PBS(PBS_FULLY, info, neighbour.dir, 1, view);
+        // if (all(brdf <= 0.01)) continue;
+        // re.Update(neighbour);
+
+    }
+}
+
+
+
+
 
 [shader("miss")]
 void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)

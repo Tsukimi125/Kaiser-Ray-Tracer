@@ -74,6 +74,7 @@ struct FrostbiteDiffuseBRDF
 
         if (min(wo.z, wi.z) < BRDF_SAMPLING_MIN_COS)
         {
+            brdfSample.weight = 0.0f.xxx;
             return false;
         }
 
@@ -95,15 +96,16 @@ struct FrostbiteDiffuseBRDF
     // Returns f(wo, wi) * pi.
     float3 evalWeight(float3 wo, float3 wi)
     {
-        float3 h = normalize(wo + wi);
-        float wiDotH = dot(wi, h);
-        float energyBias = lerp(0.f, 0.5f, roughness);
-        float energyFactor = lerp(1.f, 1.f / 1.51f, roughness);
-        float fd90 = energyBias + 2.f * wiDotH * wiDotH * roughness;
-        float fd0 = 1.f;
-        float woScatter = EvalFresnelSchlick(fd0, fd90, wo.z);
-        float wiScatter = EvalFresnelSchlick(fd0, fd90, wi.z);
-        return albedo * woScatter * wiScatter * energyFactor;
+        // float3 h = normalize(wo + wi);
+        // float wiDotH = dot(wi, h);
+        // float energyBias = lerp(0.f, 0.5f, roughness);
+        // float energyFactor = lerp(1.f, 1.f / 1.51f, roughness);
+        // float fd90 = energyBias + 2.f * wiDotH * wiDotH * roughness;
+        // float fd0 = 1.f;
+        // float woScatter = EvalFresnelSchlick(fd0, fd90, wo.z);
+        // float wiScatter = EvalFresnelSchlick(fd0, fd90, wi.z);
+        // return albedo * woScatter * wiScatter * energyFactor;
+        return albedo;
     }
 };
 
