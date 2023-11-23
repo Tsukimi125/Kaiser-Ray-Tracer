@@ -36,6 +36,7 @@ Texture2D<float4> _GBuffer2;
 Texture2D<float4> _GBuffer3;
 
 RWTexture2D<int4> _TReservoir;
+RWTexture2D<int4> _SReservoir;
 
 
 void TraceShadowRay(in PathVertex hitVertex, inout TraceData trace, inout VertexData vertex)
@@ -233,11 +234,14 @@ void ReSTIR_Temporal()
         // if (_PT_ConvergenceStep < _PT_MaxFrameCount)
 
         {
-            Reservoir re = UnPack1(_TReservoir[launchIndex]);
-            re.Update(trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
-            _TReservoir[launchIndex] = re.Pack1(20);
+            Reservoir re = UnPack(_TReservoir[launchIndex]);
+            re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
+            // re.Update(trace.radiance, trace.firstSampleDir, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
+            _TReservoir[launchIndex] = re.Pack(20);
             
-            _PT_Output[launchIndex] = float4(re.dir * re.W_sum / (re.M * re.w), 1.0f);
+            _PT_Output[launchIndex] = float4(re.radiance * re.W_sum / (re.M * re.w), 1.0f);
+            // _PT_Output[launchIndex] = float4(re.dir, 1.0f);
+            // _PT_Output[launchIndex] = float4(trace.firstSampleDir, 1.0f);
             // _PT_Output[launchIndex] = 1.0f / trace.invPDF;
 
         }
@@ -270,21 +274,24 @@ void ReSTIR_Spatial()
     float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
 
     float2 offset = float2(RandomFloat01(rng), RandomFloat01(rng));
-    float radi = 20;
-    int maxSpatialSample = 3;
+
+    Reservoir re = UnPack(_TReservoir[launchIndex]);
+    // _PT_Output[launchIndex] = float4(re.radiance * re.W_sum / (re.M * re.w), 1.0f);
+    float radi = 16;
+    int maxSpatialSample = 8;
     for (int i = 0; i < maxSpatialSample; i++)
     {
         rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex + uint(i)) * uint(24699)) | uint(1);
         
-        // float2 s = radi * NonUniformSampleDisk(float2(RandomFloat01(rng), RandomFloat01(rng) + offset));
-        // Reservoir neighbour = UnPack(_TReservoir[dispatchIdx + round(s)]);
-        // neighbour.RescaleTo(4);
-        // if (dot(neighbour.dir, info.normal) < 0) continue;
-        // float3 brdf = PBS(PBS_FULLY, info, neighbour.dir, 1, view);
-        // if (all(brdf <= 0.01)) continue;
-        // re.Update(neighbour);
-
+        float2 s = radi * SampleDiskConcentric(frac(float2(RandomFloat01(rng), RandomFloat01(rng)) + offset));
+        Reservoir neighbour = UnPack(_TReservoir[launchIndex + round(s)]);
+        // neighbour.RescaleTo(8);
+        if (dot(neighbour.dir, normal) < 0.01f || all(neighbour.radiance <= 0.001f)) continue;
+        re.Update(neighbour, RandomFloat01(rng));
     }
+
+    _SReservoir[launchIndex] = re.Pack(10);
+    _PT_Output[launchIndex] = float4(re.radiance * re.W_sum / (re.M * re.w), 1.0f);
 }
 
 

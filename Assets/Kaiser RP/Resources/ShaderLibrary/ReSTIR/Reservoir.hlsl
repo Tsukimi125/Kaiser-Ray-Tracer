@@ -87,7 +87,7 @@ struct MyReservoir
 //         W_sum += re.W_sum;
 //         if (rand() < re.W_sum / max(1e-4, W_sum))
 //         {
-//             dir = re.dir;
+//             dir = re.radiance;
 //             w = re.w;
 //         }
 //         M += re.M;
@@ -108,22 +108,22 @@ uint pack_unorm(float val, uint bitCount)
 
 uint pack_888(float3 color)
 {
-    color = sqrt(color);
+    color = normalize(color);
     uint pckd = 0;
-    pckd += pack_unorm(color.x, 8);
-    pckd += pack_unorm(color.y, 8) << 8;
-    pckd += pack_unorm(color.z, 8) << 16;
+    pckd += pack_unorm(color.x, 11);
+    pckd += pack_unorm(color.y, 11) << 11;
+    pckd += pack_unorm(color.z, 10) << 22;
     return pckd;
 }
 
 float3 unpack_888(uint p)
 {
     float3 color = float3(
-        unpack_unorm(p, 8),
-        unpack_unorm(p >> 8, 8),
-        unpack_unorm(p >> 16, 8)
+        unpack_unorm(p, 11),
+        unpack_unorm(p >> 11, 11),
+        unpack_unorm(p >> 22, 10)
     );
-    return color * color;
+    return normalize(color);
 }
 
 struct Reservoir
@@ -134,23 +134,13 @@ struct Reservoir
     float W_sum;
     int M;
 
-    int4 Pack1(int sampleNum = 1024)
-    {
-        RescaleTo(sampleNum);
-        int r = f32tof16(dir.x) + (f32tof16(dir.y) << 16);
-        int g = f32tof16(dir.z) + (M << 16);
-        int b = f32tof16(W_sum) + (f32tof16(w) << 16);
-        int a = pack_888(radiance);
-        return int4(r, g, b, a);
-    }
-
     int4 Pack(int sampleNum = 1024)
     {
         RescaleTo(sampleNum);
-        int r = pack_888(dir);
-        int g = pack_888(radiance);
-        int b = asint(W_sum);
-        int a = f32tof16(w) + (M << 16);
+        int r = f32tof16(radiance.x) + (f32tof16(radiance.y) << 16);
+        int g = f32tof16(radiance.z) + (M << 16);
+        int b = f32tof16(W_sum) + (f32tof16(w) << 16);
+        int a = pack_888(dir);
         return int4(r, g, b, a);
     }
 
@@ -168,7 +158,7 @@ struct Reservoir
 
     }
 
-    void Update(float3 newDir, float targetWeight, float invSourceWeight, float rand)
+    void Update(float3 newDir, float3 newRadiance, float targetWeight, float invSourceWeight, float rand)
     {
         float risWeight = invSourceWeight * targetWeight;
         M++;
@@ -176,44 +166,31 @@ struct Reservoir
         if (rand < risWeight / max(1e-4, W_sum))
         {
             dir = newDir;
+            radiance = newRadiance;
             w = risWeight;
         }
     }
     void Update(Reservoir re, float rand)
     {
         if (re.M == 0 || re.w == 0 || re.W_sum == 0) return;
+        if (M == 0 || w == 0 || W_sum == 0)
+        {
+            dir = re.dir;
+            radiance = re.radiance;
+            w = re.w;
+            W_sum = re.W_sum;
+            M = re.M;
+            return;
+        }  
         W_sum += re.W_sum;
         if (rand < re.W_sum / max(1e-4, W_sum))
         {
-            dir = re.dir;
+            dir = re.radiance;
             w = re.w;
         }
         M += re.M;
     }
 };
-
-Reservoir UnPack1(int4 value)
-{
-    Reservoir re;
-    int r = value.r;
-    int g = value.g;
-    int b = value.b;
-    int a = value.a;
-    re.dir = float3(f16tof32(r), f16tof32(r >> 16), f16tof32(g));
-    re.M = (g >> 16) & 0xFFFF;
-    re.W_sum = f16tof32(b);
-    re.w = f16tof32(b >> 16);
-    re.radiance = unpack_888(a);
-    // re.sampleIndex = (a >> 16) & 0xFFFF;
-    if (isnan(re.W_sum) || isnan(re.w))
-    {
-        re.dir = 0;
-        re.W_sum = 0;
-        re.w = 0;
-        re.M = 0;
-    }
-    return re;
-}
 
 Reservoir UnPack(int4 value)
 {
@@ -222,20 +199,19 @@ Reservoir UnPack(int4 value)
     int g = value.g;
     int b = value.b;
     int a = value.a;
-    re.dir = unpack_888(r);
-    re.radiance = unpack_888(g);
-    re.M = (a >> 16) & 0xFFFF;
-    re.W_sum = asfloat(b);
-    re.w = f16tof32(a);
-
+    re.radiance = float3(f16tof32(r), f16tof32(r >> 16), f16tof32(g));
+    re.M = (g >> 16) & 0xFFFF;
+    re.W_sum = f16tof32(b);
+    re.w = f16tof32(b >> 16);
+    re.dir = unpack_888(a);
+    // // re.sampleIndex = (a >> 16) & 0xFFFF;
     if (isnan(re.W_sum) || isnan(re.w))
     {
-        re.dir = 0;
+        re.radiance = 0;
         re.W_sum = 0;
         re.w = 0;
         re.M = 0;
     }
-
     return re;
 }
 

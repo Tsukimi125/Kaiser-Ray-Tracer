@@ -107,6 +107,7 @@ public partial class KaiserRayTracer : RenderPipeline
         rtHandleSystem.Dispose();
 
         ReservoirBuffers.Temporal.Release();
+        ReservoirBuffers.Spatial.Release();
     }
 }
 

@@ -19,12 +19,14 @@ public partial class KaiserRayTracer : RenderPipeline
         using (renderGraph.RecordAndExecute(renderGraphParams))
         {
             TextureHandle output = renderGraph.ImportTexture(outputRTHandle);
-            TextureHandle output1 = renderGraph.ImportTexture(ReservoirBuffers.Temporal);
+            TextureHandle tReservoir = renderGraph.ImportTexture(ReservoirBuffers.Temporal);
+            TextureHandle sReservoir = renderGraph.ImportTexture(ReservoirBuffers.Spatial);
 
             RenderGraphBuilder builder = renderGraph.AddRenderPass<ReSTIRRenderPassData>("ReSTIR Pass", out var passData);
 
             passData.outputTexture = builder.WriteTexture(output);
-            passData.temporalReservoir = builder.WriteTexture(output1);
+            passData.temporalReservoir = builder.WriteTexture(tReservoir);
+            passData.spatialReservoir = builder.WriteTexture(sReservoir);
 
             builder.SetRenderFunc((ReSTIRRenderPassData data, RenderGraphContext ctx) =>
             {
@@ -50,7 +52,11 @@ public partial class KaiserRayTracer : RenderPipeline
 
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), passData.temporalReservoir);
 
+
                 ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_SReservoir"), passData.spatialReservoir);
+                ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Spatial", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+                // ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Spatial", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 
                 frameIndex++;
             });
