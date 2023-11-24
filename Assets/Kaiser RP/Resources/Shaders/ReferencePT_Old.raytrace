@@ -178,10 +178,10 @@ void PathTracingRayGenShader()
     }
     result /= float(_PT_MaxFrameCount);
 
-    float3 prevRadiance = _PT_Output[launchIndex].xyz;
+    float3 prevRadiance = _Output[launchIndex].xyz;
     if (_PT_Progressive == 1) result = lerp(prevRadiance, result, 1 / float(_PT_ConvergenceStep + 1));
 
-    _PT_Output[launchIndex] = float4(result, 1);
+    _Output[launchIndex] = float4(result, 1);
 }
 
 [shader("miss")]

@@ -35,7 +35,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 currentFrameIndex = cameraData.frameIndex
             };
 
-            RTHandle outputRTHandle = rtHandleSystem.Alloc(cameraData.rayTracingOutput, "_PT_Output");
+            RTHandle outputRTHandle = rtHandleSystem.Alloc(cameraData.rayTracingOutput, "_Output");
             RTHandle gbufferHandle0 = rtHandleSystem.Alloc(cameraData.gbuffer0, "_GBuffer0");
             RTHandle gbufferHandle1 = rtHandleSystem.Alloc(cameraData.gbuffer1, "_GBuffer1");
             RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");

@@ -207,10 +207,10 @@ void PathTracingRayGenShader()
     // }
     // result /= float(_PT_MaxFrameCount);
     result += TracePath(launchIndex, launchDim, 0);
-    float3 prevRadiance = _PT_Output[launchIndex].xyz;
+    float3 prevRadiance = _Output[launchIndex].xyz;
     if ((_PT_Progressive == 1 && _PT_ConvergenceStep < _PT_MaxFrameCount) || _PT_Progressive == 2) result = lerp(prevRadiance, result, 1 / float(_PT_ConvergenceStep + 1));
     if (_PT_Progressive == 1 && _PT_ConvergenceStep >= _PT_MaxFrameCount) result = prevRadiance;
-    _PT_Output[launchIndex] = float4(result, 1);
+    _Output[launchIndex] = float4(result, 1);
 }
 
 [shader("miss")]
