@@ -238,7 +238,15 @@ void ReSTIR_Temporal()
         // if (_RE_ConvergenceStep < _RE_MaxFrameCount)
 
         {
-            Reservoir re = UnPack(_SReservoir[launchIndex]);
+            Reservoir re;
+            if (_RE_ResSTIRType == 1)
+            {
+                re = UnPack(_TReservoir[launchIndex]);
+            }
+            else
+            {
+                re = UnPack(_SReservoir[launchIndex]);
+            }
             re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
             // re.Update(trace.radiance, trace.firstSampleDir, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
             _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
@@ -263,26 +271,44 @@ void ReSTIR_Spatial()
 
     float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
     float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 worldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
 
     float2 offset = float2(RandomFloat01(rng), RandomFloat01(rng));
 
     Reservoir re = UnPack(_TReservoir[launchIndex]);
     // _Output[launchIndex] = float4(re.radiance * re.wSum / (re.M * re.w), 1.0f);
-    float radi = 20;
-    int maxSpatialSample = 5;
+    float radi = 64;
+    int maxSpatialSample = 2;
+    float2 neighbourFrameCoord;
+    float2 neighbourUV;
+    float3 neighbourWorldPos;
+    float3 neighbourNormal;
+    int sample = 0;
     for (int i = 0; i < maxSpatialSample; i++)
     {
         rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex + uint(i)) * uint(24699)) | uint(1);
         
         float2 s = radi * SampleDiskConcentric(frac(float2(RandomFloat01(rng), RandomFloat01(rng)) + offset));
         Reservoir neighbour = UnPack(_TReservoir[launchIndex + round(s)]);
+
+        neighbourFrameCoord = launchIndex + round(s) + float2(0.5, 0.5);
+        neighbourUV = (neighbourFrameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
+        neighbourWorldPos = _GBuffer2.SampleLevel(sampler_point_clamp, neighbourUV, 0).xyz;
+        neighbourNormal = _GBuffer1.SampleLevel(sampler_point_clamp, neighbourUV, 0).xyz;
+
+        if (distance(neighbourWorldPos, worldPos) > 1.1f) continue;
+        if (dot(neighbourNormal, normal) < 0.1f) continue;
         // neighbour.RescaleTo(16);
-        if (dot(neighbour.dir, normal) < 0.1f || all(neighbour.radiance <= 0.001f)) continue;
+        // if (dot(neighbour.dir, normal) < 0.1f || luminance(neighbour.radiance) <= 0.001f) continue;
         re.Update(neighbour, RandomFloat01(rng));
+
+        sample++;
     }
 
     _SReservoir[launchIndex] = re.Pack(_RE_SReservoirSize);
     _Output[launchIndex] = float4(re.radiance * re.wSum / (re.M * re.w), 1.0f);
+    // _Output[launchIndex] = sample / float(maxSpatialSample);
+
 }
 
 

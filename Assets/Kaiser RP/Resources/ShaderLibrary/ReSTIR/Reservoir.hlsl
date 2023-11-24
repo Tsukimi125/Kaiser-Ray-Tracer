@@ -159,8 +159,8 @@ struct Reservoir
     }
 
     void Update(float3 newDir, float3 newRadiance,
-        float targetWeight, float invSourceWeight,
-        float rand)
+    float targetWeight, float invSourceWeight,
+    float rand)
     {
         float risWeight = invSourceWeight * targetWeight;
         M++;
@@ -188,7 +188,8 @@ struct Reservoir
         wSum += re.wSum;
         if (rand < re.wSum / max(1e-4, wSum))
         {
-            dir = re.radiance;
+            dir = re.dir;
+            radiance = re.radiance;
             w = re.w;
         }
         M += re.M;
