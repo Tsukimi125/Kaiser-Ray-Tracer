@@ -23,6 +23,16 @@ Shader "KaiserRenderPipeline/Lit"
     {
         Pass
         {
+            Tags { "LightMode" = "GBufferPass" }
+            
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            ENDHLSL
+        }
+        Pass
+        {
             Name "RayTracing"
             Tags { "LightMode" = "RayTracing" }
 

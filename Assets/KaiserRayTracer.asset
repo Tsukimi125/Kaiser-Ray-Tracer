@@ -15,12 +15,12 @@ MonoBehaviour:
   renderType: 2
   envTexture: {fileID: 8900000, guid: cb5229eb8a46ed14daf2be5f1292b6c0, type: 3}
   envIntensity: 0
-  accumulateType: 1
+  accumulateType: 0
   accumulateMaxFrame: 128
   ptBounceCount: 1
   restirType: 2
   restirBounceCount: 1
-  restirTReservoirSize: 15
-  restirSReservoirSize: 9
-  restirLongPath: 1
+  restirTReservoirSize: 40
+  restirSReservoirSize: 20
+  restirLongPath: 0
   activeCameraType: 1

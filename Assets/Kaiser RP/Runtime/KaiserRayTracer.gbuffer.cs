@@ -16,11 +16,6 @@ public partial class KaiserRayTracer : RenderPipeline
             return;
         }
 
-        // RTHandle gbufferHandle0 = rtHandleSystem.Alloc(cameraData.gbuffer0, "_GBuffer0");
-        // RTHandle gbufferHandle1 = rtHandleSystem.Alloc(cameraData.gbuffer1, "_GBuffer1");
-        // RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");
-        // RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
-
         using (renderGraph.RecordAndExecute(renderGraphParams))
         {
             RenderGraphBuilder builder = renderGraph.AddRenderPass<GBufferRenderPassData>("RT GBuffer Pass", out var passData);
