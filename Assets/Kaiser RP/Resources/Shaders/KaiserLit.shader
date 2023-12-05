@@ -21,16 +21,19 @@ Shader "KaiserRenderPipeline/Lit"
 
     SubShader
     {
+        Tags { "RenderType" = "Opaque" "Queue" = "Geometry" }
         Pass
         {
             Tags { "LightMode" = "GBufferPass" }
             
             HLSLPROGRAM
+            #include "KaiserLitPass.hlsl"
             #pragma vertex vert
             #pragma fragment frag
 
             ENDHLSL
         }
+
         Pass
         {
             Name "RayTracing"
