@@ -93,10 +93,13 @@ public partial class KaiserRayTracer : RenderPipeline
                     RenderIrcache(camera, renderGraphParams);
                     break;
                 case RenderType.RESTIR_GI:
+                    RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
+                    RenderLightPass(camera, renderGraphParams, cameraData);
+
                     using (renderGraph.RecordAndExecute(renderGraphParams))
                     {
                         using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
-                        GBufferPass.Record(renderGraph, camera, cull, true, -1);
+                        GBufferPass.Record(renderGraph, camera, cull, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
                         RenderGraphBuilder builder = renderGraph.AddRenderPass<DeferredLightPassData>("Deferred Light Pass", out var passData);
 
                         TextureDesc desc = new TextureDesc()

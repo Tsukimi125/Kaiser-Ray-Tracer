@@ -9,13 +9,8 @@ using UnityEngine.Rendering.RendererUtils;
 public class GBufferPass
 {
     static readonly ProfilingSampler
-        samplerOpaque = new("Opaque Geometry"),
-        samplerTransparent = new("Transparent Geometry");
+        samplerOpaque = new("Opaque Geometry");
 
-    // static readonly ShaderTagId[] shaderTagIDs = {
-    //     new("SRPDefaultUnlit"),
-    //     new("KaiserLit")
-    // };
     static readonly ShaderTagId shaderTagID = new("GBufferPass");
 
 
@@ -27,12 +22,10 @@ public class GBufferPass
     TextureHandle depth;
     void Render(RenderGraphContext context)
     {
-
-
         context.cmd.DrawRendererList(listHandle);
         context.renderContext.ExecuteCommandBuffer(context.cmd);
         context.cmd.Clear();
-        Debug.Log("GBufferPass");
+
         // CoreUtils.DrawRendererList(context.renderContext, context.cmd, listHandle);
         context.cmd.SetGlobalTexture("_GBuffer0", gbuffer0);
         context.cmd.SetGlobalTexture("_GBuffer1", gbuffer1);
@@ -45,8 +38,10 @@ public class GBufferPass
         RenderGraph renderGraph,
         Camera camera,
         CullingResults cullingResults,
-        bool useLightsPerObject,
-        int renderingLayerMask)
+        RTHandle gbufferHandle0,
+        RTHandle gbufferHandle1,
+        RTHandle gbufferHandle2,
+        RTHandle gbufferHandle3)
     {
         ProfilingSampler sampler = samplerOpaque;
 
@@ -76,16 +71,18 @@ public class GBufferPass
                 name = "_Depth"
             };
 
-            pass.gbuffer0 = builder.UseColorBuffer(renderGraph.CreateTexture(colorRTDesc), 0);
-            pass.gbuffer1 = builder.UseColorBuffer(renderGraph.CreateTexture(colorRTDesc), 1);
-            pass.gbuffer2 = builder.UseColorBuffer(renderGraph.CreateTexture(colorRTDesc), 2);
-            pass.gbuffer3 = builder.UseColorBuffer(renderGraph.CreateTexture(colorRTDesc), 3);
+            // pass.gbuffer0 = builder.UseColorBuffer(renderGraph.CreateTexture(cameraData.gbuffer0), 0);
+            pass.gbuffer0 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle0), 0);
+            pass.gbuffer1 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle1), 1);
+            pass.gbuffer2 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle2), 2);
+            pass.gbuffer3 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle3), 3);
             pass.depth = builder.UseDepthBuffer(renderGraph.CreateTexture(depthRTDesc), DepthAccess.Write);
             builder.ReadTexture(pass.gbuffer0);
             builder.ReadTexture(pass.gbuffer1);
             builder.ReadTexture(pass.gbuffer2);
             builder.ReadTexture(pass.gbuffer3);
             builder.ReadTexture(pass.depth);
+
             RendererListDesc gbufferDesc = new RendererListDesc(shaderTagID, cullingResults, camera)
             {
                 sortingCriteria = SortingCriteria.CommonOpaque,
@@ -93,19 +90,7 @@ public class GBufferPass
             };
             pass.listHandle = builder.UseRendererList(renderGraph.CreateRendererList(gbufferDesc));
 
-            // builder.SetRenderFunc((GBufferPassData data, RenderGraphContext context) =>
-            // {
-            //     CoreUtils.DrawRendererList(context.renderContext, context.cmd, data._renderList_Qpaque);
-            // });
             builder.SetRenderFunc<GBufferPass>((pass, context) => pass.Render(context));
-            // Debug.Log("1");
-            // builder.SetRenderFunc((GBufferPass pass, RenderGraphContext context) =>
-            // {
-            //     Debug.Log("4");
-            //     context.cmd.DrawRendererList(pass.listHandle);
-            //     context.renderContext.ExecuteCommandBuffer(context.cmd);
-            //     context.cmd.Clear();
-            // });
         }
 
     }

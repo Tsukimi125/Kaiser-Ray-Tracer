@@ -24,7 +24,9 @@ void LightPass(uint3 id:SV_DispatchThreadID)
     float2 resolution = _BufferSize.xy;
     float2 invResolution = _BufferSize.zw;
     float2 uv = (float2(id.xy) + _Jitter) * invResolution;
-
+    // #ifndef UNITY_REVERSED_Z
+    //     uv.y = 1.0 - uv.y;
+    // #endif
     SurfaceData surfaceData;
     surfaceData.albedo = _GBuffer0.SampleLevel(sampler_linear_clamp, uv, 0).rgb;
     surfaceData.normal = _GBuffer1.SampleLevel(sampler_linear_clamp, uv, 0).rgb;
