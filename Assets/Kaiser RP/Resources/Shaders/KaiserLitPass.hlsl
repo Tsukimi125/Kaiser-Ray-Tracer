@@ -5,30 +5,40 @@
 
 
 
-float4 _Color;
+
 
 Texture2D<float4> _MainTex;
-float4 _MainTex_ST;
+
 SamplerState sampler_MainTex;
 
 Texture2D<float4> _BumpMap;
-float4 _BumpMap_ST;
+
 SamplerState sampler_BumpMap;
 
 Texture2D<float4> _MetallicGlossMap;
-float4 _MetallicGlossMap_ST;
+
 SamplerState sampler_MetallicGlossMap;
 
-float _Glossiness;
-float _Metallic;
-float _IOR;
+
 
 Texture2D<float4> _EmissionTex;
-float4 _EmissionTex_ST;
-SamplerState sampler_EmissionTex;
-float4 _EmissionColor;
 
-float _ExtinctionCoefficient;
+SamplerState sampler_EmissionTex;
+
+
+CBUFFER_START(UnityPerMaterial)
+    float4 _Color;
+    float4 _MainTex_ST;
+    float4 _BumpMap_ST;
+    float4 _MetallicGlossMap_ST;
+    
+    float4 _EmissionTex_ST;
+    float4 _EmissionColor;
+    float _Glossiness;
+    float _Metallic;
+    float _IOR;
+    float _ExtinctionCoefficient;
+CBUFFER_END
 
 struct Attributes
 {
@@ -48,10 +58,7 @@ struct Varyings
 
 };
 
-// CBUFFER_START(UnityPerMaterial)
-//     float4 _MainTex_ST;
-//     half4 _BaseColor;
-// CBUFFER_END
+
 
 Varyings vert(Attributes v)
 {

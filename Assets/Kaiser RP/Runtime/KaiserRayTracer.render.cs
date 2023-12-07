@@ -93,45 +93,15 @@ public partial class KaiserRayTracer : RenderPipeline
                     RenderIrcache(camera, renderGraphParams);
                     break;
                 case RenderType.RESTIR_GI:
-                    RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
-                    RenderLightPass(camera, renderGraphParams, cameraData);
+                    // RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
+                    // RenderLightPass(camera, renderGraphParams, cameraData);
 
                     using (renderGraph.RecordAndExecute(renderGraphParams))
                     {
                         using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
-                        GBufferPass.Record(renderGraph, camera, cull, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
-                        RenderGraphBuilder builder = renderGraph.AddRenderPass<DeferredLightPassData>("Deferred Light Pass", out var passData);
-
-                        TextureDesc desc = new TextureDesc()
-                        {
-                            dimension = TextureDimension.Tex2D,
-                            width = camera.pixelWidth,
-                            height = camera.pixelHeight,
-                            depthBufferBits = 0,
-                            colorFormat = GraphicsFormat.R16G16B16A16_UNorm,
-                            slices = 1,
-                            msaaSamples = MSAASamples.None,
-                            enableRandomWrite = true,
-                        };
-
-                        passData.outputTexture = builder.CreateTransientTexture(desc);
-                        // TextureHandle output = renderGraph.ImportTexture(passData.outputTexture);
-                        // passData.outputTexture = builder.WriteTexture(output);
-
-                        builder.SetRenderFunc((DeferredLightPassData data, RenderGraphContext ctx) =>
-                        {
-                            Vector4 bufferSize = new Vector4(camera.pixelWidth, camera.pixelHeight, 1.0f / camera.pixelWidth, 1.0f / camera.pixelHeight);
-                            ctx.cmd.SetComputeVectorParam(KaiserShaders.deferredLightPass, "_BufferSize", bufferSize);
-                            ctx.cmd.SetComputeVectorParam(KaiserShaders.deferredLightPass, "_Jitter", new Vector4(0.5f, 0.5f, 0, 0));
-                            ctx.cmd.SetComputeTextureParam(KaiserShaders.deferredLightPass, 0, "_Result", passData.outputTexture);
-
-                            // dispatch
-                            int threadGroupsX = Mathf.CeilToInt(camera.pixelWidth / 8.0f);
-                            int threadGroupsY = Mathf.CeilToInt(camera.pixelHeight / 8.0f);
-                            ctx.cmd.DispatchCompute(KaiserShaders.deferredLightPass, 0, threadGroupsX, threadGroupsY, 1);
-                            frameIndex++;
-                            ctx.cmd.Blit(passData.outputTexture, camera.activeTexture);
-                        });
+                        GBufferPass.Record(renderGraph, camera, cull);
+                        DeferredLightPass.Record(renderGraph, camera);
+                        frameIndex++;
                     }
 
 

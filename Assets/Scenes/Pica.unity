@@ -153,7 +153,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -6798214047826551019, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -6472627247882773590, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -181,7 +181,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -181792006800577755, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3222299091681969940, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -193,7 +193,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3879533021943936715, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4337655786967831793, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -245,19 +245,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5356922314540397602, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5420473808945800422, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6475343335203795011, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7870496343132542699, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8503821608989330934, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -269,7 +269,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8822934538274274021, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8932065139834074378, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -281,7 +281,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9069959391282526833, guid: 33b638acb8c6cbd46b177148883a9e1b, type: 3}
       propertyPath: m_RayTracingMode
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

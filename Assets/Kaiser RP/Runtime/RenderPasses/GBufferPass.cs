@@ -12,8 +12,6 @@ public class GBufferPass
         samplerOpaque = new("Opaque Geometry");
 
     static readonly ShaderTagId shaderTagID = new("GBufferPass");
-
-
     RendererListHandle listHandle;
     TextureHandle gbuffer0;
     TextureHandle gbuffer1;
@@ -37,27 +35,55 @@ public class GBufferPass
     public static void Record(
         RenderGraph renderGraph,
         Camera camera,
-        CullingResults cullingResults,
-        RTHandle gbufferHandle0,
-        RTHandle gbufferHandle1,
-        RTHandle gbufferHandle2,
-        RTHandle gbufferHandle3)
+        CullingResults cullingResults)
     {
         ProfilingSampler sampler = samplerOpaque;
 
         RenderGraphBuilder builder = renderGraph.AddRenderPass<GBufferPass>(
             "GBufferPass", out var pass);
         {
-
-            TextureDesc colorRTDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight)
+            TextureDesc gbufferAlbedoDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight)
             {
-                colorFormat = GraphicsFormatUtility.GetGraphicsFormat(RenderTextureFormat.BGRA32, QualitySettings.activeColorSpace == ColorSpace.Linear),
-                depthBufferBits = 0,
+                colorFormat = GraphicsFormat.R16G16B16A16_UNorm,
+                depthBufferBits = DepthBits.None,
                 msaaSamples = MSAASamples.None,
-                enableRandomWrite = false,
+                enableRandomWrite = true,
                 clearBuffer = true,
                 clearColor = Color.black,
                 name = "_GBuffer0"
+            };
+
+            TextureDesc gbufferNormalDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight)
+            {
+                colorFormat = GraphicsFormat.R16G16B16A16_SNorm,
+                depthBufferBits = DepthBits.None,
+                msaaSamples = MSAASamples.None,
+                enableRandomWrite = true,
+                clearBuffer = true,
+                clearColor = Color.black,
+                name = "_GBuffer1"
+            };
+
+            TextureDesc gbufferWorldPosDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight)
+            {
+                colorFormat = GraphicsFormat.R32G32B32A32_SFloat,
+                depthBufferBits = DepthBits.None,
+                msaaSamples = MSAASamples.None,
+                enableRandomWrite = true,
+                clearBuffer = true,
+                clearColor = Color.black,
+                name = "_GBuffer2"
+            };
+
+            TextureDesc gbufferRMAODesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight)
+            {
+                colorFormat = GraphicsFormat.R8G8B8A8_UNorm,
+                depthBufferBits = DepthBits.None,
+                msaaSamples = MSAASamples.None,
+                enableRandomWrite = true,
+                clearBuffer = true,
+                clearColor = Color.black,
+                name = "_GBuffer3"
             };
 
             TextureDesc depthRTDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight)
@@ -71,11 +97,14 @@ public class GBufferPass
                 name = "_Depth"
             };
 
-            // pass.gbuffer0 = builder.UseColorBuffer(renderGraph.CreateTexture(cameraData.gbuffer0), 0);
-            pass.gbuffer0 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle0), 0);
-            pass.gbuffer1 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle1), 1);
-            pass.gbuffer2 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle2), 2);
-            pass.gbuffer3 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle3), 3);
+            pass.gbuffer0 = builder.UseColorBuffer(renderGraph.CreateTexture(gbufferAlbedoDesc), 0);
+            pass.gbuffer1 = builder.UseColorBuffer(renderGraph.CreateTexture(gbufferNormalDesc), 1);
+            pass.gbuffer2 = builder.UseColorBuffer(renderGraph.CreateTexture(gbufferWorldPosDesc), 2);
+            pass.gbuffer3 = builder.UseColorBuffer(renderGraph.CreateTexture(gbufferRMAODesc), 3);
+            // pass.gbuffer0 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle0), 0);
+            // pass.gbuffer1 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle1), 1);
+            // pass.gbuffer2 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle2), 2);
+            // pass.gbuffer3 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle3), 3);
             pass.depth = builder.UseDepthBuffer(renderGraph.CreateTexture(depthRTDesc), DepthAccess.Write);
             builder.ReadTexture(pass.gbuffer0);
             builder.ReadTexture(pass.gbuffer1);
