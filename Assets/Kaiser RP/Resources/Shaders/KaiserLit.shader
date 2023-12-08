@@ -57,3 +57,4 @@ Shader "KaiserRenderPipeline/Lit"
 
     CustomEditor "KaiserLitShaderGUI"
 }
+
