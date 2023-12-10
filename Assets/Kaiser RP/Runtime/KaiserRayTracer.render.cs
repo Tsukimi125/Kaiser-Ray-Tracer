@@ -103,7 +103,7 @@ public partial class KaiserRayTracer : RenderPipeline
                         // DeferredLightPass.Record(renderGraph, camera);
                         frameIndex++;
                     }
-                    // RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
+                    RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
                     if (RenderReSTIR(camera, renderGraphParams, cameraData, outputRTHandle))
                     {
                         cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);

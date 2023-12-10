@@ -58,7 +58,7 @@ void TraceShadowRay(in uint pathLength, in PathVertex hitVertex, in float3 throu
 {
     // Trace shadow ray
     const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), pathLength, false).TraceShadowRay(_AccelStruct);
-    float3 dirLightRadiance = brdf.evalDirectionalLight(wo, wi);
+    float3 dirLightRadiance = clamp(brdf.evalDirectionalLight(wo, wi), 0.0f, 3.0f);
     radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor);
 }
 

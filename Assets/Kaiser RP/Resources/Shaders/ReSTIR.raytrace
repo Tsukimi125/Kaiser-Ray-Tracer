@@ -127,10 +127,10 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     surfaceData.albedo = albedo;
     surfaceData.normal = normal;
     surfaceData.emission = float3(0, 0, 0);
-    // surfaceData.roughness = roughness;
-    // surfaceData.metallic = metallic;
-    surfaceData.roughness = 1;
-    surfaceData.metallic = 0;
+    surfaceData.roughness = roughness;
+    surfaceData.metallic = metallic;
+    // surfaceData.roughness = 1;
+    // surfaceData.metallic = 0;
 
     trace.pathLength = 0;
     trace.throughput = albedo;
@@ -157,7 +157,7 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     hitVertex.surfaceData = surfaceData;
 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-    vertex.brdf.ForceDiffuse();
+    // vertex.brdf.ForceDiffuse();
 
     directRadiance = float3(0, 0, 0);
     // if (_RE_EvaluateDirectLighting)
@@ -194,7 +194,7 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
             vertex.wo = normalize(vertex.wo);
         }
         vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-        vertex.brdf.ForceDiffuse();
+        // vertex.brdf.ForceDiffuse();
         vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
         TraceShadowRay(hitVertex, trace, vertex);
@@ -265,7 +265,7 @@ void ReSTIR_Temporal()
             {
                 re = UnPack(_SReservoir[launchIndex]);
             }
-            re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
+            re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0f, 10.0f), RandomFloat01(rng));
             // re.Update(trace.radiance, trace.firstSampleDir, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
             _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
             

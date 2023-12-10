@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03af0fd0bb6220a4391f5f91af0a7f81, type: 3}
   m_Name: KaiserRayTracer
   m_EditorClassIdentifier: 
-  renderType: 2
+  renderType: 0
   envTexture: {fileID: 8900000, guid: cb5229eb8a46ed14daf2be5f1292b6c0, type: 3}
-  envIntensity: 0
-  accumulateType: 0
+  envIntensity: 0.28
+  accumulateType: 2
   accumulateMaxFrame: 128
-  ptBounceCount: 4
+  ptBounceCount: 2
   restirType: 1
-  restirBounceCount: 1
-  restirTReservoirSize: 20
-  restirSReservoirSize: 10
-  restirLongPath: 1
+  restirBounceCount: 4
+  restirTReservoirSize: 26
+  restirSReservoirSize: 5
+  restirLongPath: 0
   activeCameraType: 0
