@@ -118,11 +118,17 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     surfaceData.albedo = albedo;
     surfaceData.normal = normal;
     surfaceData.emission = float3(0, 0, 0);
-    // surfaceData.roughness = roughness;
-    // surfaceData.metallic = metallic;
-    surfaceData.roughness = 1;
-    surfaceData.metallic = 0;
+    
+    // surfaceData.roughness = 1;
+    // surfaceData.metallic = 0;
+    surfaceData.roughness = roughness;
 
+    // if (roughness > 0.4)
+    // {
+    //     return;
+    // }
+
+    surfaceData.metallic = metallic;
     trace.pathLength = 0;
     trace.throughput = albedo;
     trace.radiance = float3(0, 0, 0);
@@ -247,10 +253,13 @@ void ReSTIR_Temporal()
             {
                 re = UnPack(_SReservoir[launchIndex]);
             }
-            re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
+
+            // trace.radiance = saturate(trace.radiance);clamp(trace.invPDF, 0, 5000.0f)
+            re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0, 256), RandomFloat01(rng));
             // re.Update(trace.radiance, trace.firstSampleDir, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
             _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
             
+            // _Output[launchIndex] = float4(re.wSum.xxx / re.w / 100, 1.0f);
             _Output[launchIndex] = float4(re.radiance * re.wSum / (re.M * re.w), 1.0f);
         }
     }

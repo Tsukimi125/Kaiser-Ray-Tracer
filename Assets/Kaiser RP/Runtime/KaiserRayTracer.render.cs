@@ -68,8 +68,13 @@ public partial class KaiserRayTracer : RenderPipeline
 
         if (camera.cameraType == CameraType.SceneView)
         {
-            // RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
-            // RenderLightPass(camera, renderGraphParams, cameraData);
+            using (renderGraph.RecordAndExecute(renderGraphParams))
+            {
+                using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
+                GBufferPass.Record(renderGraph, camera, cull);
+                DeferredLightPass.Record(renderGraph, camera);
+                frameIndex++;
+            }
         }
         else if (camera.cameraType == CameraType.Game)
         {
@@ -93,9 +98,6 @@ public partial class KaiserRayTracer : RenderPipeline
                     RenderIrcache(camera, renderGraphParams);
                     break;
                 case RenderType.RESTIR_GI:
-                    // RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
-                    // RenderLightPass(camera, renderGraphParams, cameraData);
-
                     using (renderGraph.RecordAndExecute(renderGraphParams))
                     {
                         using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
@@ -105,7 +107,7 @@ public partial class KaiserRayTracer : RenderPipeline
                     }
 
 
-                    RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
+                    // RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
                     if (RenderReSTIR(camera, renderGraphParams, cameraData, outputRTHandle))
                     {
                         cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);
