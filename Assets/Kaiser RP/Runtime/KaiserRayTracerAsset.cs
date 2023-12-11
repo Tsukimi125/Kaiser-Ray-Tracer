@@ -35,7 +35,7 @@ public class KaiserRayTracerAsset : RenderPipelineAsset
     public uint ptBounceCount = 8;
     [Header("ReSTIR Settings")]
     public ReSTIRType restirType = ReSTIRType.SPATIOTEMPORAL;
-    [Range(1, 16)]
+    [Range(0, 16)]
     public uint restirBounceCount = 1;
     [Range(1, 64)]
     public int restirTReservoirSize = 20;

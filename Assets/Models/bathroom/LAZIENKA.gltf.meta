@@ -1,0 +1,197 @@
+fileFormatVersion: 2
+guid: ea6d25b0ce5987b4990f5a7b3224c6e6
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material
+    second: {fileID: 2100000, guid: dd5a222f63239924eb656aa56ebb3b23, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.004
+    second: {fileID: 2100000, guid: a369451121bb34c499cd861568fbaf2d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.006
+    second: {fileID: 2100000, guid: 1c4614ffe7b221945934f29d44bbdc62, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.007
+    second: {fileID: 2100000, guid: 0dae92f0d17ac794b83f248c4318569c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.009
+    second: {fileID: 2100000, guid: cc52aca42f1cc5b489a376a8c586d06e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.012
+    second: {fileID: 2100000, guid: 350a1d6b45171d949a02634378fe3119, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.013
+    second: {fileID: 2100000, guid: ca34e1190e03cef46a7d39cbf034e2b9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.016
+    second: {fileID: 2100000, guid: 791aabf5b3539f645ac8b37841be775a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: White-pot
+    second: {fileID: 2100000, guid: 8d8121cab3112aa469e6946fdce22e5e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bamboo
+    second: {fileID: 2100000, guid: d39c94ee1005e99429686235423a03fa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: biale sciany
+    second: {fileID: 2100000, guid: e3ffcc5f9ff081a41b84fb5aaa03f712, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bialy
+    second: {fileID: 2100000, guid: c250def5966856b44a7ac4b83e03df49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bialy.001
+    second: {fileID: 2100000, guid: 6d82ae68e4ad3024390b312eccab2e84, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ceramics
+    second: {fileID: 2100000, guid: 3323821bbef204c47831962ff609b294, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: chrome
+    second: {fileID: 2100000, guid: 324a3749f78cdb94b9bc0cbe11675259, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: czarne
+    second: {fileID: 2100000, guid: 3d9a52ca018aa194fa3f2fafcd80fb3d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: czarne plytki
+    second: {fileID: 2100000, guid: 30d9a6509226e2b4da9da58a15700094, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: czerwony
+    second: {fileID: 2100000, guid: 51365aa1261cbb0488071a2abea245d9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: drzwi
+    second: {fileID: 2100000, guid: eefca9eced8b9b44cac72432cb6d469e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: dywan
+    second: {fileID: 2100000, guid: 2ce396bcd18450941bbcbf385a7d5a2a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: dywan.001
+    second: {fileID: 2100000, guid: b0a4e8cd9f8352d4ea1d3431b15fd921, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lustro
+    second: {fileID: 2100000, guid: 845e6ef4bc33a1048b56e26b30dd6f75, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: n5
+    second: {fileID: 2100000, guid: db8f1b8c6dcfcd4499347e05d12763a9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: szare plytki
+    second: {fileID: 2100000, guid: d50a4d3eb6210fd4187a401b9541f27f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: szklo
+    second: {fileID: 2100000, guid: bbdbbef24b9b4bb40a127db8fd3a839b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: szklo mleczne.001
+    second: {fileID: 2100000, guid: 74c9746d599e9f04cabe495ddb99a2a7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: szklo zielone
+    second: {fileID: 2100000, guid: 98d51a2be428cf648bc04a890a2e2b7c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: zielony
+    second: {fileID: 2100000, guid: fef0079f1e61fac499fc678d3e1ca8fa, type: 2}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: 0254014_l
+    second: {fileID: 2800000, guid: f236578ec884ee649b7494fb053c4ef3, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Bamboo
+    second: {fileID: 2800000, guid: 8667c4c75f91f0b4bab59e61058de98f, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Dark-brown-fine-wood-texture
+    second: {fileID: 2800000, guid: 32a1b59878f2ff947bb3d7013a62a7e8, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: big_170177_72707A0F-2118-4433-BB77-DAD90DAE9094
+    second: {fileID: 2800000, guid: 9cd6ac2511249b64ca04a25e292f5fd6, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: bw-dywan_jpg_001
+    second: {fileID: 2800000, guid: fbcc506a5ab7b384cb164ac1c5877a87, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: czarne_plytki
+    second: {fileID: 2800000, guid: 8f49a34be9ae6974a930aa3fe87bd609, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: dywan_jpg_001
+    second: {fileID: 2800000, guid: 218edfbfe38a25347b9e56b504a67c15, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: pasta
+    second: {fileID: 2800000, guid: 86a9cdd9d813258478f462898d9389ec, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: szare_plytki_jpg
+    second: {fileID: 2800000, guid: 0e92198863302fc40b16653f86eb5c9a, type: 3}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: aecd2106718f2444db3ca21345da2cef, type: 3}
+  reverseAxis: 0
+  renderPipeline: 0

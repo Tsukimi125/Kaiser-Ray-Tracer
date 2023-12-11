@@ -23,6 +23,8 @@ int _RE_TReservoirSize;
 int _RE_SReservoirSize;
 int _RE_LongPath;
 
+int _RE_EvaluateDirectLighting;
+
 // Camera Properties
 float _RE_Zoom;
 float _RE_AspectRatio;
@@ -41,6 +43,13 @@ Texture2D<float4> _GBuffer3;
 RWTexture2D<int4> _TReservoir;
 RWTexture2D<int4> _SReservoir;
 
+
+float3 EvaluateDirectLight(in PathVertex hitVertex, inout TraceData trace, inout VertexData vertex)
+{
+    // Trace shadow ray
+    const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), trace.pathLength, false).TraceShadowRay(_AccelStruct);
+    return trace.throughput * SELECT(isShadowed, 0.0, vertex.brdf.evalDirectionalLight(vertex.wo, vertex.wi) * _DirectionalLightColor);
+}
 
 void TraceShadowRay(in PathVertex hitVertex, inout TraceData trace, inout VertexData vertex)
 {
@@ -97,7 +106,7 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
 }
 
 
-void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceData trace, inout VertexData vertex)
+void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceData trace, inout VertexData vertex, out float3 directRadiance)
 {
     float2 frameCoord = launchIndex + float2(0.5, 0.5);
     float3 result = float3(0, 0, 0);
@@ -118,10 +127,10 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     surfaceData.albedo = albedo;
     surfaceData.normal = normal;
     surfaceData.emission = float3(0, 0, 0);
-    
+    surfaceData.roughness = roughness;
+    surfaceData.metallic = metallic;
     // surfaceData.roughness = 1;
     // surfaceData.metallic = 0;
-    surfaceData.roughness = roughness;
 
     // if (roughness > 0.4)
     // {
@@ -154,7 +163,16 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     hitVertex.surfaceData = surfaceData;
 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-    vertex.brdf.ForceDiffuse();
+    // vertex.brdf.ForceDiffuse();
+
+    directRadiance = float3(0, 0, 0);
+    // if (_RE_EvaluateDirectLighting)
+
+    {
+        directRadiance = EvaluateDirectLight(hitVertex, trace, vertex);
+    }
+    
+
     // invPDF = 1.0;
     uint maxBounceCount = _RE_MaxBounceCount;
 
@@ -182,7 +200,7 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
             vertex.wo = normalize(vertex.wo);
         }
         vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-        vertex.brdf.ForceDiffuse();
+        // vertex.brdf.ForceDiffuse();
         vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
         TraceShadowRay(hitVertex, trace, vertex);
@@ -230,8 +248,8 @@ void ReSTIR_Temporal()
     
     TraceData trace;
     VertexData vertex;
-
-    TracePath(launchIndex, launchDim, rng, trace, vertex);
+    float3 directRadiance;
+    TracePath(launchIndex, launchDim, rng, trace, vertex, directRadiance);
 
     float3 totalRadiance = trace.radiance;
 
