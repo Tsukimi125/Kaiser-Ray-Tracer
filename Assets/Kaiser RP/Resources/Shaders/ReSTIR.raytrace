@@ -278,7 +278,7 @@ void ReSTIR_Temporal()
             _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
             
             // _Output[launchIndex] = float4(re.wSum.xxx / re.w / 100, 1.0f);
-            _Output[launchIndex] = float4(re.radiance * re.wSum / (re.M * re.w), 1.0f);
+            _Output[launchIndex] = float4(directRadiance + re.radiance * re.wSum / (re.M * re.w), 1.0f);
         }
     }
 }
