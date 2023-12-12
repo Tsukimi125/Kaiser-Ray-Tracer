@@ -31,7 +31,7 @@ bool TracePrimaryRay(inout RayDesc ray, in uint pathLength, inout uint rng, inou
 {
     hitVertex = KaiserRayTracer::Create(ray, 0, false).TraceScatterRay(_AccelStruct);
     SurfaceData surfaceData = hitVertex.surfaceData;
-
+    
     if (!hitVertex.bHit)
     {
         radiance += throughput * _PT_EnvIntensity * _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb;
@@ -49,7 +49,7 @@ bool TracePrimaryRay(inout RayDesc ray, in uint pathLength, inout uint rng, inou
             return false;
         }
     }
-
+    // throughput = lerp(0.04f.xxx, surfaceData.metallic, surfaceData.albedo);
     radiance += throughput * surfaceData.emission;
     return true;
 }

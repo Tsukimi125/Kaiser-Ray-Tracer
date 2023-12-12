@@ -74,11 +74,11 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
         ray.Direction = mul(vertex.tangentToWorld, brdfSample.wi);
         ray.TMin = 1e-4;
         trace.throughput *= brdfSample.weight;
-        trace.invPDF = 1.0f / brdfSample.pdf;
+        trace.invPDF = 1.0f / (brdfSample.pdf);
     }
     else
     {
-        trace.invPDF = 0.0f;
+        trace.invPDF = 0.001f;
         return false;
     }
     
@@ -129,17 +129,9 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     surfaceData.emission = float3(0, 0, 0);
     surfaceData.roughness = roughness;
     surfaceData.metallic = metallic;
-    // surfaceData.roughness = 1;
-    // surfaceData.metallic = 0;
 
-    // if (roughness > 0.4)
-    // {
-    //     return;
-    // }
-
-    surfaceData.metallic = metallic;
     trace.pathLength = 0;
-    trace.throughput = albedo;
+    trace.throughput = 1;
     trace.radiance = float3(0, 0, 0);
     trace.firstLuminance = float3(0, 0, 0);
 
@@ -272,7 +264,7 @@ void ReSTIR_Temporal()
                 re = UnPack(_SReservoir[launchIndex]);
             }
 
-            // trace.radiance = saturate(trace.radiance);clamp(trace.invPDF, 0, 5000.0f)
+            // trace.radiance = saturate(trace.radiance);clamp(trace.invPDF, 0, 256)
             re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0, 256), RandomFloat01(rng));
             // re.Update(trace.radiance, trace.firstSampleDir, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
             _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);

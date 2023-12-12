@@ -2,7 +2,82 @@ fileFormatVersion: 2
 guid: f6eb0d6d3a2b7784984c75babdc8e5be
 ScriptedImporter:
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Carpet
+    second: {fileID: 2100000, guid: 69b8d5d828873344095b5a884379e8d0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Cupboards
+    second: {fileID: 2100000, guid: ff3e82a5ad968ef4996f3136530c9c29, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Emission
+    second: {fileID: 2100000, guid: 54e47cb1d514f8643a270bf6bb2be298, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: EndTables
+    second: {fileID: 2100000, guid: 1944211431d7d68459fffdae0a6f02d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Light
+    second: {fileID: 2100000, guid: 38e3d49f2a66c584a99b3f9bbb54e5bb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Painting
+    second: {fileID: 2100000, guid: 42f6eaff1eabbec4b9aec692a3889f8d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Structure
+    second: {fileID: 2100000, guid: b7a8b801c9944b249a1e7693d427f6f5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: material
+    second: {fileID: 2100000, guid: 2c9a03b09428e42478893023d1364d07, type: 2}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Carpet_baseColor
+    second: {fileID: 2800000, guid: e0608d685d6d8d7439b1da6c43043efe, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Cupboards_baseColor
+    second: {fileID: 2800000, guid: cf2cb9390791b57469ce66475c606406, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: EndTables_baseColor
+    second: {fileID: 2800000, guid: 7cfbcbd61b1c91741bf02692af0ac7fd, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Light_baseColor
+    second: {fileID: 2800000, guid: 0569335df4a6c1d4c83b352bad2a8dac, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Painting_baseColor
+    second: {fileID: 2800000, guid: c64613fc0793b744795dcd302b3f05bf, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Structure_baseColor
+    second: {fileID: 2800000, guid: 36604bd37a271dc46ac178008dbbdaa9, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: material_baseColor
+    second: {fileID: 2800000, guid: 3b8835732ae04fc489cc601fe7378e4d, type: 3}
   serializedVersion: 2
   userData: 
   assetBundleName: 

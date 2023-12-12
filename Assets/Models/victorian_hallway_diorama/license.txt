@@ -1,0 +1,11 @@
+Model Information:
+* title:	Victorian Hallway Diorama
+* source:	https://sketchfab.com/3d-models/victorian-hallway-diorama-1e20facf9cf14dbf84fac4e33eba3b71
+* author:	coleerc (https://sketchfab.com/coleerc)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Victorian Hallway Diorama" (https://sketchfab.com/3d-models/victorian-hallway-diorama-1e20facf9cf14dbf84fac4e33eba3b71) by coleerc (https://sketchfab.com/coleerc) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
