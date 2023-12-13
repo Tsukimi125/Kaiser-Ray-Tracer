@@ -1,0 +1,167 @@
+fileFormatVersion: 2
+guid: 75bd07355ac08964994990c730c72ec9
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.001
+    second: {fileID: 2100000, guid: d2e938d26f518e94c9dfb5de48b9ec9f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.002
+    second: {fileID: 2100000, guid: 54533b7a9a731fc4f8e39752f8fb947e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.003
+    second: {fileID: 2100000, guid: 3a76f48f5fded524e9fccdc762cdc4f5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.004
+    second: {fileID: 2100000, guid: 3132eeb6a39342f4b8565a113f88a845, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.005
+    second: {fileID: 2100000, guid: 6f647547f1465e1408a26e6693de81cd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.006
+    second: {fileID: 2100000, guid: dc749073903e4f845962b24cf7bd8120, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.007
+    second: {fileID: 2100000, guid: 2b7f31d28f8b0d549a1fb2273e841703, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: krzeslo_1
+    second: {fileID: 2100000, guid: 85166f10610a59b4cae8f03c279679fc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: krzeslo_okno
+    second: {fileID: 2100000, guid: 129a3fdf6163a28459375b33773842a9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: krzeslo_prawe
+    second: {fileID: 2100000, guid: 36749ae570801c642b082cf824d21036, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: krzeslo_srodek
+    second: {fileID: 2100000, guid: c24a2329bd5aaf347ad6bc210d7405d2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: mata
+    second: {fileID: 2100000, guid: d437e3913258b6c43ab4fe63b77c26a0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: podloga
+    second: {fileID: 2100000, guid: 55849d347e1e1634499863301a75582f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sciana_okno
+    second: {fileID: 2100000, guid: f1698b0bd0bb45a4ba931cd85b612b79, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stolik
+    second: {fileID: 2100000, guid: 362f2e5bbda186344b10e0c3ade50a75, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: stolik.001
+    second: {fileID: 2100000, guid: 372e730ccfe18b74b95e227269980caa, type: 2}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_0
+    second: {fileID: 2800000, guid: 7168934ca14824d43894c02e7bff81fa, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_1
+    second: {fileID: 2800000, guid: ce1c264c28af036478a8b7dab44166a9, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_10
+    second: {fileID: 2800000, guid: 219542dc1a226eb4fb8edaea9b291ba4, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_11
+    second: {fileID: 2800000, guid: 1f20c867fed0c3d40a41ba890e4a78d7, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_12
+    second: {fileID: 2800000, guid: 27e1fa983a4100c449acdf3ad321293d, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_13
+    second: {fileID: 2800000, guid: 703a456563b754e478365b182f3515a1, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_14
+    second: {fileID: 2800000, guid: 749dcc87834016e4590a391923e70200, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_2
+    second: {fileID: 2800000, guid: 5a9c9fa68d9f16047b7e92897273beed, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_3
+    second: {fileID: 2800000, guid: 5ced97e4e3e787342bea683ad0e5319d, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_4
+    second: {fileID: 2800000, guid: 067cd9916e0d5f44583d9850277920b5, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_5
+    second: {fileID: 2800000, guid: 03ae2253f4546424bbb33ef5a4b70309, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_6
+    second: {fileID: 2800000, guid: a162f6de4aa2ba146a19ed291cf7d6f2, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_7
+    second: {fileID: 2800000, guid: ca4ad33107bc73148a604479528ceb5a, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_8
+    second: {fileID: 2800000, guid: 968c797e0e7d29f41ba3254dc90d835b, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Image_9
+    second: {fileID: 2800000, guid: a0be5f1b6eaad7d4f8fb904b5bd67feb, type: 3}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: cc45016b844e7624dae3aec10fb443ea, type: 3}
+  reverseAxis: 0
+  renderPipeline: 0

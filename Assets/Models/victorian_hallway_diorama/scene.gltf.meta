@@ -2,7 +2,127 @@ fileFormatVersion: 2
 guid: a2e4834efb40ce741a9cccfdcb9def1f
 ScriptedImporter:
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: clock_MAT
+    second: {fileID: 2100000, guid: 3c09d7d32847f254cb7656cc04b13155, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: fabric_MAT
+    second: {fileID: 2100000, guid: d692e81039df32d42889bbf489922a17, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: portrait_MAT
+    second: {fileID: 2100000, guid: 53c706b980d59a64cbc86be8b7fe2a5e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: table1trimsheet_MAT
+    second: {fileID: 2100000, guid: 35670e8aefb292144974cc884fdc9daa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trimsheet_MAT
+    second: {fileID: 2100000, guid: 42716d54c5077124a96b528d52158930, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wall_old_environmenttrimSheet_MAT
+    second: {fileID: 2100000, guid: 55fd3c556a749a346ab2ce94ff783e17, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wall_old_environmentwallpaper_MAT
+    second: {fileID: 2100000, guid: 8c86b5416b68727418441953d7d549c1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: woodPanel_MAT
+    second: {fileID: 2100000, guid: 699ae07e60b90b84090b3111bf10283b, type: 2}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: clock_MAT_baseColor
+    second: {fileID: 2800000, guid: 75b8d08043c87c84e943950a0c7ebf42, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: clock_MAT_metallicRoughness.standard
+    second: {fileID: 2800000, guid: e59a1054083f9f544add2bcc37429f44, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: clock_MAT_normal.normal
+    second: {fileID: 2800000, guid: c535f3bb530565f42b74e3e7be3fc87a, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: fabric_MAT_baseColor
+    second: {fileID: 2800000, guid: ec72efde52ef7234b80ba7fd7e6cefd1, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: fabric_MAT_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 57a1592e2950c0e4487c5434ac5c9e88, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: fabric_MAT_normal.normal
+    second: {fileID: 2800000, guid: 5053442e19007354fa8360440a3ac231, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: portrait_MAT_baseColor
+    second: {fileID: 2800000, guid: f17c0939a22b51143a160a0d4317161a, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: table1trimsheet_MAT_baseColor
+    second: {fileID: 2800000, guid: 9a68f8d8376bd2041b37566e71f120e1, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: table1trimsheet_MAT_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 11366c8e2dc971b4e9807eec606285c5, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: table1trimsheet_MAT_normal.normal
+    second: {fileID: 2800000, guid: 6456e9ae43db4b34794ee5a720b89dcf, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: wall_old_environmentwallpaper_MAT_baseColor
+    second: {fileID: 2800000, guid: 3ef42897891c2a64cb177d4bd4a398b2, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: wall_old_environmentwallpaper_MAT_metallicRoughness.standard
+    second: {fileID: 2800000, guid: 7b217c33238c2284a9dcaed1451c0194, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: wall_old_environmentwallpaper_MAT_normal.normal
+    second: {fileID: 2800000, guid: fb50d88d3db25c848afa60f09e5fc95c, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: woodPanel_MAT_baseColor
+    second: {fileID: 2800000, guid: 2b187117288758641a544bec958bdbf2, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: woodPanel_MAT_metallicRoughness.standard
+    second: {fileID: 2800000, guid: dba4ebfd8909bc744a7cc612fe839a56, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: woodPanel_MAT_normal.normal
+    second: {fileID: 2800000, guid: d3af6154dfccb864f94c6ad9551aa1af, type: 3}
   serializedVersion: 2
   userData: 
   assetBundleName: 

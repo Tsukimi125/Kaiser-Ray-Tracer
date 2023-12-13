@@ -2,7 +2,167 @@ fileFormatVersion: 2
 guid: cf1b0a0758ad9c54a99f50e03ad4b2bf
 ScriptedImporter:
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Backdrop
+    second: {fileID: 2100000, guid: 22d23f0c48270164dbb626ab6320a446, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Bowl
+    second: {fileID: 2100000, guid: f8c73a2f5a99974418a314eea23725a2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Carpet
+    second: {fileID: 2100000, guid: 336737448f0867b47acd413e5c395b07, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: CoffeeTable
+    second: {fileID: 2100000, guid: 70d463e9759f3044b9891805ea0321ab, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: EndTable
+    second: {fileID: 2100000, guid: ac6a1dcf4c0ab4547b47af2b3e6ceaa5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: EndTable_Glass
+    second: {fileID: 2100000, guid: 5a816f5e219b37840877ffeed0fe9da8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Lamp
+    second: {fileID: 2100000, guid: 3fbb9304e8ac18b43a3e8b0dc5641280, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Light
+    second: {fileID: 2100000, guid: cade16da2115d054b973bf3654c3431f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Painting
+    second: {fileID: 2100000, guid: c961f6319051a5d4fabdeda6b9447583, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PlantBranch
+    second: {fileID: 2100000, guid: ea457d14260baa747b1f5e608ed49ff0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: PlantLeaves
+    second: {fileID: 2100000, guid: 24681df6811f85e4487a922342557d08, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Shelf
+    second: {fileID: 2100000, guid: ff9c5f0deea09ca449974e942466d084, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Sofa
+    second: {fileID: 2100000, guid: f53592ef3cbe4fa41a93695b42a92f8a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Structure
+    second: {fileID: 2100000, guid: 80c56e240d4c47643b6c721db43a7b89, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Structure_Windows
+    second: {fileID: 2100000, guid: 1630d0f81edea3a458a61caa95909d18, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: material
+    second: {fileID: 2100000, guid: b536d3aac087f62478947f4ce2d23cd9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: material_14
+    second: {fileID: 2100000, guid: 261dff70ab883fa4198c807d1bba80d6, type: 2}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Backdrop_baseColor
+    second: {fileID: 2800000, guid: 199d285e4735d9b4d84211873b6dd29b, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Bowl_baseColor
+    second: {fileID: 2800000, guid: 9929deabc6736aa4b9e743e1de9aa06e, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Carpet_baseColor
+    second: {fileID: 2800000, guid: 2e55a7ffb5963bc42a827163caf93f71, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: CoffeeTable_baseColor
+    second: {fileID: 2800000, guid: 572f404cb61e0a147b38e6429b8c575c, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: EndTable_baseColor
+    second: {fileID: 2800000, guid: d5babb4faf631b64287d371081eb0f98, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Lamp_baseColor
+    second: {fileID: 2800000, guid: 1918a3439962404459433a2c161dd51b, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Light_baseColor
+    second: {fileID: 2800000, guid: 1d39b004760bd1849be50dee9adb86b3, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Painting_baseColor
+    second: {fileID: 2800000, guid: 9000eb601796326449b1a981d66aa680, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: PlantBranch_baseColor
+    second: {fileID: 2800000, guid: d7f409063cba3b143b3716d1a01ac647, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: PlantLeaves_baseColor
+    second: {fileID: 2800000, guid: a6b3a9ce543053a4a83e82528b46d574, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Shelf_baseColor
+    second: {fileID: 2800000, guid: db571db63d067c14a96b925cbcb68a20, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Sofa_baseColor
+    second: {fileID: 2800000, guid: 2dc8914aae953c64db2f3adc4d2a7662, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: Structure_Windows_baseColor
+    second: {fileID: 2800000, guid: 8fc1d6940cf2efc4baa51f6b326de720, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: material_14_baseColor
+    second: {fileID: 2800000, guid: 6a531e2b7f078064aa106ce75b12e91e, type: 3}
+  - first:
+      type: UnityEngine:Texture
+      assembly: UnityEngine.CoreModule
+      name: material_baseColor
+    second: {fileID: 2800000, guid: 5b2948c13d89c71448512dc746b21740, type: 3}
   serializedVersion: 2
   userData: 
   assetBundleName: 

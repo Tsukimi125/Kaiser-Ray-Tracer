@@ -31,11 +31,11 @@ public class KaiserRayTracerAsset : RenderPipelineAsset
 
     [Header("Path Tracing Settings")]
 
-    [Range(0, 16)]
+    [Range(0, 32)]
     public uint ptBounceCount = 8;
     [Header("ReSTIR Settings")]
     public ReSTIRType restirType = ReSTIRType.SPATIOTEMPORAL;
-    [Range(0, 16)]
+    [Range(0, 32)]
     public uint restirBounceCount = 1;
     [Range(1, 64)]
     public int restirTReservoirSize = 20;
