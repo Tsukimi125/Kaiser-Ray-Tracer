@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   renderType: 0
   envTexture: {fileID: 8900000, guid: 99d0beca60f46da4695236c0ff5c8311, type: 3}
-  envIntensity: 0.28
+  envIntensity: 0.16
   accumulateType: 2
   accumulateMaxFrame: 128
   ptBounceCount: 32

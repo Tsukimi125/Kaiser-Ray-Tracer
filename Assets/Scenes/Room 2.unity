@@ -319,7 +319,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -9202605092671148497, guid: 75bd07355ac08964994990c730c72ec9, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8920136852208431807, guid: 75bd07355ac08964994990c730c72ec9, type: 3}
       propertyPath: m_IsActive
@@ -871,13 +871,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 820622725}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.89510185, y: 0.011831229, z: -0.02339355, w: -0.4450906}
+  m_LocalRotation: {x: -0.9154474, y: -0.050447322, z: 0.122032, w: -0.3801569}
   m_LocalPosition: {x: 0.25, y: 1.37, z: -1.84}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 159871670}
-  m_LocalEulerAnglesHint: {x: -232.87799, y: -2.9769897, z: 0.033996582}
+  m_LocalEulerAnglesHint: {x: -225.1, y: 15.2, z: 0.033996582}
 --- !u!108 &820622727
 Light:
   m_ObjectHideFlags: 0
@@ -1179,7 +1179,7 @@ Light:
   m_Type: 1
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 123
+  m_Intensity: 85
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -1472,7 +1472,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -9202605092671148497, guid: 75bd07355ac08964994990c730c72ec9, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8920136852208431807, guid: 75bd07355ac08964994990c730c72ec9, type: 3}
       propertyPath: m_IsActive
