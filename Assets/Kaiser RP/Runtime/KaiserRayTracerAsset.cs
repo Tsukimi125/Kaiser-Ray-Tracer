@@ -20,6 +20,8 @@ public class KaiserRayTracerAsset : RenderPipelineAsset
 {
     [Header("Global Settings")]
     public RenderType renderType = RenderType.PATH_TRACING;
+    [Range(0, 128)]
+    public float radianceClamp = 16.0f;
     [Header("Environment Settings")]
     public Cubemap envTexture = null;
     [Range(0, 4)]

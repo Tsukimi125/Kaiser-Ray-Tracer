@@ -16,7 +16,9 @@
 uint _PT_ConvergenceStep;
 uint _PT_FrameIndex;
 uint _PT_MaxFrameCount;
+uint _PT_RandomSeed;
 int _PT_Progressive;
+float _PT_RadianceClamp;
 
 // Camera Properties
 float _PT_Zoom;
@@ -34,7 +36,7 @@ bool TracePrimaryRay(inout RayDesc ray, in uint pathLength, inout uint rng, inou
     
     if (!hitVertex.bHit)
     {
-        radiance += throughput * _PT_EnvIntensity * _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb;
+        radiance += throughput * _PT_EnvIntensity * clamp(_PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb, 0.0f, 2.0f);
         return false;
     }
 
@@ -58,7 +60,7 @@ void TraceShadowRay(in uint pathLength, in PathVertex hitVertex, in float3 throu
 {
     // Trace shadow ray
     const bool isShadowed = KaiserRayTracer::Create(CreateNewRay(hitVertex.position, _DirectionalLightDirection, 1e-4, K_T_MAX), pathLength, false).TraceShadowRay(_AccelStruct);
-    float3 dirLightRadiance = clamp(brdf.evalDirectionalLight(wo, wi), 0.0f, 3.0f);
+    float3 dirLightRadiance = clamp(brdf.evalDirectionalLight(wo, wi), 0.0f, 32.0f);
     radiance += SELECT(isShadowed, 0.0, throughput * dirLightRadiance * _DirectionalLightColor);
 }
 
@@ -115,7 +117,7 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     float2 frameCoord = launchIndex + float2(0.5, 0.5);
     float3 result = float3(0, 0, 0);
     
-    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex) * uint(26699 + sampleIndex)) | uint(1);
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex + _PT_RandomSeed) * uint(26699 + sampleIndex)) | uint(1);
     float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
     float2 ndcCoords = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
     
@@ -166,6 +168,7 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
             break;
         }
 
+
         // Russian roulette
         if (pathLength >= 2)
         {
@@ -183,7 +186,9 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     }
     if (all(radiance >= 0.0))
     {
-        totalRadiance += float4(radiance, 1.0);
+        totalRadiance += clamp(float4(radiance, 1.0), 0.0f, _PT_RadianceClamp);
+        // totalRadiance += float4(radiance, 1.0);
+
     }
     // if (all(radiance > 0.0))
     // {

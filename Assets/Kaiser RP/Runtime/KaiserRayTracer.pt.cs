@@ -51,9 +51,14 @@ public partial class KaiserRayTracer : RenderPipeline
 
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_Progressive"), (int)renderPipelineAsset.accumulateType);
 
+
+                int randomInt = Random.Range(1, 65535);
+                ctx.cmd.SetGlobalInt(Shader.PropertyToID("_PT_RandomSeed"), randomInt);
+
                 ctx.cmd.SetRayTracingAccelerationStructure(KaiserShaders.referencePathTracer, Shader.PropertyToID("_AccelStruct"), rtas);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_Zoom"), zoom);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_AspectRatio"), aspectRatio);
+                ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_RadianceClamp"), renderPipelineAsset.radianceClamp);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_ConvergenceStep"), frameIndex);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_FrameIndex"), cameraData.frameIndex);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_MaxFrameCount"), renderPipelineAsset.accumulateMaxFrame);
