@@ -25,8 +25,8 @@ float _PT_Zoom;
 float _PT_AspectRatio;
 
 // Environment Properties
-TextureCube<float4> _PT_EnvTex;
-SamplerState sampler_PT_EnvTex;
+TextureCube<float4> _G_EnvTex;
+SamplerState sampler_G_EnvTex;
 float _PT_EnvIntensity;
 
 bool TracePrimaryRay(inout RayDesc ray, in uint pathLength, inout uint rng, inout PathVertex hitVertex, inout float3 throughput, inout float3 radiance)
@@ -36,7 +36,7 @@ bool TracePrimaryRay(inout RayDesc ray, in uint pathLength, inout uint rng, inou
     
     if (!hitVertex.bHit)
     {
-        radiance += throughput * _PT_EnvIntensity * clamp(_PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb, 0.0f, 2.0f);
+        radiance += throughput * _PT_EnvIntensity * clamp(_G_EnvTex.SampleLevel(sampler_G_EnvTex, ray.Direction, 0).rgb, 0.0f, 2.0f);
         return false;
     }
 
@@ -89,7 +89,7 @@ bool TraceScatterRay(inout RayDesc ray, in uint pathLength, inout uint rng, inou
 
     if (!hitVertex.bHit)
     {
-        radiance += throughput * _PT_EnvIntensity * _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb;
+        radiance += throughput * _PT_EnvIntensity * _G_EnvTex.SampleLevel(sampler_G_EnvTex, ray.Direction, 0).rgb;
         return false;
     }
 
@@ -117,7 +117,7 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
     float2 frameCoord = launchIndex + float2(0.5, 0.5);
     float3 result = float3(0, 0, 0);
     
-    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_FrameIndex + _PT_RandomSeed) * uint(26699 + sampleIndex)) | uint(1);
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_PT_ConvergenceStep + _PT_RandomSeed) * uint(26699 + _PT_FrameIndex + sampleIndex)) | uint(1);
     float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
     float2 ndcCoords = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
     
@@ -221,7 +221,7 @@ void PathTracingRayGenShader()
 [shader("miss")]
 void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)
 {
-    // payload.surfaceData.emission = _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, WorldRayDirection(), 0).rgb;
+    // payload.surfaceData.emission = _G_EnvTex.SampleLevel(sampler_G_EnvTex, WorldRayDirection(), 0).rgb;
 
 }
 

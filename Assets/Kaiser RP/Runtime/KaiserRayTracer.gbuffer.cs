@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    void RenderCameraGBffer(Camera camera, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData, RTHandle gbufferHandle0, RTHandle gbufferHandle1, RTHandle gbufferHandle2, RTHandle gbufferHandle3)
+    void RenderCameraGBffer(Camera camera, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData, RTHandle gbufferHandle0, RTHandle gbufferHandle1, RTHandle gbufferHandle2, RTHandle gbufferHandle3, RTHandle gbufferHandle4)
     {
         if (KaiserShaders.gbuffer == null)
         {
@@ -24,6 +24,7 @@ public partial class KaiserRayTracer : RenderPipeline
             passData.gbuffer1 = builder.WriteTexture(renderGraph.ImportTexture(gbufferHandle1));
             passData.gbuffer2 = builder.WriteTexture(renderGraph.ImportTexture(gbufferHandle2));
             passData.gbuffer3 = builder.WriteTexture(renderGraph.ImportTexture(gbufferHandle3));
+            passData.gbuffer4 = builder.WriteTexture(renderGraph.ImportTexture(gbufferHandle4));
 
             builder.SetRenderFunc((GBufferRenderPassData data, RenderGraphContext ctx) =>
             {
@@ -41,12 +42,17 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_GBuffer1"), data.gbuffer1);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_GBuffer2"), data.gbuffer2);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_GBuffer3"), data.gbuffer3);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_GBuffer4"), data.gbuffer4);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_G_EnvTex"), renderPipelineAsset.envTexture);
+                ctx.cmd.SetRayTracingFloatParam(KaiserShaders.gbuffer, Shader.PropertyToID("_G_EnvIntensity"), renderPipelineAsset.envIntensity);
+
                 ctx.cmd.DispatchRays(KaiserShaders.gbuffer, "GBffuerRayGenShader", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 
                 ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer0"), data.gbuffer0);
                 ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer1"), data.gbuffer1);
                 ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer2"), data.gbuffer2);
                 ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer3"), data.gbuffer3);
+                ctx.cmd.SetGlobalTexture(Shader.PropertyToID("_GBuffer4"), data.gbuffer4);
             });
 
             frameIndex++;

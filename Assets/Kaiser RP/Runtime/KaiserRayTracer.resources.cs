@@ -19,6 +19,7 @@ public partial class KaiserRayTracer : RenderPipeline
     {
         static public RTHandle Temporal;
         static public RTHandle Spatial;
+        static public RTHandle DirectIllumination;
     };
 
     bool SetupShaders()
@@ -44,6 +45,7 @@ public partial class KaiserRayTracer : RenderPipeline
         public TextureHandle outputTexture;
         public TextureHandle temporalReservoir;
         public TextureHandle spatialReservoir;
+        public TextureHandle directIllumination;
     };
 
     class GBufferRenderPassData
@@ -52,6 +54,7 @@ public partial class KaiserRayTracer : RenderPipeline
         public TextureHandle gbuffer1;
         public TextureHandle gbuffer2;
         public TextureHandle gbuffer3;
+        public TextureHandle gbuffer4;
     };
 
     class DeferredLightPassData

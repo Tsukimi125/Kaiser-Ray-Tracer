@@ -62,7 +62,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_ConvergenceStep"), frameIndex);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_FrameIndex"), cameraData.frameIndex);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_MaxFrameCount"), renderPipelineAsset.accumulateMaxFrame);
-                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_EnvTex"), renderPipelineAsset.envTexture);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_G_EnvTex"), renderPipelineAsset.envTexture);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_EnvIntensity"), renderPipelineAsset.envIntensity);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_PT_DebugTex"), debugTexture);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.referencePathTracer, Shader.PropertyToID("_Output"), passData.outputTexture);

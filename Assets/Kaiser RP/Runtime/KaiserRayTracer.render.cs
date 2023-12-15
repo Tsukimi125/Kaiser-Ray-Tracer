@@ -47,6 +47,7 @@ public partial class KaiserRayTracer : RenderPipeline
         RTHandle gbufferHandle1 = rtHandleSystem.Alloc(cameraData.gbuffer1, "_GBuffer1");
         RTHandle gbufferHandle2 = rtHandleSystem.Alloc(cameraData.gbuffer2, "_GBuffer2");
         RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
+        RTHandle gbufferHandle4 = rtHandleSystem.Alloc(cameraData.gbuffer4, "_GBuffer4");
 
         var reTemporalDesc = new RenderTextureDescriptor()
         {
@@ -60,11 +61,12 @@ public partial class KaiserRayTracer : RenderPipeline
             enableRandomWrite = true,
         };
 
-        RenderTextureDescriptor descriptor = new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R32G32B32A32_UInt, 0);
+        RenderTextureDescriptor descriptor = new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R16G16B16A16_UNorm, 0);
         descriptor.enableRandomWrite = true;
 
         RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
-        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Spatial, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_SReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Spatial, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_SReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.DirectIllumination, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_DirectIllumination");
 
         if (camera.cameraType == CameraType.SceneView)
         {
@@ -98,14 +100,14 @@ public partial class KaiserRayTracer : RenderPipeline
                     RenderIrcache(camera, renderGraphParams);
                     break;
                 case RenderType.RESTIR_GI:
-                    using (renderGraph.RecordAndExecute(renderGraphParams))
-                    {
-                        using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
-                        GBufferPass.Record(renderGraph, camera, cull);
-                        // DeferredLightPass.Record(renderGraph, camera);
-                        frameIndex++;
-                    }
-                    RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3);
+                    // using (renderGraph.RecordAndExecute(renderGraphParams))
+                    // {
+                    //     using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
+                    //     GBufferPass.Record(renderGraph, camera, cull);
+                    //     // DeferredLightPass.Record(renderGraph, camera);
+                    //     frameIndex++;
+                    // }
+                    RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3, gbufferHandle4);
                     if (RenderReSTIR(camera, renderGraphParams, cameraData, outputRTHandle))
                     {
                         cmd.Blit(cameraData.rayTracingOutput, camera.activeTexture);

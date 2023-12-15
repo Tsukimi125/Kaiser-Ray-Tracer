@@ -24,8 +24,8 @@ float _PT_Zoom;
 float _PT_AspectRatio;
 
 // Environment Properties
-TextureCube<float4> _PT_EnvTex;
-SamplerState sampler_PT_EnvTex;
+TextureCube<float4> _G_EnvTex;
+SamplerState sampler_G_EnvTex;
 float _PT_EnvIntensity;
 
 float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
@@ -70,7 +70,7 @@ float3 tracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
         SurfaceData surfaceData = hitVertex.surfaceData;
         if (!hitVertex.bHit)
         {
-            totalRadiance += throughput * _PT_EnvIntensity * _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, ray.Direction, 0).rgb;
+            totalRadiance += throughput * _PT_EnvIntensity * _G_EnvTex.SampleLevel(sampler_G_EnvTex, ray.Direction, 0).rgb;
             break;
         }
 
@@ -187,7 +187,7 @@ void PathTracingRayGenShader()
 [shader("miss")]
 void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)
 {
-    // payload.surfaceData.emission = _PT_EnvTex.SampleLevel(sampler_PT_EnvTex, WorldRayDirection(), 0).rgb;
+    // payload.surfaceData.emission = _G_EnvTex.SampleLevel(sampler_G_EnvTex, WorldRayDirection(), 0).rgb;
 
 }
 

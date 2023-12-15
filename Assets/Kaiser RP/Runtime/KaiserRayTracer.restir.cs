@@ -21,12 +21,16 @@ public partial class KaiserRayTracer : RenderPipeline
             TextureHandle output = renderGraph.ImportTexture(outputRTHandle);
             TextureHandle tReservoir = renderGraph.ImportTexture(ReservoirBuffers.Temporal);
             TextureHandle sReservoir = renderGraph.ImportTexture(ReservoirBuffers.Spatial);
+            TextureHandle directIllumination = renderGraph.ImportTexture(ReservoirBuffers.DirectIllumination);
+
 
             RenderGraphBuilder builder = renderGraph.AddRenderPass<ReSTIRRenderPassData>("ReSTIR Pass", out var passData);
 
             passData.outputTexture = builder.WriteTexture(output);
             passData.temporalReservoir = builder.WriteTexture(tReservoir);
             passData.spatialReservoir = builder.WriteTexture(sReservoir);
+            passData.directIllumination = builder.WriteTexture(directIllumination);
+
 
             builder.SetRenderFunc((ReSTIRRenderPassData data, RenderGraphContext ctx) =>
             {
@@ -40,11 +44,9 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("_RE_MaxBounceCount"), (int)renderPipelineAsset.restirBounceCount);
                 ctx.cmd.SetGlobalInt(Shader.PropertyToID("_RE_ResSTIRType"), (int)renderPipelineAsset.restirType);
 
-
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.restir, Shader.PropertyToID("_RE_LongPath"), renderPipelineAsset.restirLongPath ? 1 : 0);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.restir, Shader.PropertyToID("_RE_TReservoirSize"), renderPipelineAsset.restirTReservoirSize);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.restir, Shader.PropertyToID("_RE_SReservoirSize"), renderPipelineAsset.restirSReservoirSize);
-
 
                 ctx.cmd.SetRayTracingAccelerationStructure(KaiserShaders.restir, Shader.PropertyToID("_AccelStruct"), rtas);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.restir, Shader.PropertyToID("_RE_Zoom"), zoom);
@@ -60,9 +62,9 @@ public partial class KaiserRayTracer : RenderPipeline
 
                 ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_SReservoir"), passData.spatialReservoir);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_DirectIllumination"), passData.directIllumination);
                 if (renderPipelineAsset.restirType == ReSTIRType.SPATIOTEMPORAL)
                 {
-
                     ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Spatial", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
                 }
                 // ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Spatial", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);

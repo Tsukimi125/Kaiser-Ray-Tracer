@@ -17,8 +17,11 @@ uint _RTGBuffer_SamplePerPixel;
 
 int _RTGBuffer_Progressive;
 
-TextureCube<float4> _RTGBuffer_EnvTex;
-SamplerState sampler__RTGBuffer_EnvTex;
+TextureCube<float4> _G_EnvTex;
+SamplerState sampler_G_EnvTex;
+float _G_EnvIntensity;
+
+
 
 #pragma max_recursion_depth 10
 
@@ -28,6 +31,7 @@ RWTexture2D<float4> _GBuffer0;
 RWTexture2D<float4> _GBuffer1;
 RWTexture2D<float4> _GBuffer2;
 RWTexture2D<float4> _GBuffer3;
+RWTexture2D<float4> _GBuffer4;
 
 [shader("raygeneration")]
 void GBffuerRayGenShader()
@@ -69,6 +73,7 @@ void GBffuerRayGenShader()
         _GBuffer1[launchIndex] = float4(rtGBuffer.normal, 0.0);
         _GBuffer2[launchIndex] = float4(rtGBuffer.worldPos, 0.0);
         _GBuffer3[launchIndex] = float4(rtGBuffer.roughness, rtGBuffer.metallic, 0.0, 0.0);
+        _GBuffer4[launchIndex] = float4(rtGBuffer.emission, 0.0);
     }
     else
     {
@@ -76,6 +81,7 @@ void GBffuerRayGenShader()
         _GBuffer1[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
         _GBuffer2[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
         _GBuffer3[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
+        _GBuffer4[launchIndex] = float4(_G_EnvIntensity * clamp(_G_EnvTex.SampleLevel(sampler_G_EnvTex, ray.Direction, 0).rgb, 0.0f, 2.0f), 0.0);
     }
 }
 

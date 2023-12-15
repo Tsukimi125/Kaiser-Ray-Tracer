@@ -19,6 +19,9 @@ public class KaiserCameraData : MonoBehaviour
     public RenderTexture gbuffer2 = null;
     [HideInInspector]
     public RenderTexture gbuffer3 = null;
+    [HideInInspector]
+    public RenderTexture gbuffer4 = null;
+
 
     private Camera _camera;
 
@@ -104,6 +107,18 @@ public class KaiserCameraData : MonoBehaviour
                 enableRandomWrite = true,
             };
 
+            var gbufferEmissionDesc = new RenderTextureDescriptor()
+            {
+                dimension = TextureDimension.Tex2D,
+                width = _camera.pixelWidth,
+                height = _camera.pixelHeight,
+                depthBufferBits = 0,
+                volumeDepth = 1,
+                msaaSamples = 1,
+                graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm,
+                enableRandomWrite = true,
+            };
+
             rayTracingOutput = new RenderTexture(rtDesc);
             rayTracingOutput.Create();
 
@@ -118,6 +133,9 @@ public class KaiserCameraData : MonoBehaviour
 
             gbuffer3 = new RenderTexture(gbufferRMAODesc);
             gbuffer3.Create();
+
+            gbuffer4 = new RenderTexture(gbufferEmissionDesc);
+            gbuffer4.Create();
 
             return true;
         }

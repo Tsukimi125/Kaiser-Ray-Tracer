@@ -39,9 +39,11 @@ Texture2D<float4> _GBuffer0;
 Texture2D<float4> _GBuffer1;
 Texture2D<float4> _GBuffer2;
 Texture2D<float4> _GBuffer3;
+Texture2D<float4> _GBuffer4;
 
 RWTexture2D<int4> _TReservoir;
 RWTexture2D<int4> _SReservoir;
+RWTexture2D<float4> _DirectIllumination;
 
 
 float3 EvaluateDirectLight(in PathVertex hitVertex, inout TraceData trace, inout VertexData vertex)
@@ -116,12 +118,14 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     // float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
     float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
 
-    float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
-    float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
-    float3 worldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
-    float3 rmao = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 albedo = _GBuffer0.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
+    float3 normal = _GBuffer1.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
+    float3 worldPos = _GBuffer2.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
+    float3 rmao = _GBuffer3.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
     float roughness = rmao.x;
     float metallic = rmao.y;
+
+    float3 emissive = _GBuffer4.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
 
     SurfaceData surfaceData;
     surfaceData.albedo = albedo;
@@ -157,11 +161,11 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
     // vertex.brdf.ForceDiffuse();
 
-    directRadiance = float3(0, 0, 0);
+    directRadiance = emissive;
     // if (_RE_EvaluateDirectLighting)
 
     {
-        directRadiance = EvaluateDirectLight(hitVertex, trace, vertex);
+        directRadiance += EvaluateDirectLight(hitVertex, trace, vertex);
     }
     
 
@@ -247,7 +251,7 @@ void ReSTIR_Temporal()
 
     if (_RE_ResSTIRType == 0)
     {
-        _Output[launchIndex] = float4(totalRadiance, 1);
+        _Output[launchIndex] = float4(directRadiance + totalRadiance, 1);
     }
     else
     {
@@ -255,7 +259,7 @@ void ReSTIR_Temporal()
 
         {
             Reservoir re;
-            if (_RE_ResSTIRType == 1)
+            if (_RE_ResSTIRType != 3)
             {
                 re = UnPack(_TReservoir[launchIndex]);
             }
@@ -270,7 +274,8 @@ void ReSTIR_Temporal()
             _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
             
             // _Output[launchIndex] = float4(re.wSum.xxx / re.w / 100, 1.0f);
-            _Output[launchIndex] = float4(directRadiance + re.radiance * re.wSum / (re.M * re.w), 1.0f);
+            _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+            _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
         }
     }
 }
@@ -288,9 +293,9 @@ void ReSTIR_Spatial()
     // float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
     float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
 
-    float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
-    float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
-    float3 worldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 albedo = _GBuffer0.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
+    float3 normal = _GBuffer1.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
+    float3 worldPos = _GBuffer2.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
 
     float2 offset = float2(RandomFloat01(rng), RandomFloat01(rng));
 
@@ -312,8 +317,8 @@ void ReSTIR_Spatial()
 
         neighbourFrameCoord = launchIndex + round(s) + float2(0.5, 0.5);
         neighbourUV = (neighbourFrameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
-        neighbourWorldPos = _GBuffer2.SampleLevel(sampler_point_clamp, neighbourUV, 0).xyz;
-        neighbourNormal = _GBuffer1.SampleLevel(sampler_point_clamp, neighbourUV, 0).xyz;
+        neighbourWorldPos = _GBuffer2.SampleLevel(sampler_bilinear_clamp, neighbourUV, 0).xyz;
+        neighbourNormal = _GBuffer1.SampleLevel(sampler_bilinear_clamp, neighbourUV, 0).xyz;
 
         if (distance(neighbourWorldPos, worldPos) > 1.1f) continue;
         if (dot(neighbourNormal, normal) < 0.1f) continue;
@@ -323,9 +328,9 @@ void ReSTIR_Spatial()
 
         sample++;
     }
-
+    float3 directRadiance = _DirectIllumination[launchIndex].xyz;
     _SReservoir[launchIndex] = re.Pack(_RE_SReservoirSize);
-    _Output[launchIndex] = float4(re.radiance * re.wSum / (re.M * re.w), 1.0f);
+    _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
     // _Output[launchIndex] = sample / float(maxSpatialSample);
 
 }

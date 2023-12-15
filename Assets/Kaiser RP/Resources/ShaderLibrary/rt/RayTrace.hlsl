@@ -107,6 +107,7 @@ struct RayTracedGBuffer
     float depth;
     float roughness;
     float metallic;
+    float3 emission;
 };
 
 struct ScatterRayData
@@ -122,6 +123,7 @@ void GenerateRayTracedGBufferFromHitPathVertex(in PathVertex hitVertex, out RayT
     gbuffer.depth = hitVertex.rayT; // TODO: Raw Depth? 01 Depth? Linear Depth?
     gbuffer.roughness = hitVertex.surfaceData.roughness;
     gbuffer.metallic = hitVertex.surfaceData.metallic;
+    gbuffer.emission = hitVertex.surfaceData.emission;
 }
 
 
