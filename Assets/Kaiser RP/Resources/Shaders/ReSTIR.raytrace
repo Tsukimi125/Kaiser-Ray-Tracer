@@ -118,14 +118,14 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     // float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
     float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
 
-    float3 albedo = _GBuffer0.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
-    float3 normal = _GBuffer1.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
-    float3 worldPos = _GBuffer2.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
-    float3 rmao = _GBuffer3.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
+    float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 worldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 rmao = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).xyz;
     float roughness = rmao.x;
     float metallic = rmao.y;
 
-    float3 emissive = _GBuffer4.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
+    float3 emissive = _GBuffer4.SampleLevel(sampler_point_clamp, uv, 0).xyz;
 
     SurfaceData surfaceData;
     surfaceData.albedo = albedo;
@@ -159,7 +159,7 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     hitVertex.surfaceData = surfaceData;
 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-    // vertex.brdf.ForceDiffuse();
+    vertex.brdf.ForceSpecular();
 
     directRadiance = emissive;
     // if (_RE_EvaluateDirectLighting)
@@ -196,7 +196,7 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
             vertex.wo = normalize(vertex.wo);
         }
         vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-        // vertex.brdf.ForceDiffuse();
+        vertex.brdf.ForceSpecular();
         vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
         TraceShadowRay(hitVertex, trace, vertex);
@@ -268,8 +268,7 @@ void ReSTIR_Temporal()
                 re = UnPack(_SReservoir[launchIndex]);
             }
 
-            // trace.radiance = saturate(trace.radiance);clamp(trace.invPDF, 0, 256)
-            re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0, 256), RandomFloat01(rng));
+            re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 1), RandomFloat01(rng));
             // re.Update(trace.radiance, trace.firstSampleDir, re.TargetPDF(trace.radiance), trace.invPDF, RandomFloat01(rng));
             _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
             
@@ -293,9 +292,9 @@ void ReSTIR_Spatial()
     // float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
     float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
 
-    float3 albedo = _GBuffer0.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
-    float3 normal = _GBuffer1.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
-    float3 worldPos = _GBuffer2.SampleLevel(sampler_bilinear_clamp, uv, 0).xyz;
+    float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 worldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
 
     float2 offset = float2(RandomFloat01(rng), RandomFloat01(rng));
 
@@ -317,8 +316,8 @@ void ReSTIR_Spatial()
 
         neighbourFrameCoord = launchIndex + round(s) + float2(0.5, 0.5);
         neighbourUV = (neighbourFrameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
-        neighbourWorldPos = _GBuffer2.SampleLevel(sampler_bilinear_clamp, neighbourUV, 0).xyz;
-        neighbourNormal = _GBuffer1.SampleLevel(sampler_bilinear_clamp, neighbourUV, 0).xyz;
+        neighbourWorldPos = _GBuffer2.SampleLevel(sampler_point_clamp, neighbourUV, 0).xyz;
+        neighbourNormal = _GBuffer1.SampleLevel(sampler_point_clamp, neighbourUV, 0).xyz;
 
         if (distance(neighbourWorldPos, worldPos) > 1.1f) continue;
         if (dot(neighbourNormal, normal) < 0.1f) continue;

@@ -60,11 +60,12 @@ void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attrib
     float3 worldNormal = normalize(mul((float3x3)ObjectToWorld3x4(), float4(localNormal, 0.0)));
     
     // Construct TBN
-    float3 tangent = normalize(mul(v.tangent, (float3x3)WorldToObject()));
-    float3 N = worldNormal;
-    float3 T = normalize(tangent - dot(tangent, N) * N);
-    float3 Bi = normalize(cross(T, N));
-    float3x3 TBN = float3x3(T, Bi, N);
+    // float3 tangent = normalize(mul(v.tangent, (float3x3)WorldToObject()));
+    // float3 N = worldNormal;
+    // float3 T = normalize(tangent - dot(tangent, N) * N);
+    // float3 Bi = normalize(cross(T, N));
+    // float3x3 TBN = float3x3(T, Bi, N);
+    
 
     // float3 albedo = _MainTex.SampleLevel(sampler_MainTex, _MainTex_ST.xy * v.uv + _MainTex_ST.zw, 0).xyz;
     float3 albedo = _Color.xyz * _MainTex.SampleLevel(sampler_MainTex, _MainTex_ST.xy * v.uv + _MainTex_ST.zw, 0).xyz;
@@ -86,12 +87,19 @@ void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attrib
     #endif
 
     #if _NORMALMAP
+        // Construct TBN
+        // float3 tangent = normalize(mul(v.tangent, (float3x3)WorldToObject()));
+        // float3 N = worldNormal;
+        // float3 T = normalize(tangent - dot(tangent, N) * N);
+        // float3 Bi = normalize(cross(T, N));
+        // float3x3 TBN = float3x3(T, Bi, N);
+        float3x3 TBN = BuildOrthonormalBasis(worldNormal);
         localNormal = GetNormalTS(v.uv);
         worldNormal = normalize(mul(localNormal, TBN));
-        N = worldNormal;
-        T = normalize(T - dot(T, N) * N);
-        Bi = normalize(cross(T, N));
-        TBN = float3x3(T, Bi, N);
+        // N = worldNormal;
+        // T = normalize(T - dot(T, N) * N);
+        // Bi = normalize(cross(T, N));
+        // TBN = float3x3(T, Bi, N);
     #endif
 
     payload.surfaceData.albedo = albedo;
