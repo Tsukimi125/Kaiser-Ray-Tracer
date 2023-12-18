@@ -15,13 +15,13 @@ MonoBehaviour:
   renderType: 2
   radianceClamp: 128
   envTexture: {fileID: 8900000, guid: 99d0beca60f46da4695236c0ff5c8311, type: 3}
-  envIntensity: 0.5
+  envIntensity: 0.32
   accumulateType: 2
   accumulateMaxFrame: 1
-  ptBounceCount: 8
+  ptBounceCount: 4
   restirType: 1
-  restirBounceCount: 32
-  restirTReservoirSize: 24
-  restirSReservoirSize: 12
-  restirLongPath: 0
+  restirBounceCount: 2
+  restirTReservoirSize: 16
+  restirSReservoirSize: 4
+  restirLongPath: 1
   activeCameraType: 1
