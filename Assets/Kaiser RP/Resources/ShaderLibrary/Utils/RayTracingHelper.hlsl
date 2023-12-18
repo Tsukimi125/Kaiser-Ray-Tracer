@@ -12,6 +12,7 @@
 
 Texture2D _BRDF_LUT_Texture;
 SamplerState sampler_point_clamp;
+SamplerState sampler_linear_clamp;
 SamplerState sampler_bilinear_clamp;
 
 RayDesc CreateNewRay(float3 origin, float3 direction, float tmin, float tmax)
