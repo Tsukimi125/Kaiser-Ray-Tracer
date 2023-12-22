@@ -15,7 +15,7 @@ MonoBehaviour:
   renderType: 2
   radianceClamp: 128
   envTexture: {fileID: 8900000, guid: 99d0beca60f46da4695236c0ff5c8311, type: 3}
-  envIntensity: 0.32
+  envIntensity: 0.24
   accumulateType: 2
   accumulateMaxFrame: 1
   ptBounceCount: 4
