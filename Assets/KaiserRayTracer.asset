@@ -19,9 +19,10 @@ MonoBehaviour:
   accumulateType: 2
   accumulateMaxFrame: 1
   ptBounceCount: 4
-  restirType: 1
+  restirAccumulateType: 1
+  restirSampleType: 0
   restirBounceCount: 2
-  restirTReservoirSize: 16
-  restirSReservoirSize: 4
+  restirTReservoirSize: 47
+  restirSReservoirSize: 15
   restirLongPath: 1
   activeCameraType: 1
