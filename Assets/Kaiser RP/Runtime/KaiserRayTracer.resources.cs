@@ -28,7 +28,7 @@ public partial class KaiserRayTracer : RenderPipeline
 
     void ReAllocateRTHandles(Camera camera)
     {
-        var reTemporalDesc = new RenderTextureDescriptor()
+        var reservoirDesc = new RenderTextureDescriptor()
         {
             dimension = TextureDimension.Tex2D,
             width = camera.pixelWidth,
@@ -43,12 +43,12 @@ public partial class KaiserRayTracer : RenderPipeline
         RenderTextureDescriptor descriptor = new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R16G16B16A16_UNorm, 0);
         descriptor.enableRandomWrite = true;
 
-        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
-        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Spatial, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_SReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Spatial, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_SReservoir");
         RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.DirectIllumination, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_DirectIllumination");
 
-        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.DiffuseTemporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_Diffuse_TReservoir");
-        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.SpecularTemporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_Specular_TReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.DiffuseTemporal, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_Diffuse_TReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.SpecularTemporal, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_Specular_TReservoir");
     }
 
     bool SetupShaders()

@@ -96,10 +96,6 @@ void ClosestHitMain(inout RayPayload payload:SV_RayPayload, AttributeData attrib
         float3x3 TBN = BuildOrthonormalBasis(worldNormal);
         localNormal = GetNormalTS(v.uv);
         worldNormal = normalize(mul(localNormal, TBN));
-        // N = worldNormal;
-        // T = normalize(T - dot(T, N) * N);
-        // Bi = normalize(cross(T, N));
-        // TBN = float3x3(T, Bi, N);
     #endif
 
     payload.surfaceData.albedo = albedo;

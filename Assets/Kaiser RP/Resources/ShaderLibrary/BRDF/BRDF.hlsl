@@ -216,7 +216,7 @@ struct LayeredBRDF
         specularBRDF.albedo = brdfData.specular;
         specularBRDF.alpha = brdfData.roughness * brdfData.roughness;
 
-        float pDiffuse = (1.0f - brdfData.metallic) * luminance(diffuseBRDF.albedo);
+        float pDiffuse = (1.0f - brdfData.metallic) * luminance(brdfData.diffuse);
         float pSpecular = luminance(EvalFresnelSchlick(brdfData.specular, 1.0f.xxx, ndotv));
 
         float normFactor = 1.0f / (pDiffuse + pSpecular);
