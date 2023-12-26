@@ -184,6 +184,7 @@ float3 TracePath(uint2 launchIndex, uint2 launchDim, uint sampleIndex)
             }
         }
     }
+    
     if (all(radiance >= 0.0))
     {
         totalRadiance += clamp(float4(radiance, 1.0), 0.0f, _PT_RadianceClamp);

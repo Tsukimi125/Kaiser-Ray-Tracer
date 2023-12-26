@@ -49,24 +49,7 @@ public partial class KaiserRayTracer : RenderPipeline
         RTHandle gbufferHandle3 = rtHandleSystem.Alloc(cameraData.gbuffer3, "_GBuffer3");
         RTHandle gbufferHandle4 = rtHandleSystem.Alloc(cameraData.gbuffer4, "_GBuffer4");
 
-        var reTemporalDesc = new RenderTextureDescriptor()
-        {
-            dimension = TextureDimension.Tex2D,
-            width = camera.pixelWidth,
-            height = camera.pixelHeight,
-            depthBufferBits = 0,
-            volumeDepth = 1,
-            msaaSamples = 1,
-            graphicsFormat = GraphicsFormat.R32G32B32A32_UInt,
-            enableRandomWrite = true,
-        };
-
-        RenderTextureDescriptor descriptor = new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R16G16B16A16_UNorm, 0);
-        descriptor.enableRandomWrite = true;
-
-        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
-        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Spatial, reTemporalDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_SReservoir");
-        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.DirectIllumination, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_DirectIllumination");
+        ReAllocateRTHandles(camera);
 
         if (camera.cameraType == CameraType.SceneView)
         {

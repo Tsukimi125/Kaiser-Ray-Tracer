@@ -13,7 +13,8 @@ public enum RenderType
 };
 
 public enum AccumulateType { SINGLE_FRAME, MAX_FRAME, UNLIMITED_FRAME };
-public enum ReSTIRType { SINGLE_FRAME, TEMPORAL_ONLY, SPATIOTEMPORAL };
+public enum ReSTIRAccumulateType { SINGLE_FRAME, TEMPORAL_ONLY, SPATIOTEMPORAL };
+public enum ReSTIRSampleType { BRDF, DIFFUSE, SPECULAR, HIERARCHY };
 
 [CreateAssetMenu(menuName = "Rendering/KaiserRayTracerAsset")]
 public class KaiserRayTracerAsset : RenderPipelineAsset
@@ -36,7 +37,8 @@ public class KaiserRayTracerAsset : RenderPipelineAsset
     [Range(0, 32)]
     public uint ptBounceCount = 8;
     [Header("ReSTIR Settings")]
-    public ReSTIRType restirType = ReSTIRType.SPATIOTEMPORAL;
+    public ReSTIRAccumulateType restirAccumulateType = ReSTIRAccumulateType.SPATIOTEMPORAL;
+    public ReSTIRSampleType restirSampleType = ReSTIRSampleType.BRDF;
     [Range(0, 32)]
     public uint restirBounceCount = 1;
     [Range(1, 64)]

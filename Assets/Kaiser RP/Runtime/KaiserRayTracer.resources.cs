@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
-
+using UnityEngine.Rendering.Universal;
 public partial class KaiserRayTracer : RenderPipeline
 {
     static class KaiserShaders
@@ -20,7 +20,36 @@ public partial class KaiserRayTracer : RenderPipeline
         static public RTHandle Temporal;
         static public RTHandle Spatial;
         static public RTHandle DirectIllumination;
+
+        static public RTHandle DiffuseTemporal;
+        static public RTHandle SpecularTemporal;
+
     };
+
+    void ReAllocateRTHandles(Camera camera)
+    {
+        var reservoirDesc = new RenderTextureDescriptor()
+        {
+            dimension = TextureDimension.Tex2D,
+            width = camera.pixelWidth,
+            height = camera.pixelHeight,
+            depthBufferBits = 0,
+            volumeDepth = 1,
+            msaaSamples = 1,
+            graphicsFormat = GraphicsFormat.R32G32B32A32_UInt,
+            enableRandomWrite = true,
+        };
+
+        RenderTextureDescriptor descriptor = new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight, colorFormat: GraphicsFormat.R16G16B16A16_UNorm, 0);
+        descriptor.enableRandomWrite = true;
+
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Spatial, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_SReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.DirectIllumination, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_DirectIllumination");
+
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.DiffuseTemporal, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_Diffuse_TReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.SpecularTemporal, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_Specular_TReservoir");
+    }
 
     bool SetupShaders()
     {
