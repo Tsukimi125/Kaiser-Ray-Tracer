@@ -125,6 +125,10 @@ struct SpecularBRDF
             if (alpha == 0.f) return 0.0f.xxx;
         #endif
 
+        // wi.z : ndotl
+        // wo.z : ndotv
+        // h.z : ndoth
+
         float3 h = normalize(wi + wo);
         float woDotH = dot(wo, h);
 
