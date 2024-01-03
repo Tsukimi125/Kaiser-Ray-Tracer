@@ -174,6 +174,45 @@ void ReSTIR_Spatial()
 
 }
 
+[shader("raygeneration")]
+void ReSTIR_Combine()
+{
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
+
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex) * uint(24699)) | uint(1);
+    float2 frameCoord = launchIndex + float2(0.5, 0.5);
+
+    float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
+    // float2 uv = frameCoord / float2(launchDim.x - 1, launchDim.y - 1);
+    float2 uv = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
+
+    float3 albedo = _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 worldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 rmao = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float metallic = rmao.y;
+
+    float3 viewDir = normalize(_WorldSpaceCameraPos - worldPos);
+    float ndotv = saturate(dot(normal, viewDir));
+
+    float pDiffuse = (1.0f - metallic) * luminance(lerp(albedo, 0.0.xxx, metallic));
+    float pSpecular = luminance(EvalFresnelSchlick(lerp(0.04.xxx, albedo, metallic), 1.0f.xxx, ndotv));
+
+    float normFactor = 1.0f / (pDiffuse + pSpecular + 0.0001f);
+    pDiffuse *= normFactor;
+    pSpecular *= normFactor;
+
+    float3 directRadiance = _DirectIllumination[launchIndex].xyz;
+    Reservoir diffReservoir = UnPack(_Diffuse_TReservoir[launchIndex]);
+    Reservoir specReservoir = UnPack(_Specular_TReservoir[launchIndex]);
+    float3 diffGI = max(diffReservoir.radiance * diffReservoir.wSum / (diffReservoir.M * diffReservoir.w), 0.0f);
+    float3 specGI = max(specReservoir.radiance * specReservoir.wSum / (specReservoir.M * specReservoir.w), 0.0f);
+
+    float3 indirectRadiance = pDiffuse * diffGI + pSpecular * specGI;
+    _Output[launchIndex] = float4(directRadiance + indirectRadiance, 1.0f);
+}
+
 
 [shader("miss")]
 void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)

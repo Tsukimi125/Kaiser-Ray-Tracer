@@ -60,8 +60,8 @@ public partial class KaiserRayTracer : RenderPipeline
 
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), passData.temporalReservoir);
 
-
-
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_SReservoir"), passData.spatialReservoir);
+                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_DirectIllumination"), passData.directIllumination);
 
                 if (renderPipelineAsset.restirSampleType == ReSTIRSampleType.BRDF)
                 {
@@ -79,21 +79,22 @@ public partial class KaiserRayTracer : RenderPipeline
                 }
                 else
                 {
-                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Diffuse_TReservoir"), ReservoirBuffers.DiffuseTemporal);
-                    ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Diffuse_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
                     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Specular_TReservoir"), ReservoirBuffers.SpecularTemporal);
                     ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Specular_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Diffuse_TReservoir"), ReservoirBuffers.DiffuseTemporal);
+                    ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Diffuse_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Diffuse_TReservoir"), ReservoirBuffers.DiffuseTemporal);
+                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Specular_TReservoir"), ReservoirBuffers.SpecularTemporal);
+                    ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Combine", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
                 }
 
+                // if (renderPipelineAsset.restirAccumulateType == ReSTIRAccumulateType.SPATIOTEMPORAL)
+                // {
 
-
-                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_SReservoir"), passData.spatialReservoir);
-                ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_DirectIllumination"), passData.directIllumination);
-
-                if (renderPipelineAsset.restirAccumulateType == ReSTIRAccumulateType.SPATIOTEMPORAL)
-                {
-                    ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Spatial", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
-                }
+                //     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_SReservoir"), passData.spatialReservoir);
+                //     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_DirectIllumination"), passData.directIllumination);
+                //     ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Spatial", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+                // }
                 // ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Spatial", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 
                 frameIndex++;
