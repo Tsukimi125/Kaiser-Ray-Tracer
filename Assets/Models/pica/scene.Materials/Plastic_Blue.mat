@@ -80,7 +80,7 @@ Material:
     - _Emission: 0
     - _ExtinctionCoefficient: 1
     - _GlossMapScale: 1
-    - _Glossiness: 1
+    - _Glossiness: 0.875
     - _GlossyReflections: 1
     - _IOR: 1.432
     - _Metallic: 0.604

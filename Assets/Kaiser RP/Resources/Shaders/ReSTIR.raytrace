@@ -75,7 +75,7 @@ void ReSTIR_Diffuse_Temporal()
         re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 1), RandomFloat01(rng));
 
         _Diffuse_TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
-        _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+        _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
         _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
     }
 }
@@ -114,7 +114,7 @@ void ReSTIR_Specular_Temporal()
         re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 1), RandomFloat01(rng));
 
         _Specular_TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
-        _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+        _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
         _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
     }
 }
@@ -169,7 +169,7 @@ void ReSTIR_Spatial()
     }
     float3 directRadiance = _DirectIllumination[launchIndex].xyz;
     _SReservoir[launchIndex] = re.Pack(_RE_SReservoirSize);
-    _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+    _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
     // _Output[launchIndex] = sample / float(maxSpatialSample);
 
 }
@@ -191,7 +191,7 @@ void ReSTIR_Combine()
     float3 normal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
     float3 worldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
     float3 rmao = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).xyz;
-    float metallic = rmao.y;
+    float metallic = saturate(rmao.y);
 
     float3 viewDir = normalize(_WorldSpaceCameraPos - worldPos);
     float ndotv = saturate(dot(normal, viewDir));
@@ -199,9 +199,10 @@ void ReSTIR_Combine()
     float pDiffuse = (1.0f - metallic) * luminance(lerp(albedo, 0.0.xxx, metallic));
     float pSpecular = luminance(EvalFresnelSchlick(lerp(0.04.xxx, albedo, metallic), 1.0f.xxx, ndotv));
 
-    float normFactor = 1.0f / (pDiffuse + pSpecular + 0.0001f);
+    float normFactor = 1.0f / (pDiffuse + pSpecular);
     pDiffuse *= normFactor;
     pSpecular *= normFactor;
+
 
     float3 directRadiance = _DirectIllumination[launchIndex].xyz;
     Reservoir diffReservoir = UnPack(_Diffuse_TReservoir[launchIndex]);
@@ -209,8 +210,10 @@ void ReSTIR_Combine()
     float3 diffGI = max(diffReservoir.radiance * diffReservoir.wSum / (diffReservoir.M * diffReservoir.w), 0.0f);
     float3 specGI = max(specReservoir.radiance * specReservoir.wSum / (specReservoir.M * specReservoir.w), 0.0f);
 
-    float3 indirectRadiance = pDiffuse * diffGI + pSpecular * specGI;
-    _Output[launchIndex] = float4(directRadiance + indirectRadiance, 1.0f);
+    float3 indirectRadiance = diffGI * pDiffuse + specGI * pSpecular;
+    _Output[launchIndex] = float4(directRadiance + saturate(indirectRadiance), 1.0f);
+    // _Output[launchIndex] = float4(saturate(indirectRadiance), 1.0f);
+
 }
 
 

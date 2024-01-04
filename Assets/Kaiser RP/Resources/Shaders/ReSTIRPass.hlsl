@@ -262,7 +262,7 @@ void TraceDiffuse(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Trac
     hitVertex.surfaceData = surfaceData;
 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-    vertex.brdf.ForceDiffuse();
+    
 
     directRadiance = emissive;
     // if (_RE_EvaluateDirectLighting)
@@ -270,7 +270,7 @@ void TraceDiffuse(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Trac
     {
         directRadiance += EvaluateDirectLight(hitVertex, trace, vertex);
     }
-    
+    vertex.brdf.ForceDiffuse();
 
     // invPDF = 1.0;
     uint maxBounceCount = _RE_MaxBounceCount;
@@ -299,7 +299,7 @@ void TraceDiffuse(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Trac
             vertex.wo = normalize(vertex.wo);
         }
         vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-        vertex.brdf.ForceDiffuse();
+        // vertex.brdf.ForceDiffuse();
         vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
         TraceShadowRay(hitVertex, trace, vertex);
@@ -364,7 +364,7 @@ void TraceSpecular(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Tra
     hitVertex.surfaceData = surfaceData;
 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-    vertex.brdf.ForceSpecular();
+    
 
     directRadiance = emissive;
     // if (_RE_EvaluateDirectLighting)
@@ -372,7 +372,7 @@ void TraceSpecular(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Tra
     {
         directRadiance += EvaluateDirectLight(hitVertex, trace, vertex);
     }
-    
+    vertex.brdf.ForceSpecular();
 
     // invPDF = 1.0;
     uint maxBounceCount = _RE_MaxBounceCount;
@@ -401,7 +401,7 @@ void TraceSpecular(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Tra
             vertex.wo = normalize(vertex.wo);
         }
         vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-        vertex.brdf.ForceSpecular();
+        // vertex.brdf.ForceSpecular();
         vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
         TraceShadowRay(hitVertex, trace, vertex);

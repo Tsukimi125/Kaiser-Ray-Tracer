@@ -101,8 +101,6 @@ public partial class KaiserRayTracer : RenderPipeline
                         Debug.Log("Error occurred when ReSTIR!");
                     }
                     break;
-
-
             }
         }
 
