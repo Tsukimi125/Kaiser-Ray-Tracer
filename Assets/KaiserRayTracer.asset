@@ -13,16 +13,16 @@ MonoBehaviour:
   m_Name: KaiserRayTracer
   m_EditorClassIdentifier: 
   renderType: 2
-  radianceClamp: 9
+  radianceClamp: 32
   envTexture: {fileID: 8900000, guid: 99d0beca60f46da4695236c0ff5c8311, type: 3}
-  envIntensity: 0.55
+  envIntensity: 0.57
   accumulateType: 2
   accumulateMaxFrame: 1
-  ptBounceCount: 1
+  ptBounceCount: 4
   restirAccumulateType: 1
   restirSampleType: 3
   restirBounceCount: 4
-  restirTReservoirSize: 20
-  restirSReservoirSize: 1
+  restirTReservoirSize: 32
+  restirSReservoirSize: 9
   restirLongPath: 0
   activeCameraType: 1

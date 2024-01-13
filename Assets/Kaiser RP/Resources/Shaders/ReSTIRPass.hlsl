@@ -262,7 +262,6 @@ void TraceDiffuse(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Trac
     hitVertex.surfaceData = surfaceData;
 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-    
 
     directRadiance = emissive;
     // if (_RE_EvaluateDirectLighting)
@@ -299,7 +298,6 @@ void TraceDiffuse(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Trac
             vertex.wo = normalize(vertex.wo);
         }
         vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-        // vertex.brdf.ForceDiffuse();
         vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
         TraceShadowRay(hitVertex, trace, vertex);

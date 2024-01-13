@@ -69,7 +69,9 @@ public partial class KaiserRayTracer : RenderPipeline
                 }
                 else if (renderPipelineAsset.restirSampleType == ReSTIRSampleType.DIFFUSE)
                 {
-                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Diffuse_TReservoir"), ReservoirBuffers.DiffuseTemporal);
+                    ctx.cmd.SetRayTracingIntParam(KaiserShaders.restir, Shader.PropertyToID("_RE_TReservoirSize"), renderPipelineAsset.restirTReservoirSize);
+                    ctx.cmd.SetRayTracingIntParam(KaiserShaders.restir, Shader.PropertyToID("_RE_SReservoirSize"), renderPipelineAsset.restirSReservoirSize);
+                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), passData.temporalReservoir);
                     ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Diffuse_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
                 }
                 else if (renderPipelineAsset.restirSampleType == ReSTIRSampleType.SPECULAR)
@@ -79,10 +81,15 @@ public partial class KaiserRayTracer : RenderPipeline
                 }
                 else
                 {
+
                     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Specular_TReservoir"), ReservoirBuffers.SpecularTemporal);
                     ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Specular_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
-                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Diffuse_TReservoir"), ReservoirBuffers.DiffuseTemporal);
+
+                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), passData.temporalReservoir);
+                    // ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Diffuse_TReservoir"), ReservoirBuffers.DiffuseTemporal);
                     ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Diffuse_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+
+                    ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), passData.temporalReservoir);
                     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Diffuse_TReservoir"), ReservoirBuffers.DiffuseTemporal);
                     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Specular_TReservoir"), ReservoirBuffers.SpecularTemporal);
                     ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Combine", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);

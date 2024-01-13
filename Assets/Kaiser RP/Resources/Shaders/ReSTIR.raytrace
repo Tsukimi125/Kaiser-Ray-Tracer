@@ -65,7 +65,7 @@ void ReSTIR_Diffuse_Temporal()
         Reservoir re;
         if (_RE_ResSTIRType != 3)
         {
-            re = UnPack(_Diffuse_TReservoir[launchIndex]);
+            re = UnPack(_TReservoir[launchIndex]);
         }
         else
         {
@@ -74,7 +74,8 @@ void ReSTIR_Diffuse_Temporal()
 
         re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 1), RandomFloat01(rng));
 
-        _Diffuse_TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
+        _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
+        // _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
         _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
         _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
     }
@@ -205,7 +206,7 @@ void ReSTIR_Combine()
 
 
     float3 directRadiance = _DirectIllumination[launchIndex].xyz;
-    Reservoir diffReservoir = UnPack(_Diffuse_TReservoir[launchIndex]);
+    Reservoir diffReservoir = UnPack(_TReservoir[launchIndex]);
     Reservoir specReservoir = UnPack(_Specular_TReservoir[launchIndex]);
     float3 diffGI = max(diffReservoir.radiance * diffReservoir.wSum / (diffReservoir.M * diffReservoir.w), 0.0f);
     float3 specGI = max(specReservoir.radiance * specReservoir.wSum / (specReservoir.M * specReservoir.w), 0.0f);
