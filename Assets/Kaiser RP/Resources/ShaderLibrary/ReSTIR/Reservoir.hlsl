@@ -139,8 +139,8 @@ struct Reservoir
         RescaleTo(sampleNum);
         int r = f32tof16(radiance.x) + (f32tof16(radiance.y) << 16);
         int g = f32tof16(radiance.z) + (M << 16);
-        int b = f32tof16(wSum) + (f32tof16(w) << 16);
-        int a = pack_11_11_10(dir);
+        int b = asint(wSum);
+        int a = asint(w);
         return int4(r, g, b, a);
     }
 
@@ -205,9 +205,9 @@ Reservoir UnPack(int4 value)
     int a = value.a;
     re.radiance = float3(f16tof32(r), f16tof32(r >> 16), f16tof32(g));
     re.M = (g >> 16) & 0xFFFF;
-    re.wSum = f16tof32(b);
-    re.w = f16tof32(b >> 16);
-    re.dir = unpack_11_11_10(a);
+    re.wSum = asfloat(b);
+    re.w = asfloat(a);
+    // re.dir = unpack_11_11_10(a);
     // // re.sampleIndex = (a >> 16) & 0xFFFF;
     if (isnan(re.wSum) || isnan(re.w))
     {

@@ -75,7 +75,7 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
 
     if (brdfSample.IsValid())
     {
-        ray.Origin = ComputeRayOrigin(hitVertex.position, hitVertex.surfaceData.normal);;
+        ray.Origin = ComputeRayOrigin(hitVertex.position, hitVertex.surfaceData.normal);
         ray.Direction = mul(vertex.tangentToWorld, brdfSample.wi);
         ray.TMin = 1e-4;
         trace.throughput *= brdfSample.weight;
@@ -83,7 +83,7 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
     }
     else
     {
-        trace.invPDF = 0.001f;
+        trace.invPDF = 0.0001f;
         return false;
     }
     
@@ -111,7 +111,7 @@ bool TraceScatterRay(inout RayDesc ray, inout PathVertex hitVertex, inout TraceD
 }
 
 
-void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceData trace, inout VertexData vertex, out float3 directRadiance)
+void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceData trace, inout VertexData vertex, out float3 directRadiance, out float pDiffuse)
 {
     float2 frameCoord = launchIndex + float2(0.5, 0.5);
     float3 result = float3(0, 0, 0);
@@ -162,7 +162,7 @@ void TracePath(uint2 launchIndex, uint2 launchDim, inout uint rng, inout TraceDa
     hitVertex.surfaceData = surfaceData;
 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
-
+    pDiffuse = vertex.brdf.pDiffuse;
     directRadiance = emissive;
     // if (_RE_EvaluateDirectLighting)
 
@@ -349,8 +349,6 @@ void TraceSpecular(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Tra
     vertex.wi = mul(_DirectionalLightDirection, vertex.tangentToWorld);
 
     float3 urand3 = float3(RandomFloat01(rng), RandomFloat01(rng), RandomFloat01(rng));
-    // LayeredBRDF brdf = LayeredBRDF::Create(surfaceData, wo.z);
-    // float3 rayDirection = brdf.sample(urand3, wo).wi;
 
     RayDesc ray;
     {
@@ -363,10 +361,7 @@ void TraceSpecular(uint2 launchIndex, uint2 launchDim, inout uint rng, inout Tra
 
     vertex.brdf = LayeredBRDF::Create(hitVertex.surfaceData, vertex.wo.z);
     
-
     directRadiance = emissive;
-    // if (_RE_EvaluateDirectLighting)
-
     {
         directRadiance += EvaluateDirectLight(hitVertex, trace, vertex);
     }

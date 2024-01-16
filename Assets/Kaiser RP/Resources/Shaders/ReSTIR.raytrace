@@ -13,7 +13,8 @@ void ReSTIR_BRDF_Temporal()
     TraceData trace;
     VertexData vertex;
     float3 directRadiance;
-    TracePath(launchIndex, launchDim, rng, trace, vertex, directRadiance);
+    float pDiffuse;
+    TracePath(launchIndex, launchDim, rng, trace, vertex, directRadiance, pDiffuse);
 
     float3 totalRadiance = trace.radiance;
 
@@ -37,6 +38,7 @@ void ReSTIR_BRDF_Temporal()
 
         _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
         _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+        // _Output[launchIndex] = float4((1 - pDiffuse.xxx), 1.0f);
         _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
     }
 }
@@ -112,7 +114,7 @@ void ReSTIR_Specular_Temporal()
             re = UnPack(_SReservoir[launchIndex]);
         }
 
-        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 1), RandomFloat01(rng));
+        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 10.0f), RandomFloat01(rng));
 
         _Specular_TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
         _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
@@ -211,7 +213,8 @@ void ReSTIR_Combine()
     float3 diffGI = max(diffReservoir.radiance * diffReservoir.wSum / (diffReservoir.M * diffReservoir.w), 0.0f);
     float3 specGI = max(specReservoir.radiance * specReservoir.wSum / (specReservoir.M * specReservoir.w), 0.0f);
 
-    float3 indirectRadiance = diffGI * pDiffuse + specGI * pSpecular;
+    float3 indirectRadiance = diffGI + specGI;
+    // float3 indirectRadiance = diffGI * pDiffuse + specGI * pSpecular;
     _Output[launchIndex] = float4(directRadiance + saturate(indirectRadiance), 1.0f);
     // _Output[launchIndex] = float4(saturate(indirectRadiance), 1.0f);
 
