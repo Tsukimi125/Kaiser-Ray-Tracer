@@ -48,6 +48,7 @@ RWTexture2D<float4> _DirectIllumination;
 RWTexture2D<float4> _Diffuse_TReservoir;
 RWTexture2D<float4> _Specular_TReservoir;
 
+RWTexture2D<float4> _FinalOutput;
 
 float3 EvaluateDirectLight(in PathVertex hitVertex, inout TraceData trace, inout VertexData vertex)
 {

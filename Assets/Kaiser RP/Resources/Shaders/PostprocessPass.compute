@@ -1,0 +1,100 @@
+#pragma kernel ReSTIR_Combine
+#pragma kernel SVGF
+
+#include "../ShaderLibrary/ReSTIR/Reservoir.hlsl"
+#include "../ShaderLibrary/Utils/Random.hlsl"
+
+RWTexture2D<float4> _DirectIllumination;
+RWTexture2D<float4> _DiffuseReservoir;
+RWTexture2D<float4> _SpecularReservoir;
+RWTexture2D<float4> _History;
+RWTexture2D<float4> _Result;
+
+Texture2D<float4> _Input;
+RWTexture2D<float4> _Output;
+Texture2D<float4> _GBuffer0;
+Texture2D<float4> _GBuffer1;
+Texture2D<float4> _GBuffer2;
+Texture2D<float4> _GBuffer3;
+Texture2D<float4> _GBuffer4;
+
+SamplerState sampler_point_clamp;
+
+
+
+[numthreads(8, 8, 1)]
+void ReSTIR_Combine(uint3 id:SV_DispatchThreadID)
+{
+    float4 dirIll = saturate(_DirectIllumination[id.xy]);
+    Reservoir diffReservoir = UnPack(_DiffuseReservoir[id.xy]);
+    float3 diffGI = _DiffuseReservoir[id.xy].rgb;
+    float3 specGI = _SpecularReservoir[id.xy].rgb;
+    // float4 specGI = UnPack(_SpecularReservoir[id.xy]);
+    float3 history = saturate(_History[id.xy]).rgb;
+    float3 current = saturate(dirIll.rgb + diffGI + specGI).rgb; // dirIll.rgb + diffGI +
+    // float blendFactor = lerp(0.015f, 0.1f, saturate(distance(history, current)));
+    float blendFactor = lerp(0.05f, 0.15f, saturate(distance(history, current)));
+    float3 res = lerp(history, current, blendFactor);
+    // float4 res = _History[id.xy] * 0.95f + _Result[id.xy] * 0.05f;
+    _Result[id.xy] = float4(res, 1.0f);
+}
+
+float4 _Screen_Resolution;
+float _Screen_DenoiseKernelSize;
+float _Screen_FrameIndex;
+
+[numthreads(8, 8, 1)]
+void SVGF(uint3 id:SV_DispatchThreadID)
+{
+    uint rng = uint(uint(id.x) * uint(1973 + _Screen_FrameIndex) + uint(id.y) * uint(9277 + _Screen_FrameIndex) + uint(_Screen_FrameIndex) * uint(24699)) | uint(1);
+    float2 frameCoord = id.xy + float2(0.5, 0.5);
+
+    float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
+    float2 uv = (frameCoord) * _Screen_Resolution.zw;
+
+    float3 centerColor = saturate(_Input.SampleLevel(sampler_point_clamp, uv, 0).xyz);
+    float3 centerNormal = _GBuffer1.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 centerWorldPos = _GBuffer2.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    float3 rmao = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).xyz;
+    // float colorPhi = 1.0f / 3.3f;
+    // float normalPhi = 0.01f / 2.0f ;
+    // float worldPosPhi = 0.5f / 5.5f;
+    float factor = 2.50f;
+    float colorPhi = 0.703f * factor;
+    float normalPhi = 6.555f * factor;
+    float worldPosPhi = 15.01f * factor;
+    float rmPhi = 1.51f * factor;
+
+    float3 finalColor = float3(0.0, 0.0, 0.0);
+    float weight = 0.0;
+    float weightSum = 0.0;
+
+    for (int i = 0; i < 25; i++)
+    {
+        float2 hash = frac(Hammersley16((RandomFloat01(rng) + i * 7), (uint)153, float2(RandomFloat01(rng), RandomFloat01(rng))));
+        hash = hash * 2.0 - 1.0;
+        // float2 offsetUV = uv + offset[i] * _Screen_Resolution.zw * _Screen_DenoiseKernelSize * (roughness + 0.5);
+        float2 offsetUV = uv + hash * _Screen_Resolution.zw * _Screen_DenoiseKernelSize * (1.25f + RandomFloat01(rng) * 0.5f) * (max(rmao.r, 1 - rmao.g) + 0.25f);
+        float3 offsetColor = saturate(_Input.SampleLevel(sampler_point_clamp, offsetUV, 0).xyz);
+        float3 t = centerColor - offsetColor;
+        float colorWeight = min(exp(-dot(t, t) * colorPhi), 1.0);
+
+        float3 offsetNormal = _GBuffer1.SampleLevel(sampler_point_clamp, offsetUV, 0).xyz;
+        t = centerNormal - offsetNormal;
+        float normalWeight = min(exp(-dot(t, t) * normalPhi), 1.0);
+
+        float3 offsetWorldPos = _GBuffer2.SampleLevel(sampler_point_clamp, offsetUV, 0).xyz;
+        t = centerWorldPos - offsetWorldPos;
+        float worldPosWeight = min(exp(-dot(t, t) * worldPosPhi), 1.0);
+        float2 offsetRM = _GBuffer3.SampleLevel(sampler_point_clamp, offsetUV, 0).xy;
+        float2 t2 = rmao - offsetRM;
+        float rmWeight = min(exp(-dot(t2, t2) * rmPhi), 1.0);
+
+        weight = colorWeight * normalWeight * worldPosWeight * rmWeight;
+        finalColor += offsetColor * weight;
+        weightSum += weight;
+    }
+    
+    // _Output[id.xy] = float4(uv, 1.0f, 1.0f);
+    _Output[id.xy] = float4(finalColor / weightSum, 1.0f);
+}

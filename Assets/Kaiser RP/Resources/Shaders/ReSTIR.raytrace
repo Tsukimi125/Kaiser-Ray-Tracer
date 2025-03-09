@@ -8,7 +8,7 @@ void ReSTIR_BRDF_Temporal()
     uint2 launchIndex = DispatchRaysIndex().xy;
     uint2 launchDim = DispatchRaysDimensions().xy;
 
-    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex) * uint(24699)) | uint(1);
+    uint rng = uint(uint(launchIndex.x + _RE_ConvergenceStep) * uint(1973) + uint(launchIndex.y + _RE_FrameIndex) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex) * uint(24699)) | uint(1);
     
     TraceData trace;
     VertexData vertex;
@@ -55,7 +55,7 @@ void ReSTIR_Diffuse_Temporal()
     VertexData vertex;
     float3 directRadiance;
     TraceDiffuse(launchIndex, launchDim, rng, trace, vertex, directRadiance);
-
+    trace.radiance = saturate(trace.radiance);
     float3 totalRadiance = trace.radiance;
 
     if (_RE_ResSTIRType == 0)
@@ -74,7 +74,7 @@ void ReSTIR_Diffuse_Temporal()
             re = UnPack(_SReservoir[launchIndex]);
         }
 
-        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 1), RandomFloat01(rng));
+        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.001f, 1), RandomFloat01(rng));
 
         _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
         // _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
@@ -95,8 +95,17 @@ void ReSTIR_Specular_Temporal()
     VertexData vertex;
     float3 directRadiance;
     TraceSpecular(launchIndex, launchDim, rng, trace, vertex, directRadiance);
+    trace.radiance = clamp(trace.radiance, 0.0f, 1.0f);
+    Reservoir re = UnPack(_TReservoir[launchIndex]);
+    float3 diffGI = saturate(re.radiance * re.wSum / (re.M * re.w));
+    float3 currentRadiance = lerp(trace.radiance, _Specular_TReservoir[launchIndex].rgb, 0.95f);
+    _Output[launchIndex] = float4(currentRadiance, 1.0f);
+    _Specular_TReservoir[launchIndex] = float4(currentRadiance, 1.0f);
+    _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
+    return;
 
     float3 totalRadiance = trace.radiance;
+    if (luminance(totalRadiance) < 0.0001f) return;
 
     if (_RE_ResSTIRType == 0)
     {
@@ -114,10 +123,51 @@ void ReSTIR_Specular_Temporal()
             re = UnPack(_SReservoir[launchIndex]);
         }
 
-        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 10.0f), RandomFloat01(rng));
+        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 100.0f), RandomFloat01(rng));
 
         _Specular_TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
-        _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+        
+        // _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+        _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
+    }
+}
+
+[shader("raygeneration")]
+void ReSTIR_Layered_Temporal()
+{
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
+
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex) * uint(24699)) | uint(1);
+    
+    TraceData trace;
+    VertexData vertex;
+    float3 directRadiance;
+    TraceSpecular(launchIndex, launchDim, rng, trace, vertex, directRadiance);
+
+    float3 totalRadiance = trace.radiance;
+    if (luminance(totalRadiance) < 0.0001f) return;
+
+    if (_RE_ResSTIRType == 0)
+    {
+        _Output[launchIndex] = float4(directRadiance + totalRadiance, 1);
+    }
+    else
+    {
+        Reservoir re;
+        if (_RE_ResSTIRType != 3)
+        {
+            re = UnPack(_Specular_TReservoir[launchIndex]);
+        }
+        else
+        {
+            re = UnPack(_SReservoir[launchIndex]);
+        }
+
+        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 100.0f), RandomFloat01(rng));
+
+        _Specular_TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
+        // _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
         _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
     }
 }
@@ -143,8 +193,8 @@ void ReSTIR_Spatial()
 
     Reservoir re = UnPack(_TReservoir[launchIndex]);
     // _Output[launchIndex] = float4(re.radiance * re.wSum / (re.M * re.w), 1.0f);
-    float radi = 64;
-    int maxSpatialSample = 2;
+    float radi = 1.8;
+    int maxSpatialSample = 9;
     float2 neighbourFrameCoord;
     float2 neighbourUV;
     float3 neighbourWorldPos;
@@ -210,12 +260,13 @@ void ReSTIR_Combine()
     float3 directRadiance = _DirectIllumination[launchIndex].xyz;
     Reservoir diffReservoir = UnPack(_TReservoir[launchIndex]);
     Reservoir specReservoir = UnPack(_Specular_TReservoir[launchIndex]);
-    float3 diffGI = max(diffReservoir.radiance * diffReservoir.wSum / (diffReservoir.M * diffReservoir.w), 0.0f);
-    float3 specGI = max(specReservoir.radiance * specReservoir.wSum / (specReservoir.M * specReservoir.w), 0.0f);
+    float3 diffGI = max(diffReservoir.radiance * diffReservoir.wSum / (diffReservoir.M * diffReservoir.w), 0.0001f);
+    float3 specGI = max(specReservoir.radiance * specReservoir.wSum / (specReservoir.M * specReservoir.w), 0.0001f);
 
-    float3 indirectRadiance = diffGI + specGI;
+    float3 indirectRadiance = specGI;
     // float3 indirectRadiance = diffGI * pDiffuse + specGI * pSpecular;
-    _Output[launchIndex] = float4(directRadiance + saturate(indirectRadiance), 1.0f);
+    _Output[launchIndex] = float4(directRadiance + diffGI, 1.0f); //  + saturate(indirectRadiance)
+    // _Output[launchIndex] = float4(specGI, 1.0f); //  + saturate(indirectRadiance)
     // _Output[launchIndex] = float4(saturate(indirectRadiance), 1.0f);
 
 }

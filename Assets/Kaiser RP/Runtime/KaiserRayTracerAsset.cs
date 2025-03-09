@@ -43,7 +43,7 @@ public class KaiserRayTracerAsset : RenderPipelineAsset
     public uint restirBounceCount = 1;
     [Range(1, 64)]
     public int restirTReservoirSize = 20;
-    [Range(1, 64)]
+    [Range(1, 500)]
     public int restirSReservoirSize = 12;
     public bool restirLongPath = false;
 
