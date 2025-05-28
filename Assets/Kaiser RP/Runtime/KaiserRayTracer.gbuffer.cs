@@ -8,6 +8,8 @@ using Unity.VisualScripting;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
+    Matrix4x4 prevViewProjMatrix = Matrix4x4.identity;
+    
     void RenderCameraGBffer(Camera camera, RenderGraphParameters renderGraphParams, KaiserCameraData cameraData, RTHandle gbufferHandle0, RTHandle gbufferHandle1, RTHandle gbufferHandle2, RTHandle gbufferHandle3, RTHandle gbufferHandle4)
     {
         if (KaiserShaders.gbuffer == null)
@@ -31,7 +33,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 float zoom = Mathf.Tan(Mathf.Deg2Rad * camera.fieldOfView * 0.5f);
                 float aspectRatio = camera.pixelWidth / (float)camera.pixelHeight;
 
-                ctx.cmd.SetRayTracingFloatParam(KaiserShaders.gbuffer, Shader.PropertyToID("_RTGBuffer_Zoom"), zoom);
+                ctx.cmd.SetGlobalFloat(Shader.PropertyToID("_RTGBuffer_Zoom"), zoom);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.gbuffer, Shader.PropertyToID("_RTGBuffer_AspectRatio"), aspectRatio);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.gbuffer, Shader.PropertyToID("_RTGBuffer_ConvergenceStep"), frameIndex);
                 ctx.cmd.SetRayTracingIntParam(KaiserShaders.gbuffer, Shader.PropertyToID("_RTGBuffer_FrameIndex"), cameraData.frameIndex);
@@ -45,6 +47,13 @@ public partial class KaiserRayTracer : RenderPipeline
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_GBuffer4"), data.gbuffer4);
                 ctx.cmd.SetRayTracingTextureParam(KaiserShaders.gbuffer, Shader.PropertyToID("_G_EnvTex"), renderPipelineAsset.envTexture);
                 ctx.cmd.SetRayTracingFloatParam(KaiserShaders.gbuffer, Shader.PropertyToID("_G_EnvIntensity"), renderPipelineAsset.envIntensity);
+                
+                Matrix4x4 viewMatrix = camera.worldToCameraMatrix;
+                Matrix4x4 projMatrix = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false);
+                
+                // ctx.cmd.SetRayTracingMatrixParam(KaiserShaders.gbuffer, Shader.PropertyToID("_PrevViewProjMatrix"), prevViewProjMatrix);
+                ctx.cmd.SetGlobalMatrix(Shader.PropertyToID("_PrevViewProjMatrix"), prevViewProjMatrix);
+                prevViewProjMatrix = projMatrix * viewMatrix;
 
                 ctx.cmd.DispatchRays(KaiserShaders.gbuffer, "GBffuerRayGenShader", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 

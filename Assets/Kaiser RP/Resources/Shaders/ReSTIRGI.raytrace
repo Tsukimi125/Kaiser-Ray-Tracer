@@ -1,0 +1,65 @@
+
+#include "ReSTIRPass.hlsl"
+
+
+[shader("raygeneration")]
+void ReSTIR_Diffuse_Temporal()
+{
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
+
+    uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex) * uint(24699)) | uint(1);
+    
+    float2 frameCoord = launchIndex.xy + float2(0.5, 0.5);
+    float2 uv = (frameCoord) / float2(1920, 1080);
+    // float2 prevUV = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).zw;
+    float2 prevUV = ComputeUV(_GBuffer2.SampleLevel(sampler_linear_clamp, uv, 0).xyz);
+    uint2 lastID = (uint2)(prevUV * float2(1920, 1080));
+
+    TraceData trace;
+    VertexData vertex;
+    float3 directRadiance;
+    TraceDiffuse(launchIndex, launchDim, rng, trace, vertex, directRadiance);
+    trace.radiance = saturate(trace.radiance);
+    float3 totalRadiance = trace.radiance;
+
+    if (_RE_ResSTIRType == 0)
+    {
+        _Output[launchIndex] = float4(directRadiance + totalRadiance, 1);
+    }
+    else
+    {
+        Reservoir re;
+        if (_RE_ResSTIRType != 3)
+        {
+            re = UnPack(_TReservoir[lastID]);
+        }
+        else
+        {
+            re = UnPack(_SReservoir[lastID]);
+        }
+
+        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.001f, 1), RandomFloat01(rng));
+        int p = _RE_TReservoirSize;
+        p = (int)(p - length(uv - prevUV) * 1);
+        _TReservoir[launchIndex] = re.Pack(max(10, p));
+        // _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+        // _Output[launchIndex] = float4(length(uv - prevUV).xxx * 1000, 1.0f);
+        _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+        _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
+    }
+}
+
+
+[shader("miss")]
+void MissShader0_Primary(inout RayPayload payload:SV_RayPayload)
+{
+    // payload.surfaceData.emission = _RE_EnvTex.SampleLevel(sampler_RE_EnvTex, WorldRayDirection(), 0).rgb;
+
+}
+
+[shader("miss")]
+void MissShader1_ShadowRay(inout ShadowRayPayload payload:SV_RayPayload)
+{
+    payload.isShadowed = false;
+}

@@ -21,8 +21,6 @@ TextureCube<float4> _G_EnvTex;
 SamplerState sampler_G_EnvTex;
 float _G_EnvIntensity;
 
-
-
 #pragma max_recursion_depth 10
 
 #define K_USE_ROUGHNESS_BIAS 0
@@ -32,6 +30,16 @@ RWTexture2D<float4> _GBuffer1;
 RWTexture2D<float4> _GBuffer2;
 RWTexture2D<float4> _GBuffer3;
 RWTexture2D<float4> _GBuffer4;
+
+float4x4 _PrevViewProjMatrix;
+
+float2 ComputeUV(float3 worldPos)
+{
+    float4 clip = mul(_PrevViewProjMatrix, float4(worldPos, 1.0));
+    float2 ndc = clip.xy / clip.w;
+    float2 uv = ndc * 0.5 + 0.5;
+    return uv;
+}
 
 [shader("raygeneration")]
 void GBffuerRayGenShader()
@@ -44,10 +52,12 @@ void GBffuerRayGenShader()
     
     uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RTGBuffer_ConvergenceStep + _RTGBuffer_FrameIndex) * uint(26699)) | uint(1);
     float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
-    float2 ndcCoords = (frameCoord + jitter) / float2(launchDim.x - 1, launchDim.y - 1);
+    float2 ndcCoords = (frameCoord) / float2(launchDim.x, launchDim.y);
     
     ndcCoords = ndcCoords * 2 - float2(1, 1);
     ndcCoords = ndcCoords * _RTGBuffer_Zoom;
+
+    float2 uv = (frameCoord) / float2(1920, 1080);
 
     // Get a ray in view space.
     float3 viewDirection = normalize(float3(ndcCoords.x * _RTGBuffer_AspectRatio, ndcCoords.y, 1));
@@ -69,10 +79,12 @@ void GBffuerRayGenShader()
     if (hitVertex.bHit)
     {
         GenerateRayTracedGBufferFromHitPathVertex(hitVertex, rtGBuffer);
-        _GBuffer0[launchIndex] = float4(rtGBuffer.albedo, 0.0);
+        
+        float2 prevUV = ComputeUV(rtGBuffer.worldPos);
+        _GBuffer0[launchIndex] = float4(rtGBuffer.albedo, 1.0);
         _GBuffer1[launchIndex] = float4(rtGBuffer.normal, 0.0);
         _GBuffer2[launchIndex] = float4(rtGBuffer.worldPos, 0.0);
-        _GBuffer3[launchIndex] = float4(rtGBuffer.roughness, rtGBuffer.metallic, 0.0, 0.0);
+        _GBuffer3[launchIndex] = float4(rtGBuffer.roughness, rtGBuffer.metallic, prevUV.x, prevUV.y);
         _GBuffer4[launchIndex] = float4(rtGBuffer.emission, 0.0);
     }
     else
@@ -80,7 +92,7 @@ void GBffuerRayGenShader()
         _GBuffer0[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
         _GBuffer1[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
         _GBuffer2[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
-        _GBuffer3[launchIndex] = float4(0.0, 0.0, 0.0, 0.0);
+        _GBuffer3[launchIndex] = float4(0.0, 0.0, uv.x, uv.y);
         _GBuffer4[launchIndex] = float4(_G_EnvIntensity * clamp(_G_EnvTex.SampleLevel(sampler_G_EnvTex, ray.Direction, 0).rgb, 0.0f, 2.0f), 0.0);
     }
 }

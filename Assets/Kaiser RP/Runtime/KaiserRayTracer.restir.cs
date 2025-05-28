@@ -107,7 +107,7 @@ public partial class KaiserRayTracer : RenderPipeline
                 }
                 else
                 {
-                    float denoiseKernelSizeMulti = 0.25f;
+                    float denoiseKernelSizeMulti = 1.0f;
 
                     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_SReservoir"), passData.spatialReservoir);
                     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_TReservoir"), passData.temporalReservoir);
@@ -161,15 +161,15 @@ public partial class KaiserRayTracer : RenderPipeline
                     ctx.cmd.SetRayTracingTextureParam(KaiserShaders.restir, Shader.PropertyToID("_Specular_TReservoir"), ReservoirBuffers.SpecularTemporal);
                     ctx.cmd.DispatchRays(KaiserShaders.restir, "ReSTIR_Specular_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
 
-                    ctx.cmd.SetComputeFloatParam(KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 0.1f * denoiseKernelSizeMulti);
+                    ctx.cmd.SetComputeFloatParam(KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 0.15f * denoiseKernelSizeMulti);
                     ctx.cmd.SetComputeTextureParam(KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Input"), ReservoirBuffers.SpecularTemporal);
                     ctx.cmd.SetComputeTextureParam(KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Output"), passData.indirectSpecular);
                     ctx.cmd.DispatchCompute(KaiserShaders.postprocessPass, kernel, camera.pixelWidth / 8, camera.pixelHeight / 8, 1);
-                    ctx.cmd.SetComputeFloatParam(KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 0.2f * denoiseKernelSizeMulti);
+                    ctx.cmd.SetComputeFloatParam(KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 0.3f * denoiseKernelSizeMulti);
                     ctx.cmd.SetComputeTextureParam(KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Input"), passData.indirectSpecular);
                     ctx.cmd.SetComputeTextureParam(KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Output"), ReservoirBuffers.SpecularTemporal);
                     ctx.cmd.DispatchCompute(KaiserShaders.postprocessPass, kernel, camera.pixelWidth / 8, camera.pixelHeight / 8, 1);
-                    ctx.cmd.SetComputeFloatParam(KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 0.4f * denoiseKernelSizeMulti);
+                    ctx.cmd.SetComputeFloatParam(KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 0.6f * denoiseKernelSizeMulti);
                     ctx.cmd.SetComputeTextureParam(KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Input"), ReservoirBuffers.SpecularTemporal);
                     ctx.cmd.SetComputeTextureParam(KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Output"), passData.indirectSpecular);
                     ctx.cmd.DispatchCompute(KaiserShaders.postprocessPass, kernel, camera.pixelWidth / 8, camera.pixelHeight / 8, 1);

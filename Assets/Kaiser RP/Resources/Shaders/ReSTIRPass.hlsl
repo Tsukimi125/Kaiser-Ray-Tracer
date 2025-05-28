@@ -28,6 +28,7 @@ int _RE_EvaluateDirectLighting;
 // Camera Properties
 float _RE_Zoom;
 float _RE_AspectRatio;
+float4x4 _PrevViewProjMatrix;
 
 // Environment Properties
 TextureCube<float4> _RE_EnvTex;
@@ -49,6 +50,14 @@ RWTexture2D<float4> _Diffuse_TReservoir;
 RWTexture2D<float4> _Specular_TReservoir;
 
 RWTexture2D<float4> _FinalOutput;
+
+float2 ComputeUV(float3 worldPos)
+{
+    float4 clip = mul(_PrevViewProjMatrix, float4(worldPos, 1.0));
+    float2 ndc = clip.xy / clip.w;
+    float2 uv = ndc * 0.5 + 0.5;
+    return uv;
+}
 
 float3 EvaluateDirectLight(in PathVertex hitVertex, inout TraceData trace, inout VertexData vertex)
 {

@@ -7,7 +7,7 @@ using UnityEngine.Experimental.Rendering.RenderGraphModule;
 
 public partial class KaiserRayTracer : RenderPipeline
 {
-    private KaiserRayTracerAsset renderPipelineAsset;
+    public KaiserRayTracerAsset renderPipelineAsset;
     private RayTracingAccelerationStructure rtas = null;
     private RenderGraph renderGraph = null;
     private RTHandleSystem rtHandleSystem = null;

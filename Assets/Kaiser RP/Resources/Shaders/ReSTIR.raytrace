@@ -51,6 +51,11 @@ void ReSTIR_Diffuse_Temporal()
 
     uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex) * uint(24699)) | uint(1);
     
+    float2 frameCoord = launchIndex.xy + float2(0.5, 0.5);
+    float2 uv = (frameCoord) / float2(1920, 1080);
+    float2 prevUV = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).zw;
+    uint2 lastID = (uint2)(prevUV * float2(1920, 1080));
+
     TraceData trace;
     VertexData vertex;
     float3 directRadiance;
@@ -75,10 +80,12 @@ void ReSTIR_Diffuse_Temporal()
         }
 
         re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.001f, 1), RandomFloat01(rng));
-
-        _TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
+        int p = _RE_TReservoirSize;
+        p = (int)(p - length(uv - prevUV) * 5000);
+        _TReservoir[launchIndex] = re.Pack(max(1, p));
         // _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
-        _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+        _Output[launchIndex] = float4(length(uv - prevUV).xxx * 1000, 1.0f);
+        // _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
         _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
     }
 }
@@ -86,50 +93,60 @@ void ReSTIR_Diffuse_Temporal()
 [shader("raygeneration")]
 void ReSTIR_Specular_Temporal()
 {
+    TraceData trace;
+    VertexData vertex;
+    float3 directRadiance;
     uint2 launchIndex = DispatchRaysIndex().xy;
     uint2 launchDim = DispatchRaysDimensions().xy;
 
     uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex) * uint(24699)) | uint(1);
-    
-    TraceData trace;
-    VertexData vertex;
-    float3 directRadiance;
-    TraceSpecular(launchIndex, launchDim, rng, trace, vertex, directRadiance);
-    trace.radiance = clamp(trace.radiance, 0.0f, 1.0f);
-    Reservoir re = UnPack(_TReservoir[launchIndex]);
-    float3 diffGI = saturate(re.radiance * re.wSum / (re.M * re.w));
-    float3 currentRadiance = lerp(trace.radiance, _Specular_TReservoir[launchIndex].rgb, 0.95f);
+    float2 frameCoord = launchIndex.xy + float2(0.5, 0.5);
+    float2 uv = (frameCoord) / float2(1920, 1080);
+    // float2 prevUV = ComputeUV(_GBuffer2.Load(int3(launchIndex, 0)));
+    float2 prevUV = _GBuffer3.Load(int3(launchIndex, 0)).zw;
+    uint2 lastID = (uint2)(prevUV * float2(1920, 1080));
+    float3 res = 0;
+    for (int i = 0; i < 4; i++) {
+        rng = uint(uint(launchIndex.x) * uint(1973 + i) + uint(launchIndex.y) * uint(9277 - i) + uint(_RE_ConvergenceStep + _RE_FrameIndex - i) * uint(24699 + i)) | uint(1);
+        TraceSpecular(launchIndex, launchDim, rng, trace, vertex, directRadiance);
+        trace.radiance = clamp(trace.radiance, 0.0f, 1.0f);
+        res += trace.radiance;
+        // Reservoir re = UnPack(_TReservoir[launchIndex]);
+        // float3 diffGI = saturate(re.radiance * re.wSum / (re.M * re.w));
+    }
+    float3 currentRadiance = lerp(res / 4, _Specular_TReservoir[lastID].rgb, 0.96f);
     _Output[launchIndex] = float4(currentRadiance, 1.0f);
     _Specular_TReservoir[launchIndex] = float4(currentRadiance, 1.0f);
     _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
     return;
+    #if 0
+        float3 totalRadiance = trace.radiance;
+        if (luminance(totalRadiance) < 0.0001f) return;
 
-    float3 totalRadiance = trace.radiance;
-    if (luminance(totalRadiance) < 0.0001f) return;
-
-    if (_RE_ResSTIRType == 0)
-    {
-        _Output[launchIndex] = float4(directRadiance + totalRadiance, 1);
-    }
-    else
-    {
-        Reservoir re;
-        if (_RE_ResSTIRType != 3)
+        if (_RE_ResSTIRType == 0)
         {
-            re = UnPack(_Specular_TReservoir[launchIndex]);
+            _Output[launchIndex] = float4(directRadiance + totalRadiance, 1);
         }
         else
         {
-            re = UnPack(_SReservoir[launchIndex]);
+            Reservoir re;
+            if (_RE_ResSTIRType != 3)
+            {
+                re = UnPack(_Specular_TReservoir[launchIndex]);
+            }
+            else
+            {
+                re = UnPack(_SReservoir[launchIndex]);
+            }
+
+            re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 100.0f), RandomFloat01(rng));
+
+            _Specular_TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
+            
+            // _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
+            _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
         }
-
-        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 100.0f), RandomFloat01(rng));
-
-        _Specular_TReservoir[launchIndex] = re.Pack(_RE_TReservoirSize);
-        
-        // _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
-        _DirectIllumination[launchIndex] = float4(directRadiance, 1.0f);
-    }
+    #endif
 }
 
 [shader("raygeneration")]
@@ -139,7 +156,12 @@ void ReSTIR_Layered_Temporal()
     uint2 launchDim = DispatchRaysDimensions().xy;
 
     uint rng = uint(uint(launchIndex.x) * uint(1973) + uint(launchIndex.y) * uint(9277) + uint(_RE_ConvergenceStep + _RE_FrameIndex) * uint(24699)) | uint(1);
-    
+
+    float2 frameCoord = launchIndex.xy + float2(0.5, 0.5);
+    float2 uv = (frameCoord) / float2(1920, 1080);
+    float2 prevUV = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).zw;
+    uint2 lastID = (uint2)(prevUV * float2(1920, 1080));
+
     TraceData trace;
     VertexData vertex;
     float3 directRadiance;
@@ -161,7 +183,7 @@ void ReSTIR_Layered_Temporal()
         }
         else
         {
-            re = UnPack(_SReservoir[launchIndex]);
+            re = UnPack(_SReservoir[lastID]);
         }
 
         re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.0, 100.0f), RandomFloat01(rng));

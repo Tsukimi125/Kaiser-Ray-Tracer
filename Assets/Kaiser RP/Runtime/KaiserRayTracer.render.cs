@@ -83,13 +83,6 @@ public partial class KaiserRayTracer : RenderPipeline
                     RenderIrcache(camera, renderGraphParams);
                     break;
                 case RenderType.RESTIR_GI:
-                    // using (renderGraph.RecordAndExecute(renderGraphParams))
-                    // {
-                    //     using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
-                    //     GBufferPass.Record(renderGraph, camera, cull);
-                    //     // DeferredLightPass.Record(renderGraph, camera);
-                    //     frameIndex++;
-                    // }
                     RenderCameraGBffer(camera, renderGraphParams, cameraData, gbufferHandle0, gbufferHandle1, gbufferHandle2, gbufferHandle3, gbufferHandle4);
                     if (RenderReSTIR(camera, renderGraphParams, cameraData, outputRTHandle))
                     {
@@ -99,6 +92,16 @@ public partial class KaiserRayTracer : RenderPipeline
                     {
                         cmd.ClearRenderTarget(false, true, Color.black);
                         Debug.Log("Error occurred when ReSTIR!");
+                    }
+                    break;
+                case RenderType.RENDER_GRAPH:
+                    using (renderGraph.RecordAndExecute(renderGraphParams))
+                    {
+                        using var _ = new RenderGraphProfilingScope(renderGraph, cameraSampler);
+                        GBufferPass.Record(renderGraph, camera, cull);
+                        // DeferredLightPass.Record(renderGraph, camera);
+                        ReSTIRGIPass.Record(renderGraph, camera, rtas, renderPipelineAsset);
+                        frameIndex++;
                     }
                     break;
             }
@@ -132,6 +135,7 @@ public partial class KaiserRayTracer : RenderPipeline
             cmd.Release();
             return;
         }
+        
 
         CullInstance();
 

@@ -7,7 +7,7 @@ using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 public partial class KaiserRayTracer : RenderPipeline
 {
-    static class KaiserShaders
+    static public class KaiserShaders
     {
         static public ComputeShader deferredLightPass;
         static public ComputeShader postprocessPass;
@@ -16,7 +16,7 @@ public partial class KaiserRayTracer : RenderPipeline
         static public RayTracingShader gbuffer;
     };
 
-    static class ReservoirBuffers
+    static public class ReservoirBuffers
     {
         static public RTHandle Temporal;
         static public RTHandle Spatial;
@@ -27,7 +27,7 @@ public partial class KaiserRayTracer : RenderPipeline
         static public RTHandle SpecularTemporal;
     };
 
-    static class PostprocessBuffers
+    static public class PostprocessBuffers
     {
         static public RTHandle History;
     };

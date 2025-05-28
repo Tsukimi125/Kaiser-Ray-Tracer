@@ -4,10 +4,10 @@
 #include "../ShaderLibrary/ReSTIR/Reservoir.hlsl"
 #include "../ShaderLibrary/Utils/Random.hlsl"
 
-RWTexture2D<float4> _DirectIllumination;
-RWTexture2D<float4> _DiffuseReservoir;
-RWTexture2D<float4> _SpecularReservoir;
-RWTexture2D<float4> _History;
+Texture2D<float4> _DirectIllumination;
+Texture2D<float4> _DiffuseReservoir;
+Texture2D<float4> _SpecularReservoir;
+Texture2D<float4> _History;
 RWTexture2D<float4> _Result;
 
 Texture2D<float4> _Input;
@@ -18,30 +18,166 @@ Texture2D<float4> _GBuffer2;
 Texture2D<float4> _GBuffer3;
 Texture2D<float4> _GBuffer4;
 
+float4x4 _PrevViewProjMatrix;
+
 SamplerState sampler_point_clamp;
-
-
-
-[numthreads(8, 8, 1)]
-void ReSTIR_Combine(uint3 id:SV_DispatchThreadID)
-{
-    float4 dirIll = saturate(_DirectIllumination[id.xy]);
-    Reservoir diffReservoir = UnPack(_DiffuseReservoir[id.xy]);
-    float3 diffGI = _DiffuseReservoir[id.xy].rgb;
-    float3 specGI = _SpecularReservoir[id.xy].rgb;
-    // float4 specGI = UnPack(_SpecularReservoir[id.xy]);
-    float3 history = saturate(_History[id.xy]).rgb;
-    float3 current = saturate(dirIll.rgb + diffGI + specGI).rgb; // dirIll.rgb + diffGI +
-    // float blendFactor = lerp(0.015f, 0.1f, saturate(distance(history, current)));
-    float blendFactor = lerp(0.05f, 0.15f, saturate(distance(history, current)));
-    float3 res = lerp(history, current, blendFactor);
-    // float4 res = _History[id.xy] * 0.95f + _Result[id.xy] * 0.05f;
-    _Result[id.xy] = float4(res, 1.0f);
-}
+SamplerState sampler_bilinear_clamp;
 
 float4 _Screen_Resolution;
 float _Screen_DenoiseKernelSize;
 float _Screen_FrameIndex;
+
+#define FLT_EPS  5.960464478e-8
+
+float2 ComputeUV(float3 worldPos)
+{
+    float4 clip = mul(_PrevViewProjMatrix, float4(worldPos, 1.0));
+    float2 ndc = clip.xy / clip.w;
+    float2 uv = ndc * 0.5 + 0.5;
+    return uv;
+}
+
+float4 ClipAABB(float3 aabbMin, float3 aabbMax, float4 avg, float4 preColor)
+{
+    float3 p_clip = 0.5 * (aabbMax + aabbMin);
+    float3 e_clip = 0.5 * (aabbMax - aabbMin) + FLT_EPS;
+
+    float4 v_clip = preColor - float4(p_clip, avg.w);
+    float3 v_unit = v_clip.xyz / e_clip;
+    float3 a_unit = abs(v_unit);
+    float ma_unit = max(a_unit.x, max(a_unit.y, a_unit.z));
+
+    if (ma_unit > 1.0)
+        return float4(p_clip, avg.w) + v_clip / ma_unit;
+    return preColor;
+}
+
+float4 RGB2YCoCgR(float4 rgbColor)
+{
+    float4 YCoCgRColor;
+
+    YCoCgRColor.y = rgbColor.r - rgbColor.b;
+    float temp = rgbColor.b + YCoCgRColor.y / 2;
+    YCoCgRColor.z = rgbColor.g - temp;
+    YCoCgRColor.x = temp + YCoCgRColor.z / 2;
+    YCoCgRColor.w = rgbColor.w;
+
+    return YCoCgRColor;
+}
+
+float4 YCoCgR2RGB(float4 YCoCgRColor)
+{
+    float4 rgbColor;
+
+    float temp = YCoCgRColor.x - YCoCgRColor.z / 2;
+    rgbColor.g = YCoCgRColor.z + temp;
+    rgbColor.b = temp - YCoCgRColor.y / 2;
+    rgbColor.r = rgbColor.b + YCoCgRColor.y;
+    rgbColor.w = YCoCgRColor.w;
+
+    return rgbColor;
+}
+
+float Luminance(float3 linearRgb)
+{
+    return dot(linearRgb, float3(0.2126729, 0.7151522, 0.0721750));
+}
+
+float Luminance(float4 linearRgb)
+{
+    return dot(linearRgb.rgb, float3(0.2126729, 0.7151522, 0.0721750));
+}
+
+float4 ToneMap(float4 color)
+{
+    return color / (1 + Luminance(color));
+}
+
+float4 UnToneMap(float4 color)
+{
+    return color / (1 - Luminance(color));
+}
+
+float4 SampleColor(float2 uv)
+{
+    float4 directIllumination = _DirectIllumination.SampleLevel(sampler_point_clamp, uv, 0);
+    return directIllumination;
+    float4 diffGI = _DiffuseReservoir.SampleLevel(sampler_point_clamp, uv, 0);
+    float4 specGI = _SpecularReservoir.SampleLevel(sampler_point_clamp, uv, 0);
+    return diffGI + specGI;
+}
+
+[numthreads(8, 8, 1)]
+void ReSTIR_Combine(uint3 id:SV_DispatchThreadID)
+{
+    // uint rng = uint(uint(id.x) * uint(1973 + 1) + uint(id.y) * uint(9277 + 1) + uint(1) * uint(24699)) | uint(1);
+    // float2 frameCoord = id.xy + float2(0.5, 0.5);
+    // float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
+    // float2 uv = (frameCoord) / float2(1920, 1080);
+    // float3 resGBuffer = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).zww;
+    // _Result[id.xy] = float4(uv - resGBuffer.xy, 0.0f, 1.0f);
+    // return;
+    
+    float4 dirIll = saturate(_DirectIllumination[id.xy]);
+    Reservoir diffReservoir = UnPack(_DiffuseReservoir[id.xy]);
+    float3 diffGI = _DiffuseReservoir[id.xy].rgb;
+    float3 specGI = _SpecularReservoir[id.xy].rgb;
+    float2 frameCoord = id.xy + float2(0.5, 0.5);
+    float2 uv = (frameCoord) / float2(1920, 1080);
+    float2 prevUV = ComputeUV(_GBuffer2.SampleLevel(sampler_point_clamp, uv, 0));
+    // float2 prevUV = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).zw;
+    // float4 specGI = UnPack(_SpecularReservoir[id.xy]);
+    float3 history = saturate(_History.SampleLevel(sampler_point_clamp, prevUV, 0)).rgb;
+    float3 current = saturate(dirIll.rgb + diffGI).rgb; // dirIll.rgb + diffGI + + specGI + dirIll.rgb
+    // float blendFactor = lerp(0.015f, 0.1f, saturate(distance(history, current)));
+    float blendFactor = lerp(0.04f, 0.9f, saturate(max(40 * length(uv - prevUV), 1.2f * distance(history, current))));
+    float3 res = lerp(history, current, max((1.0f - _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).a), blendFactor));
+    // float4 res = _History[id.xy] * 0.95f + _Result[id.xy] * 0.05f;
+    _Result[id.xy] = float4(res, 1.0f);
+
+    // uint rng = uint(uint(id.x) * uint(1973 + _Screen_FrameIndex) + uint(id.y) * uint(9277 + _Screen_FrameIndex) + uint(_Screen_FrameIndex) * uint(24699)) | uint(1);
+    // float2 frameCoord = id.xy + float2(0.5, 0.5);
+    //
+    // float2 jitter = float2(RandomFloat01(rng), RandomFloat01(rng)) - float2(0.5, 0.5);
+    // float2 uv = (frameCoord) * _Screen_Resolution.zw;
+    //
+    // float2 du = float2(_Screen_Resolution.z, 0.0f);
+    // float2 dv = float2(0.0f, _Screen_Resolution.w);
+    //
+    // float4 colorTL = RGB2YCoCgR(ToneMap(SampleColor(uv - du - dv)));
+    // float4 colorTC = RGB2YCoCgR(ToneMap(SampleColor(uv - dv)));
+    // float4 colorTR = RGB2YCoCgR(ToneMap(SampleColor(uv + du - dv)));
+    // float4 colorML = RGB2YCoCgR(ToneMap(SampleColor(uv - du)));
+    // float4 colorMC = RGB2YCoCgR(ToneMap(SampleColor(uv)));
+    // float4 colorMR = RGB2YCoCgR(ToneMap(SampleColor(uv + du)));
+    // float4 colorBL = RGB2YCoCgR(ToneMap(SampleColor(uv - du + dv)));
+    // float4 colorBC = RGB2YCoCgR(ToneMap(SampleColor(uv + dv)));
+    // float4 colorBR = RGB2YCoCgR(ToneMap(SampleColor(uv + du + dv)));
+    // float4 colorMin = min(colorTL, min(colorTC, min(colorTR, min(colorML, min(colorMC, min(colorMR, min(colorBL, min(colorBC, colorBR))))))));
+    // float4 colorMax = max(colorTL, max(colorTC, max(colorTR, max(colorML, max(colorMC, max(colorMR, max(colorBL, max(colorBC, colorBR))))))));
+    // float4 colorAvg = (colorTL + colorTC + colorTR + colorML + colorMC + colorMR + colorBL + colorBC + colorBR) / 9.0;
+    //
+    // float2 prevUV = _GBuffer3.SampleLevel(sampler_point_clamp, uv, 0).zw;
+    // float4 preColor = _History.SampleLevel(sampler_point_clamp, prevUV, 0);
+    // preColor = RGB2YCoCgR(ToneMap(preColor));
+    // float4 clampedColor = ClipAABB(colorMin.rgb, colorMax.rgb, colorAvg, preColor);
+    // clampedColor = UnToneMap(YCoCgR2RGB(clampedColor));
+    // preColor = clampedColor;
+    //
+    // float4 dirIll = saturate(_DirectIllumination[id.xy]);
+    // Reservoir diffReservoir = UnPack(_DiffuseReservoir[id.xy]);
+    // float3 diffGI = _DiffuseReservoir[id.xy].rgb;
+    // float3 specGI = _SpecularReservoir[id.xy].rgb;
+    // // float4 specGI = UnPack(_SpecularReservoir[id.xy]);
+    // // float3 history = saturate(_History[id.xy]).rgb;
+    // float3 history = saturate(_History.SampleLevel(sampler_point_clamp, uv, 0)).rgb;
+    // float3 current = SampleColor(uv).rgb; // dirIll.rgb + diffGI +
+    // // float blendFactor = lerp(0.015f, 0.1f, saturate(distance(history, current)));
+    // float blendFactor = lerp(0.025f, 0.9f, saturate(distance(history, current)));
+    // float3 res = lerp(preColor.rgb, current.rgb, blendFactor);
+    // // float4 res = _History[id.xy] * 0.95f + _Result[id.xy] * 0.05f;
+    // _Result[id.xy] = float4(current.rgb, 1.0f);
+}
 
 [numthreads(8, 8, 1)]
 void SVGF(uint3 id:SV_DispatchThreadID)
@@ -87,7 +223,7 @@ void SVGF(uint3 id:SV_DispatchThreadID)
         t = centerWorldPos - offsetWorldPos;
         float worldPosWeight = min(exp(-dot(t, t) * worldPosPhi), 1.0);
         float2 offsetRM = _GBuffer3.SampleLevel(sampler_point_clamp, offsetUV, 0).xy;
-        float2 t2 = rmao - offsetRM;
+        float2 t2 = rmao.rg - offsetRM;
         float rmWeight = min(exp(-dot(t2, t2) * rmPhi), 1.0);
 
         weight = colorWeight * normalWeight * worldPosWeight * rmWeight;
@@ -96,5 +232,5 @@ void SVGF(uint3 id:SV_DispatchThreadID)
     }
     
     // _Output[id.xy] = float4(uv, 1.0f, 1.0f);
-    _Output[id.xy] = float4(finalColor / weightSum, 1.0f);
+    _Output[id.xy] = float4(saturate(finalColor / weightSum), 1.0f);
 }

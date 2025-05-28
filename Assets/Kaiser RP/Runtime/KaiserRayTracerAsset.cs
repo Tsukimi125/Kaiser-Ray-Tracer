@@ -9,7 +9,8 @@ public enum RenderType
 {
     PATH_TRACING,
     RCGI,
-    RESTIR_GI
+    RESTIR_GI,
+    RENDER_GRAPH
 };
 
 public enum AccumulateType { SINGLE_FRAME, MAX_FRAME, UNLIMITED_FRAME };

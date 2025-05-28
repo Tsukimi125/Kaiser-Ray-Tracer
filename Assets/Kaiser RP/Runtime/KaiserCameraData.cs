@@ -103,7 +103,7 @@ public class KaiserCameraData : MonoBehaviour
                 depthBufferBits = 0,
                 volumeDepth = 1,
                 msaaSamples = 1,
-                graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm,
+                graphicsFormat = GraphicsFormat.R16G16B16A16_UNorm,
                 enableRandomWrite = true,
             };
 

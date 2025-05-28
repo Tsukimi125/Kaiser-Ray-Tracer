@@ -17,8 +17,10 @@ public class GBufferPass
     TextureHandle gbuffer1;
     TextureHandle gbuffer2;
     TextureHandle gbuffer3;
+    TextureHandle gbuffer4;
     TextureHandle depth;
-    void Render(RenderGraphContext context)
+    Matrix4x4 prevViewProjMatrix;
+    void Render(RenderGraphContext context, Camera camera)
     {
         context.cmd.DrawRendererList(listHandle);
         context.renderContext.ExecuteCommandBuffer(context.cmd);
@@ -29,7 +31,14 @@ public class GBufferPass
         context.cmd.SetGlobalTexture("_GBuffer1", gbuffer1);
         context.cmd.SetGlobalTexture("_GBuffer2", gbuffer2);
         context.cmd.SetGlobalTexture("_GBuffer3", gbuffer3);
-
+        context.cmd.SetGlobalTexture("_GBuffer4", gbuffer4);
+        
+        Matrix4x4 viewMatrix = camera.worldToCameraMatrix;
+        Matrix4x4 projMatrix = GL.GetGPUProjectionMatrix(camera.projectionMatrix, false);
+                
+        // ctx.cmd.SetRayTracingMatrixParam(KaiserShaders.gbuffer, Shader.PropertyToID("_PrevViewProjMatrix"), prevViewProjMatrix);
+        context.cmd.SetGlobalMatrix(Shader.PropertyToID("_PrevViewProjMatrix"), prevViewProjMatrix);
+        prevViewProjMatrix = projMatrix * viewMatrix;
     }
 
     public static void Record(
@@ -85,6 +94,17 @@ public class GBufferPass
                 clearColor = Color.black,
                 name = "_GBuffer3"
             };
+            
+            TextureDesc gbufferMotionVectorDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight)
+            {
+                colorFormat = GraphicsFormat.R8G8B8A8_UNorm,
+                depthBufferBits = DepthBits.None,
+                msaaSamples = MSAASamples.None,
+                enableRandomWrite = true,
+                clearBuffer = true,
+                clearColor = Color.black,
+                name = "_GBuffer3"
+            };
 
             TextureDesc depthRTDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight)
             {
@@ -101,6 +121,7 @@ public class GBufferPass
             pass.gbuffer1 = builder.UseColorBuffer(renderGraph.CreateTexture(gbufferNormalDesc), 1);
             pass.gbuffer2 = builder.UseColorBuffer(renderGraph.CreateTexture(gbufferWorldPosDesc), 2);
             pass.gbuffer3 = builder.UseColorBuffer(renderGraph.CreateTexture(gbufferRMAODesc), 3);
+            pass.gbuffer4 = builder.UseColorBuffer(renderGraph.CreateTexture(gbufferMotionVectorDesc), 4);
             // pass.gbuffer0 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle0), 0);
             // pass.gbuffer1 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle1), 1);
             // pass.gbuffer2 = builder.UseColorBuffer(renderGraph.ImportTexture(gbufferHandle2), 2);
@@ -110,6 +131,7 @@ public class GBufferPass
             builder.ReadTexture(pass.gbuffer1);
             builder.ReadTexture(pass.gbuffer2);
             builder.ReadTexture(pass.gbuffer3);
+            builder.ReadTexture(pass.gbuffer4);
             builder.ReadTexture(pass.depth);
 
             RendererListDesc gbufferDesc = new RendererListDesc(shaderTagID, cullingResults, camera)
@@ -119,7 +141,9 @@ public class GBufferPass
             };
             pass.listHandle = builder.UseRendererList(renderGraph.CreateRendererList(gbufferDesc));
 
-            builder.SetRenderFunc<GBufferPass>((pass, context) => pass.Render(context));
+            builder.SetRenderFunc<GBufferPass>((pass, context) => pass.Render(context, camera));
+            
+
         }
 
     }
