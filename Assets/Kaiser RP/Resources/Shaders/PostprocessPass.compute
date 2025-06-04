@@ -130,7 +130,7 @@ void ReSTIR_Combine(uint3 id:SV_DispatchThreadID)
     float3 history = saturate(_History.SampleLevel(sampler_point_clamp, prevUV, 0)).rgb;
     float3 current = saturate(dirIll.rgb + diffGI).rgb; // dirIll.rgb + diffGI + + specGI + dirIll.rgb
     // float blendFactor = lerp(0.015f, 0.1f, saturate(distance(history, current)));
-    float blendFactor = lerp(0.04f, 0.9f, saturate(max(40 * length(uv - prevUV), 1.2f * distance(history, current))));
+    float blendFactor = lerp(0.03f, 0.8f, saturate(max(75 * length(uv - prevUV), 2.8f * distance(history, current))));
     float3 res = lerp(history, current, max((1.0f - _GBuffer0.SampleLevel(sampler_point_clamp, uv, 0).a), blendFactor));
     // float4 res = _History[id.xy] * 0.95f + _Result[id.xy] * 0.05f;
     _Result[id.xy] = float4(res, 1.0f);

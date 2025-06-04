@@ -19,6 +19,7 @@ public partial class KaiserRayTracer : RenderPipeline
     static public class ReservoirBuffers
     {
         static public RTHandle Temporal;
+        static public RTHandle LastFrameTemporal;
         static public RTHandle Spatial;
         static public RTHandle DirectIllumination;
         static public RTHandle IndirectDiffuse;
@@ -52,6 +53,7 @@ public partial class KaiserRayTracer : RenderPipeline
         RenderingUtils.ReAllocateIfNeeded(ref PostprocessBuffers.History, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_History");
 
         RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Temporal, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_TReservoir");
+        RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.LastFrameTemporal, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_LastFrameTReservoir");
         RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.Spatial, reservoirDesc, FilterMode.Point, TextureWrapMode.Clamp, name: "_SReservoir");
         RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.DirectIllumination, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_DirectIllumination");
         RenderingUtils.ReAllocateIfNeeded(ref ReservoirBuffers.IndirectDiffuse, descriptor, FilterMode.Point, TextureWrapMode.Clamp, name: "_IndirectDiffuse");

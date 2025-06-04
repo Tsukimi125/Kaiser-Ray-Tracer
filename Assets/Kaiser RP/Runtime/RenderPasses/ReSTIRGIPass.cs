@@ -17,6 +17,7 @@ public class ReSTIRGIPass
     private TextureHandle output;
     private TextureHandle finalOutput;
     private TextureHandle tReservoir;
+    private TextureHandle tReservoir2;
     private TextureHandle sReservoir;
     private TextureHandle directIllumination;
     private TextureHandle indirectDiffuse;
@@ -64,6 +65,7 @@ public class ReSTIRGIPass
         
         // TextureHandle output = renderGraph.ImportTexture(outputRTHandle);
         TextureHandle tReservoir = renderGraph.ImportTexture(KaiserRayTracer.ReservoirBuffers.Temporal);
+        TextureHandle tReservoir2 = renderGraph.ImportTexture(KaiserRayTracer.ReservoirBuffers.LastFrameTemporal);
         TextureHandle sReservoir = renderGraph.ImportTexture(KaiserRayTracer.ReservoirBuffers.Spatial);
         TextureHandle directIllumination = renderGraph.ImportTexture(KaiserRayTracer.ReservoirBuffers.DirectIllumination);
         TextureHandle indirectDiffuse = renderGraph.ImportTexture(KaiserRayTracer.ReservoirBuffers.IndirectDiffuse);
@@ -71,6 +73,7 @@ public class ReSTIRGIPass
 
         // pass.outputTexture = builder.WriteTexture(output);
         pass.tReservoir = builder.WriteTexture(tReservoir);
+        pass.tReservoir2 = builder.WriteTexture(tReservoir2);
         pass.sReservoir = builder.WriteTexture(sReservoir);
         pass.directIllumination = builder.WriteTexture(directIllumination);
         pass.indirectDiffuse = builder.WriteTexture(indirectDiffuse);
@@ -101,17 +104,16 @@ public class ReSTIRGIPass
             ctx.cmd.SetRayTracingTextureParam(restirGIPassShader, Shader.PropertyToID("_RE_EnvTex"), renderPipelineAsset.envTexture);
             ctx.cmd.SetRayTracingFloatParam(restirGIPassShader, Shader.PropertyToID("_RE_EnvIntensity"), renderPipelineAsset.envIntensity);
             ctx.cmd.SetRayTracingTextureParam(restirGIPassShader, Shader.PropertyToID("_Output"), pass.outputTexture);
-
-            ctx.cmd.SetRayTracingTextureParam(restirGIPassShader, Shader.PropertyToID("_TReservoir"), pass.tReservoir);
-
             ctx.cmd.SetRayTracingTextureParam(restirGIPassShader, Shader.PropertyToID("_SReservoir"), pass.sReservoir);
             ctx.cmd.SetRayTracingTextureParam(restirGIPassShader, Shader.PropertyToID("_DirectIllumination"), pass.directIllumination);
-
-
             ctx.cmd.SetRayTracingIntParam(restirGIPassShader, Shader.PropertyToID("_RE_TReservoirSize"), renderPipelineAsset.restirTReservoirSize);
             ctx.cmd.SetRayTracingIntParam(restirGIPassShader, Shader.PropertyToID("_RE_SReservoirSize"), renderPipelineAsset.restirSReservoirSize);
+            // if (frameIndex % 2 == 0)
             ctx.cmd.SetRayTracingTextureParam(restirGIPassShader, Shader.PropertyToID("_TReservoir"), pass.tReservoir);
+            ctx.cmd.SetRayTracingTextureParam(restirGIPassShader, Shader.PropertyToID("_LastFrameTReservoir"), pass.tReservoir2);
+            
             ctx.cmd.DispatchRays(restirGIPassShader, "ReSTIR_Diffuse_Temporal", (uint)camera.pixelWidth, (uint)camera.pixelHeight, 1, camera);
+            ctx.cmd.CopyTexture(pass.tReservoir, pass.tReservoir2);
             if (renderPipelineAsset.restirSampleType != ReSTIRSampleType.DIFFUSE)
             {
                 int kernel = 1;
@@ -125,14 +127,14 @@ public class ReSTIRGIPass
                 ctx.cmd.SetComputeFloatParam(KaiserRayTracer.KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 2.0f);
                 ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Input"), pass.indirectDiffuse);
                 ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Output"), pass.outputTexture);
-                ctx.cmd.DispatchCompute(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, camera.pixelWidth / 8, camera.pixelHeight / 8, 1);
-                ctx.cmd.SetComputeFloatParam(KaiserRayTracer.KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 4.0f);
-                ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Input"), pass.outputTexture);
-                ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Output"), pass.indirectDiffuse);
-                ctx.cmd.DispatchCompute(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, camera.pixelWidth / 8, camera.pixelHeight / 8, 1);
-                ctx.cmd.SetComputeFloatParam(KaiserRayTracer.KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 8.0f);
-                ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Input"), pass.indirectDiffuse);
-                ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Output"), pass.outputTexture);
+                // ctx.cmd.DispatchCompute(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, camera.pixelWidth / 8, camera.pixelHeight / 8, 1);
+                // ctx.cmd.SetComputeFloatParam(KaiserRayTracer.KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 4.0f);
+                // ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Input"), pass.outputTexture);
+                // ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Output"), pass.indirectDiffuse);
+                // ctx.cmd.DispatchCompute(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, camera.pixelWidth / 8, camera.pixelHeight / 8, 1);
+                // ctx.cmd.SetComputeFloatParam(KaiserRayTracer.KaiserShaders.postprocessPass, "_Screen_DenoiseKernelSize", 8.0f);
+                // ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Input"), pass.indirectDiffuse);
+                // ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_Output"), pass.outputTexture);
                 
                 kernel = 0;
                 ctx.cmd.SetComputeTextureParam(KaiserRayTracer.KaiserShaders.postprocessPass, kernel, Shader.PropertyToID("_DirectIllumination"), pass.directIllumination);

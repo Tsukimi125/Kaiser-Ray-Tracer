@@ -25,24 +25,33 @@ void ReSTIR_Diffuse_Temporal()
 
     if (_RE_ResSTIRType == 0)
     {
-        _Output[launchIndex] = float4(directRadiance + totalRadiance, 1);
+        _Output[launchIndex] = float4(totalRadiance, 1);
     }
     else
     {
         Reservoir re;
-        if (_RE_ResSTIRType != 3)
+        if (_RE_ResSTIRType == 0)
         {
-            re = UnPack(_TReservoir[lastID]);
+            re.RescaleTo(0);
         }
+        else if (_RE_ResSTIRType == 1)
+        {
+            // re = UnPack(_SReservoir[lastID]);
+            re = UnPack(_TReservoir[lastID]);
+        } 
         else
         {
-            re = UnPack(_SReservoir[lastID]);
-        }
-
-        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.001f, 1), RandomFloat01(rng));
+            // re = UnPack(_SReservoir[lastID]);
+            re = UnPack(_TReservoir[lastID]);
+        } 
         int p = _RE_TReservoirSize;
-        p = (int)(p - length(uv - prevUV) * 1);
-        _TReservoir[launchIndex] = re.Pack(max(10, p));
+        p = (int)(p - length(uv - prevUV) * 200);
+        if (prevUV.x < 0 || prevUV.y < 0 || prevUV.x > 1 || prevUV.y > 1 ) p = 1;
+    
+        re.RescaleTo(p);
+        re.Update(trace.firstSampleDir, trace.radiance, re.TargetPDF(trace.radiance), clamp(trace.invPDF, 0.001f, 1), RandomFloat01(rng));
+        
+        _TReservoir[launchIndex] = re.Pack(max(1, p));
         // _Output[launchIndex] = float4(directRadiance + max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);
         // _Output[launchIndex] = float4(length(uv - prevUV).xxx * 1000, 1.0f);
         _Output[launchIndex] = float4(max(re.radiance * re.wSum / (re.M * re.w), 0.0f), 1.0f);

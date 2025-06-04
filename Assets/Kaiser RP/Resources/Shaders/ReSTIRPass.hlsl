@@ -42,6 +42,7 @@ Texture2D<float4> _GBuffer2;
 Texture2D<float4> _GBuffer3;
 Texture2D<float4> _GBuffer4;
 
+RWTexture2D<int4> _LastFrameTReservoir;
 RWTexture2D<int4> _TReservoir;
 RWTexture2D<int4> _SReservoir;
 RWTexture2D<float4> _DirectIllumination;
